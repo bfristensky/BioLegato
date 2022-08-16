@@ -1,0 +1,8 @@
+name        "Copy out"
+icon    "$BIRCH/dat/birch_black_ico.png"
+tip    "copy selected data to blfiles clipboard"
+exec        "cat %in1% |tr -d '\042' > $HOME/.blfiles_clipboard"
+var "in1"
+    type        tempfile
+    direction   in
+    format      tsv

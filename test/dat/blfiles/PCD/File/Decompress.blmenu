@@ -1,0 +1,29 @@
+name        "Decompress - uncompress files based on file extension"
+icon    "$BIRCH/dat/birch_black_ico.png"
+tip    "Decompress files based on file extension eg. gz, zip, bz2, 7z"
+       
+var "in1"
+    type        tempfile
+    direction   in
+    format      tsv
+    save        false
+
+var "out1"
+    type        tempfile
+    direction   out
+    format      tsv
+    save        false
+    overwrite   true
+    content     canvas
+
+panel
+    var "Run"
+        type        button
+        label       "Run"
+        shell       "bltsv2name.py %in1% %in1%.tsv; bl_decompress.sh %in1%.tsv; rm %in1%.tsv; bldirtab.py %out1%"
+        close       true
+    var "Manual"
+        type        button
+        label       "Manual"
+        shell       "chooseviewer.py $BIRCH/doc/bioLegato/bl_decompress.html"
+        close       false

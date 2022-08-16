@@ -1,0 +1,18 @@
+name        "ViewDocumentation"
+icon    "$BIRCH/dat/birch_black_ico.png"
+tip    "View BioLegato documentation"
+
+var "document"
+    type        combobox
+    label       "Documentation file"
+    default     0
+    choices
+        "bioLegato Overview" "$BL_Browser http://home.cc.umanitoba.ca/~psgendb/birchhomedir/BIRCHDEV/public_html/tutorials/bioLegato/bioLegato.html"
+        "BioLegato Manual" "$BL_Browser http://home.cc.umanitoba.ca/~psgendb/birchhomedir/BIRCHDEV/public_html/doc/bioLegato/bioLegato_man.txt"
+
+panel
+    var "Run"
+        type        button
+        label       "Run"
+        shell       "(%DOCUMENT%)&"
+        close       true

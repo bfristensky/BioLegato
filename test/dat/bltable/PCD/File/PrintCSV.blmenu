@@ -1,0 +1,6 @@
+name        "Print Selection (CSV)"
+exec        "cat %in1%"
+var "in1"
+    type        tempfile
+    direction   in
+    format      csv

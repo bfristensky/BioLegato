@@ -1,0 +1,14 @@
+CAT - Reads a file to standard output
+ 
+This command reads in any number of files specified by its command line arguments and outputs the contents of these files to standard output.
+ 
+COMMAND LINE ARGUMENTS
+----------------------
+This command accepts any number of command line arguments.  Each command line arguments should be a file name.
+ 
+EXECUTION STATUS
+----------------
+This command returns one (1) unless an exception is encountered.  In the case of an exception, this command will return zero (0)
+ 
+@author Graham Alvare
+@author Brian Fristensky

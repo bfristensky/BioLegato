@@ -1,0 +1,63 @@
+A simplified implementation of the UNIX grep command.
+ 
+This simplified version of the UNIX grep only accepts input from standard in.  If you wish to grep files, please use the simplified fgrep command.
+
+COMMAND LINE ARGUMENTS
+----------------------
+ 
+grep [flags] pattern(s)
+ 
+flags can be any one of the following:
+ 
+# Pattern matching flags
+ -i              # case insensitive matching
+ 
+ -v              # negative matching -- the next pattern found will not be
+                 # matched instead grep will test the pattern as follows: if
+                 # the pattern is not found in the input, then grep will treat
+                 # the pattern as matching.  If the pattern IS found within
+                 # the input, then grep will treat the pattern as NOT matching.
+ 
+                 # NOTE: this is the reverse of grep's usual behaviour
+ 
+ -F              # treat the next pattern as a literal string,
+                 # rather than a regular expression
+ 
+ -f file         # reads a list of patterns from a file using the current flags
+ 
+ -e pattern      # adds another pattern to the list of patterns (this is
+                 # primarily used in fgrep, which otherwise would only accept
+                 # one pattern
+ 
+# Program and output flags
+ 
+ -n              # When outputting the results of the matcher, this flag
+                 # indicates that each line of output should be preceded by
+                 # the line's relative line number within the file.  In fgrep,
+                 # each file starts at line one (1), and the line counter is
+                 # reset for each file processed.
+ 
+ -c              # When outputting the results of the matcher, this flag
+                 # indicates that only the number of matching lines should be
+                 # printed for each file.  In fgrep, each file starts at line
+                 # one (1), and the line counter is reset for each file
+                 # processed.
+                 
+                 # The -c flag overrides the -n flag; therefore, if both were
+                 # specified, only the -c flag would be used!
+ 
+ -q              # Suppress all output from GREP!
+                 
+                 # This flag overrides ALL other output flags!
+ 
+EXECUTION STATUS
+----------------
+This command returns the following values based on whether the program matched its input:
+
+>0 	A match was found (NOTE: negative matching counts as matches).
+     the number indicates the number of matches total.
+0 	No match was found.
+<0 	A syntax error was found or a file was inaccessible (even if matches were found).
+ 
+@author Graham Alvare
+@author Brian Fristensky

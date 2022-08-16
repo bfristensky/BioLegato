@@ -1,0 +1,13 @@
+All commands:
+    CAT, CD, CP, CUT, DATE, ECHO, EXPR, FGREP,
+    GREP, HEAD, MAN, MKDIRS, MV, PASTE, PWD,
+    RM, RSORT, SORT, TAIL, TR, UNIQ, WC
+
+By category:
+
+    File/path commands:
+        CD, CP, FGREP, MKDIRS, MV, PWD, RM
+
+    Stream commands:
+        CAT, CUT, DATE, ECHO, EXPR, GREP, HEAD,
+        PASTE, REV, RSORT, SORT, TAIL, TR, UNIQ, WC

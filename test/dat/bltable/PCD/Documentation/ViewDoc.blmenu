@@ -1,0 +1,15 @@
+name        "ViewDocumentation"
+var "document"
+    type        combobox
+    label       "Documentation file"
+    default     0
+    choices
+        "bioLegato Documentation" "$BL_Browser $tutorials/bioLegato/bioLegato.html"
+        "bltable Interface Documentation" "$BL_Browser $tutorials/bioLegato/overview/bioLegato.interfaces.html#bltable"
+        "bioLegato Manual" "$BL_TextEditor $DOC/bioLegato/bioLegato_man.txt"
+panel
+    var "Run"
+        type        button
+        label       "Run"
+        shell       "(%DOCUMENT%)&"
+        close       true

@@ -1,0 +1,38 @@
+SORT - Sorts lines of input from standard input in ascending order.
+ 
+This command accepts input via standard input, sorts each line of input based on its content, and prints the resulting output to standard output.  The sort method is the same behaviour as the default sort in Java - i.e. ascending order.
+ 
+let's say you have a file 'shopping.list' containing the following text:
+ 
+     6. milk
+     3. orange
+     1. apple
+     5. bread
+     2. banana
+     4. rice
+ 
+if you only wanted to sort the file, you could run the following command:
+ 
+cat shopping.list | sort
+ 
+This would print the following:
+ 
+     1. apple
+     2. banana
+     3. orange
+     4. rice
+     5. bread
+     6. milk
+ 
+NOTE: the lines are sorted in ascending order.
+
+COMMAND LINE ARGUMENTS
+----------------------
+This command does not accept any arguments.
+ 
+EXECUTION STATUS
+----------------
+This command returns one (1) unless an exception is encountered.  In the case of an exception, this command will return zero (0)
+ 
+@author Graham Alvare
+@author Brian Fristensky

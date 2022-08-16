@@ -1,0 +1,179 @@
+
+/*
+ * Copyright © 2002 Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+ * California 95054, U.S.A. All rights reserved.  Sun Microsystems, Inc. has
+ * intellectual property rights relating to technology embodied in the product
+ * that is described in this document. In particular, and without limitation,
+ * these intellectual property rights may include one or more of the U.S.
+ * patents listed at http://www.sun.com/patents and one or more additional
+ * patents or pending patent applications in the U.S. and in other countries.
+ * U.S. Government Rights - Commercial software. Government users are subject
+ * to the Sun Microsystems, Inc. standard license agreement and applicable
+ * provisions of the FAR and its supplements.  Use is subject to license terms.
+ * Sun,  Sun Microsystems,  the Sun logo and  Java are trademarks or registered
+ * trademarks of Sun Microsystems, Inc. in the U.S. and other countries.  This
+ * product is covered and controlled by U.S. Export Control laws and may be
+ * subject to the export or import laws in other countries.  Nuclear, missile,
+ * chemical biological weapons or nuclear maritime end uses or end users,
+ * whether direct or indirect, are strictly prohibited.  Export or reexport
+ * to countries subject to U.S. embargo or to entities identified on U.S.
+ * export exclusion lists, including, but not limited to, the denied persons
+ * and specially designated nationals lists is strictly prohibited.
+ */
+
+
+options {
+  LOOKAHEAD = 1;
+  CHOICE_AMBIGUITY_CHECK = 2;
+  OTHER_AMBIGUITY_CHECK = 1;
+  STATIC = false;
+  DEBUG_PARSER = false;
+  DEBUG_LOOKAHEAD = false;
+  DEBUG_TOKEN_MANAGER = false;
+  ERROR_REPORTING = true;
+  JAVA_UNICODE_ESCAPE = false;
+  UNICODE_INPUT = false;
+  IGNORE_CASE = false;
+  USER_TOKEN_MANAGER = false;
+  USER_CHAR_STREAM = false;
+  BUILD_PARSER = true;
+  BUILD_TOKEN_MANAGER = true;
+  SANITY_CHECK = true;
+  FORCE_LA_CHECK = false;
+}
+
+PARSER_BEGIN(ShellString)
+
+package org.turtleshell.strings;
+
+import java.io.*;
+import java.util.*;
+import org.turtleshell.*;
+
+/**
+ * An object to wrap strings within the turtle shell internal string system.
+ **
+ * @author Graham Alvare
+ * @author Brian Fristensky
+ */
+public class ShellString implements TString {
+    /**
+     * The string value to wrap within the turtle shell internal string system
+     */
+    private String value;
+
+    /**
+     * Constructs a new turtle shell Java string wrapper
+     **
+     * @param value the string value to wrap within the turtle shell internal string system
+     */
+    public ShellString (String value) {
+        this(new StringReader(value));
+        this.value = value;
+    }
+
+    /**
+     * Returns the contained/wrapped Java string
+     **
+     * @param env the Turtle shell environment to read any necessary variable values from.
+     * @return the string value wrapped by this object
+     */
+    public String getValue(TEnv env) {
+        String result = "";
+
+        try {
+            ReInit(new StringReader(value));
+            result = parse(env).toString();
+        } catch (ParseException pe) {
+            pe.printStackTrace(System.err);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the unmodified contained/wrapped Java string (for debug)
+     **
+     * @return the unmodified string value wrapped by this object
+     */
+    public String toString() {
+        return value;
+    }
+}
+
+PARSER_END(ShellString)
+
+StringBuilder parse(TEnv env) :
+{
+    Token t;
+    String string;
+    StringBuilder exec   = new StringBuilder();
+    StringBuilder result = new StringBuilder();
+}
+{
+    (
+      string=quoteShare(env)     { result.append(string);  }
+    | t=<CHAR>                   { result.append(t.image); }
+    | <SQSTART> 
+          t=<SCHAR>              { result.append(t.image); }
+      <SQEND>
+    | <DQSTART> (
+          string=quoteShare(env) { result.append(string);  }
+        | t=<DCHAR>              { result.append(t.image); }
+        )+
+      <DQEND>
+    | <EQSTART> { exec = new StringBuilder(); } (
+          string=quoteShare(env) { exec.append(string);  }
+        | t=<ECHAR>              { exec.append(t.image); }
+        )+
+      <EQEND> {
+            try {
+                result.append(new DoubleExecString(exec.toString()).getValue(env));
+            } catch (org.turtleshell.ParseException pe) {
+                pe.printStackTrace(System.err);
+            }
+        }
+    )*
+    <EOF>
+    { return result; }
+}
+
+String quoteShare (TEnv env) :
+{
+    Token t;
+    String string;
+}
+{
+    ( t=<ESCAPE> { string = t.image.substring(1);       }
+    | t=<VAR>    { string = env.envreplace(t.image); }
+    | t=<DS>     { string = "$"; }
+    )
+    { return string; }
+}
+
+<DEFAULT,DQUOTE,EQUOTE> TOKEN: {
+             < DS:     "$" >
+           | < VAR:    ( <DS> ( ["A"-"Z","a"-"z","_","0"-"9"] )+ ) >
+           | < ESCAPE: ( ["\\"]~[] ) >
+           }
+
+<DEFAULT> TOKEN: {
+             < SQSTART: "'"  > : SQUOTE
+           | < DQSTART: "\"" > : DQUOTE
+           | < EQSTART: "`"  > : EQUOTE
+           | < CHAR:   ( ~["$","\\","'","\"","`"] )+ >
+           }
+
+<SQUOTE> TOKEN: {
+             < SQEND: "'" > : DEFAULT
+           | < SCHAR: ( ~["'"] )+ >
+           }
+
+<DQUOTE> TOKEN: {
+             < DQEND: "\"" > : DEFAULT
+           | < DCHAR: ( ~["$","\\","\""] )+ >
+           }
+
+<EQUOTE> TOKEN: {
+             < EQEND: "`" > : DEFAULT
+           | < ECHAR: ( ~["$","\\","`"] )+ >
+           }

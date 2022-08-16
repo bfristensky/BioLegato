@@ -1,0 +1,182 @@
+Turtle shell syntax parser
+ 
+This class handles all of the main syntax parsing for turtle shell.  The main
+components to the grammar are defined in GenCommand() and ControlBlock().
+Each method contains detailed documentation about what is supported by the language.
+ 
+The turtle shell language is meant to be a simplified cross-platform Java
+implementation of a command line shell.  Turtle shell follows closely the
+general syntaxes of Bash and SH; however, this does not mean that Turtle shell
+is a one-to-one clone of Bash or SH.  There are significant differences because
+Turtle shell is much simpler.  Some of the differences are within the grammar;
+however, the most surprising of differences are likely found in the implementations
+of Turtle shell's internal commands.  Please see each of the internal command
+javadoc and other documentation for more details on how any of the interal commands
+differ from Bash and SH
+ 
+The basic grammar of Turtle shell supports the following basic constructions (and combinations):
+ 
+1. internal commands -- specified as strings
+     see org.turtleshell.Turtle.CommandBuilder() and the class org.turtleshell.Command
+ 
+2. external commands -- ALSO specified as strings
+     see org.turtleshell.Turtle.CommandBuilder() and the class org.turtleshell.Command
+ 
+3. escaped external commands -- specified as strings preceeded by an asterisk (*)
+     see org.turtleshell.Turtle.CommandBuilder() and the class org.turtleshell.Command
+ 
+4. commands in parenthesis (executed as one entity)
+     This allows backgrounding a block of code.  While each command within the block
+     would be ran sequentially, the entire block would be run asynchronously with the
+     rest of the commands.
+ 
+5. backgrounding processes (via & at the end of a command) -- nedit hello.py &
+     Backgrounded processes will be ran asynchronously from the main body of the code.
+     Please note that after the ampersand, a semicolon may optionally be used to specify
+     more commands on the same line.
+ 
+6. semicolon separated command lists -- echo "hello!"; echo "This is turtle shell"
+     All commands separated by semicolons will be ran sequentially.  The behaviour of
+     the semicolon is the same as a newline, except the semicolon allows for writing
+     multiple commands on a single line.
+ 
+7. piping program output to other commands
+     Commands may be separated by pipe characters (|).  The pipe character indicates
+     that the standard input from the command follwing the pipe character is the same
+     as the standard output from the command preceding the pipe character.  In other
+     words, the standard output of the preceding command will be piped into the standard
+     input of the command following the pipe character.  Please note that after the file
+     name, a semicolon may optionally be used to specify more commands on the same line.
+ 
+8. piping program output to a file
+     Additionally, commands may send their standard output to a file.  Any command followed
+     by a greater than symbol and a file name will send its standard output to that file.
+ 
+9. conjugated execution (AND)
+     Commands may be executed in conjunction with one another.  This means that a command
+     following a conjunction symbol (&&) will only be executed if the return status from
+     the command preceding the conjunction symbol (&&) is NOT equal to zero (0).
+ 
+10. exclusive disjunct execution (XOR)
+     Commands may be executed in disjunctions with one another.  This means that a command
+     following a disjunction symbol (||) will only be executed if the return status from
+     the command preceding the disjunction symbol (||) IS equal to zero (0).
+ 
+11. If statements (without else)
+ 
+     if [ condition ]; then
+         .... statements
+     fi
+ 
+12. If statement (with else)
+ 
+     if [ condition ]; then
+         .... statements
+     else
+         .... more statements
+     fi
+ 
+     where condition is a conditional statement with the format
+ 
+         <tutleshell string> <comparison operator> <tutleshell string>
+ 
+     <tutleshell string> can be any valid turtle shell string.  Some examples are:
+ 
+         "hello world"
+         hello
+         103
+         `expr 1 + 1`
+         $Y
+ 
+     <comparison operator> can be any of the following
+ 
+         =   equal
+         <=  less than, OR equal to
+         <   less than, but NOT equal to
+         >   greater than, OR equal to
+         >=  greater than, but NOT equal to
+ 
+     Therefore an example of an if statement would be:
+ 
+         A=`cat value.txt`
+         if [ $A < 100 ]; then
+             echo "A is less than 100"
+         else
+             echo "A is greater than or equal to 100"
+         fi
+ 
+13. While loops
+     While loops are blocks of code which are executed repeatedly until a condition
+     yields false.  The format of a while loop is as follows:
+ 
+     while [ condition ]; do
+         .... block of code
+     done
+ 
+     where condition is a conditional statement with the format
+ 
+         <tutleshell string> <comparison operator> <tutleshell string>
+ 
+     <tutleshell string> can be any valid turtle shell string.  Some examples are:
+ 
+         "hello world"
+         hello
+         103
+         `expr 1 + 1`
+         $Y
+ 
+     <comparison operator> can be any of the following
+ 
+         =   equal
+         <=  less than, OR equal to
+         <   less than, but NOT equal to
+         >   greater than, OR equal to
+         >=  greater than, but NOT equal to
+ 
+     Therefore an example of a while loop would be:
+ 
+         A=0
+         while [ $A < 100 ]; do
+             A=`expr $A + 1`
+             echo $A
+         done
+ 
+14. Executable strings
+     Executable strings are turtle shell string objects that have their content
+     dynamically generated from executing a command.  An example is `expr 1 + 1`,
+     this would set the string to the output from the command expr 1 + 1.  In other
+     words, the string would be 2.  Executable strings are not executed until their
+     content is needed.  In a loop, they are executed each iteration of the loop.
+ 
+         There are two formats for executable strings:
+             1. the backwards quote format
+ 
+                 e.g., echo `expr 1 + 1`
+ 
+             2. the exec variable format
+ 
+                 e.g., echo $(expr 1 + 1)
+ 
+         The latter (exec variable format) can be nested as such:
+ 
+                 echo $(expr 1 + $(cat value))
+ 
+15. Comments
+     Notes for humans, which the computer (parser) ignores.  All comments are
+     preceeded by a pound symbol (#).
+
+What is a turtle shell internal string object?
+
+Currently 4 types of internal strings are supported by turtle shell:
+
+    1. unquoted id strings -- e.g., echo
+    2. quoted text strings -- e.g., "hello world!"
+    3. variable strings    -- e.g., $ABC
+    4. executable strings  -- e.g., `echo abc`
+
+All commands and their parameters are specified by a list of strings.
+
+For more information about turtle shell, please see the Javadoc documentation.
+
+@author Graham Alvare
+@author Brian Fristensky

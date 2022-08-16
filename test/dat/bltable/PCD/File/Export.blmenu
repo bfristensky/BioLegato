@@ -1,0 +1,16 @@
+name        "Export selection to spreadsheet"
+icon    "$BIRCH/public_html/images/birch_black_ico.png"
+tip    "Open contents of bltable window in a spreadsheet."
+
+var "in1"
+    type        tempfile
+    direction   in
+    format      tsv
+    save        false
+
+panel
+    var "Run"
+        type        button
+        label       "Run"
+        shell       "cp %in1% %in1%.tsv; $BL_Spreadsheet %in1%.tsv"
+        close       true

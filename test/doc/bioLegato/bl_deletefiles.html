@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;
+      charset=windows-1252">
+    <meta name="GENERATOR" content="Mozilla/4.05 [en] (X11; U; SunOS
+      5.5.1 sun4u) [Netscape]">
+    <title>bl_deletefiles.sh - Delete files from current directory</title>
+  </head>
+  <body>
+    <div style="text-align: right;">update July 17, 2018<br>
+    </div>
+    NAME<br>
+    <span style="font-weight: bold;"></span><br>
+    <div style="margin-left: 40px;">bl_deletefiles.sh - Delete files
+      from current working directory.<br>
+      <br>
+    </div>
+    SYNOPSIS<br>
+    <div style="margin-left: 40px;"><span style="font-weight: bold;">bl_deletefiles.sh</span>&nbsp;
+
+      <span style="font-style: italic;">filelist</span><span
+        style="font-style: italic;"></span><br>
+      <br>
+    </div>
+    DESCRIPTION<br>
+    <span style="font-weight: bold;"></span>
+    <blockquote><span style="font-weight: bold;"></span><i>filelist</i>
+      - This is a list of filenames, one name per line.<br>
+      <br>
+      Before deleting files, a popup box promots the user with the names
+      of the selected files, asking to verify that the files should be
+      deleted. If the user clicks on Yes, each file named in filelist is
+      deleted from the current working directory.<br>
+      <br>
+      Exceptions:<br>
+      <br>
+      1. For use with BioLegato it is important to know that the&nbsp;
+      BioLegato Table canvas selects all files if none are selected,
+      meaning that ALL files in the current directory will be written to
+      filelist. This is a feature. We can circumvent that by checking
+      for a pseudo-comment beginning '#' on the first line.&nbsp; If
+      found, a popup box informs the user that no files were selected,
+      and the deletion is cancelled. <br>
+      <br>
+      2. We want to avoid deleting NFS file handles. Any file whose name
+      begins with .nfs will be skipped, and a message is printed to the
+      standard output.<br>
+      <br>
+    </blockquote>
+    AUTHOR<br>
+    <blockquote>Dr. Brian Fristensky<br>
+      Department of Plant Science <br>
+      University of Manitoba<br>
+      Winnipeg, MB &nbsp;Canada R3T 2N2<br>
+      <a href="mailto:frist@cc.umanitoba.ca">frist@cc.umanitoba.ca</a><br>
+      <a href="http://home.cc.umanitoba.ca/%7Efrist">http://home.cc.umanitoba.ca/~frist</a><br>
+    </blockquote>
+    <br>
+    <br>
+    <br>
+  </body>
+</html>

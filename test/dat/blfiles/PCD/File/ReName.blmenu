@@ -1,0 +1,49 @@
+name        "Rename files by changing one pattern to another"
+icon    "$BIRCH/dat/birch_black_ico.png"
+tip    "For each selected file, change the name by replacing old pattern with pattern."
+
+var "in1"
+    type        tempfile
+    direction   in
+    format      tsv
+    save        false
+    content     selection
+
+var "out1"
+    type        tempfile
+    direction   out
+    format      tsv
+    overwrite   true
+    content     canvas  
+
+var "command"
+    type        combobox
+    label       "Replacement"
+    default     0
+    choices
+        "replace old pattern with new pattern" "--replace '%OLDPAT%' '%NEWPAT%'"
+        "replace blanks with new pattern" "--chblanks %NEWPAT%"
+        "delete all blanks" "--noblanks"
+        "change to CamelCase with no blanks" "--camel"
+
+var "oldpat"
+    type        text
+    label       "     old pattern"
+
+var "newpat"
+    type        text
+    label       "     new pattern"
+
+panel
+
+    var "run"
+        type        button
+        label       "Run"
+        shell       "bltsv2name.py %in1% %in1%.tsv; bl_rename.py %COMMAND% %in1%.tsv; rm %in1%.tsv; bldirtab.py %out1%"
+        close       true
+
+    var "Manual"
+        type        button
+        label       "Manual"
+        shell       "$BIRCH/script/chooseviewer.py $BIRCH/doc/bioLegato/bl_rename.html"
+        close       false

@@ -1,0 +1,3 @@
+seqcolourdirs=$BIRCH/dat/bltable/seqcolors:$BIRCH/local/dat/bltable/seqcolors
+pcd.menus.path=$BIRCH/dat/bltable/PCD:$BIRCH/local/dat/bltable/PCD
+canvas=Table

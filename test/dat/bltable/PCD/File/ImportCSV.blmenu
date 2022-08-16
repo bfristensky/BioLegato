@@ -1,0 +1,19 @@
+name        "Import Discrete Data from CSV file"
+var "out1"
+    type        tempfile
+    direction   out
+    format      flat
+var "inputfile"
+    type        file
+    label       "Name of file?"
+panel
+    var "Run"
+        type        button
+        label       "Run"
+        shell       "cat %INPUTFILE% | csv2phyl.sh | phyl2flat > %out1%"
+        close       true
+    var "Help"
+        type        button
+        label       "Help"
+        shell       "$BIRCH/script/chooseviewer.py $BIRCH/doc/blmarker/ImportCSV.help"
+        close       false

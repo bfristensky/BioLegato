@@ -1,0 +1,13 @@
+name        "Paste (TSV)"
+var "in1"
+    type        tempfile
+    direction   out
+    format      tsv
+var "string"
+    type        text
+panel
+    var "Run"
+        type        button
+        label       "Run"
+        shell       "echo %STRING% > %in1%"
+        close       true

@@ -1,0 +1,203 @@
+/*
+ * DataFormat.java
+ *
+ * Created on January 30, 2008, 11:54 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+package org.biolegato.sequence.data;
+
+import java.io.IOException;
+import java.util.Scanner;
+import javax.swing.filechooser.FileFilter;
+
+/**
+ * Class to represent reading of data formats.
+ **
+ * @author Graham Alvare
+ * @author Brian Fristensky
+ */
+public abstract class DataFormat extends FileFilter {
+
+    /**
+     * A static final object used for handling GenBank files.
+     **
+     * This object is used for JOptionPane file chooser drop downs,
+     * and for general file translation
+     */
+    public static final DataFormat GENBANK = new GenBankFile2008();
+    /**
+     * A static final object used for handling normal GDE files.
+     **
+     * This object is used for JOptionPane file chooser drop downs,
+     * and for general file translation
+     */
+    public static final DataFormat GDEFILE = new GDEFile();
+    /**
+     * A static final object used for handling GDE flat-files.
+     **
+     * This object is used for JOptionPane file chooser drop downs,
+     * and for general file translation
+     */
+    public static final DataFormat GDEFLAT = new GDEFlatfile();
+    /**
+     * A static final object used for handling FastA files.
+     **
+     * This object is used for JOptionPane file chooser drop downs,
+     * and for general file translation
+     */
+    public static final DataFormat FASTA   = new FastAFile();
+    /**
+     * The list of available file formats
+     */
+    public static final DataFormat[] FORMAT_LIST = new DataFormat[]{
+        GENBANK, GDEFILE, GDEFLAT, FASTA
+    };
+
+    /**
+     * Creates a new instance of DataFormat
+     */
+    public DataFormat() {
+    }
+
+    /**
+     * Translates data from the BioLegato's sequence canvas internal format to the given file format.
+     **
+     * @param destination the destination for the converted data
+     * @param datamodel the data model object to read from
+     * @param y the line number to read from the data model
+     * @throws IOException if an error occurs while writing to the destination
+     */
+    public void translateTo(Appendable destination, Dataset datamodel, int y) throws IOException {
+        translateTo(destination, datamodel, y, 0, -1);
+    }
+
+    /**
+     * Translates data from the BioLegato's sequence canvas internal format to the given file format.
+     **
+     * @param destination the destination for the converted data
+     * @param datamodel the data model object to read from
+     * @param y the line number to read from the data model
+     * @param offset the x co-ordinate to start the conversion at
+     * @param length the number of characters to read from position 'x'
+     * @throws IOException if an error occurs while writing to the destination
+     */
+    public void translateTo(Appendable destination, Dataset datamodel, int y, int offset, int length) throws IOException {
+        Seq line = datamodel.getLine(y);
+
+        // ensure that the offset is not less than 0
+        offset = Math.max(0, offset);
+
+        // check the length bounds (if -1, then set length to the length of the sequence)
+        if (length < 0) {
+            length = line.getSequence().length();
+        } else {
+            length = Math.min(length, line.getSequence().length());
+        }
+        
+        translateTo(destination, line, offset, length);
+    }
+
+    /**
+     * Translates data from the BioLegato's GDE canvas internal format to the given file format.
+     **
+     * @param destination the destination for the converted data
+     * @param data the sequence object to convert
+     * @param offset the x co-ordinate to start the conversion at
+     * @param length the number of characters to read from position 'x'
+     * @throws IOException if an error occurs while writing to the destination
+     */
+    public abstract void translateTo(Appendable destination, Seq data, int offset, int length) throws IOException;
+
+    /**
+     * Translates a string from the given file format into the BioLegato internal format.
+     **
+     * @param datamodel the data model to store the translated sequences
+     * @param data the scanner to parse
+     * @param x the X-coordinate of the position where to insert the results
+     * @param y the Y-coordinate of the position where to insert the results
+     * @throws IOException any exceptions that occur while reading the stream are passed.
+     */
+    public void translateFrom(Dataset datamodel, Scanner data, int x, int y) throws IOException {
+        // continually extract sequences from the scanner until there are non left to extract
+        // simultaneously increment the y co-ordinate, so the newly extracted sequences will
+        // be in sequential order (i.e. in the sequence from which they were extracted from the scanner)
+        while (translateSequence(datamodel, data, x, y, false)) {
+            y++;
+        }
+    }
+
+    /**
+     * Translates a single sequence from a scanner into BioLegato
+     **
+     * @param datamodel the destination model to store the translated sequences
+     * @param source the data source to parse
+     * @param x the X-coordinate of the position where to insert the results
+     * @param y the Y-coordinate of the position where to insert the results
+     * @return whether there are any remaining sequences of the current format type in the scanner
+     * @throws IOException any exceptions that occur while reading the stream are passed
+     */
+    public abstract boolean translateSequence(Dataset datamodel, Scanner source, int x, int y, boolean addonly) throws IOException;
+
+    /**
+     * Used to auto-detect Bio Legato formats
+     *
+     * @param test the string to test
+     * @return whether the format is correct
+     * @throws IOException returns any possible io exceptions (such as mark not supported)
+     */
+    protected abstract boolean isFormat(Scanner test) throws IOException;
+
+    /**
+     * Used to auto-detect file formats.
+     *
+     * @param data the string to convert
+     * @return The resulting sequences.
+     */
+    public static DataFormat autodetect(Scanner data) throws IOException {
+        DataFormat result = DataFormat.GDEFLAT;
+
+        // skip any leading whitespace
+        data.skip("[\\s\n\r]*");
+
+        // ensure the data we are using is not null
+        if (data != null) {
+            // itterate through all file formats
+            // test each of the 4 supported formats sequentially
+            if (DataFormat.GENBANK.isFormat(data)) {
+                result = DataFormat.GENBANK;
+            } else if (DataFormat.GDEFILE.isFormat(data)) {
+                result = DataFormat.GDEFILE;
+            } else if (DataFormat.FASTA.isFormat(data)) {
+                result = DataFormat.FASTA;
+            }
+        }
+        return result;
+    }
+
+////////////////////////
+//********************//
+//* STATIC FUNCTIONS *//
+//********************//
+////////////////////////
+    /**
+     * Finds the filetype that corresponds to the given hashname (null if not successful).
+     *
+     * @param hashname the hashname to search for.
+     * @return The result of the search (returns null on failure).
+     */
+    public static DataFormat getFormat(String hashname) {
+        DataFormat found = DataFormat.GDEFLAT;  // the data format found (null if not found).
+
+        // ensure the name we are searching for is not null
+        if ("genbank".equals(hashname)) {
+            found = DataFormat.GENBANK;
+        } else if ("gde".equals(hashname)) {
+            found = DataFormat.GDEFILE;
+        } else if ("fasta".equals(hashname)) {
+            found = DataFormat.FASTA;
+        }
+        return found;
+    }
+}

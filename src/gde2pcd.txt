@@ -1,0 +1,15 @@
+GDE2PCD Menu conversion tool (version 1.00)
+-------------------------------------------
+USAGE:    GDE2PCD [options]
+OPTIONS:
+    --makemenus     Read GDE menus from $GDE_MAKEMENUS_DIR using
+                    the GDE makemenus version of the GDE format
+    --birch         Read GDE menus from a BIRCH installation.
+                    The installation is found using the $BIRCH
+                    environment variable
+    --standard      Read a .GDEmenus file the same way GDE read
+                    .GDEmenus files (i.e. search $GDE_HELP_DIR,
+                    and the current directory for a .GDEmenus file)
+
+All of the data is output to a directory labelled "output".  This directory is created in
+the same directory as gde2pcd.jar (GDE2PCD/build/output from the current directory)

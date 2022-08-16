@@ -1,0 +1,39 @@
+name        "Compress - compress files"
+icon    "$BIRCH/dat/birch_black_ico.png"
+tip    "Compress files, choosing compression method based on file extension eg. gz, zip, bz2, 7z"
+       
+var "in1"
+    type        tempfile
+    direction   in
+    format      tsv
+    save        false
+
+var "ext"
+    type        chooser
+    label       "Compression file format?"
+    default     0
+    choices
+        "Gzip (gz)" "gz"
+        "Zip (zip)" "zip"
+        "bzip2 (bz2)" "bz2"
+        "p7zip (7z)" "7z"
+
+var "out1"
+    type        tempfile
+    direction   out
+    format      tsv
+    save        false
+    overwrite   true
+    content     canvas
+
+panel
+    var "Run"
+        type        button
+        label       "Run"
+        shell       "bltsv2name.py %in1% %in1%.tsv; bl_compress.sh %in1%.tsv %EXT%; rm %in1%.tsv; bldirtab.py %out1%"
+        close       true
+    var "Manual"
+        type        button
+        label       "Manual"
+        shell       "chooseviewer.py $BIRCH/doc/bioLegato/bl_compress.html"
+        close       false

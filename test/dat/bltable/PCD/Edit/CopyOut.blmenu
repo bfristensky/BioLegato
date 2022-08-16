@@ -1,0 +1,6 @@
+name        "Copy out"
+exec        "cat %in1% > $HOME/.bltable_clipboard"
+var "in1"
+    type        tempfile
+    direction   in
+    format      csv

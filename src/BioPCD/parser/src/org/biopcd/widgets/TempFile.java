@@ -1,0 +1,767 @@
+package org.biopcd.widgets;
+
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import javax.swing.AbstractAction;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
+import org.biopcd.parser.PCDIO;
+
+/**
+ * Stores information about the file fields used by the command
+ **
+ * @author Graham Alvare
+ * @author Brian Fristensky
+ */
+public class TempFile extends SimpleWidget {
+
+    /**
+     * whether to add the contents of the window to the file before execution
+     * (whether the temporary file is input for a program).
+     */
+    private boolean input = false;
+    /**
+     * whether to add the contents of the file to the window after execution.
+     * (whether the temporary file is output for a program).
+     */
+    private boolean output = false;
+    /**
+     * Whether to force output the entire canvas (true) instead of outputting
+     * only the selected data from the canvas (false)
+     */
+    private boolean forceall = false;
+    /**
+     * Determines whether to delete the file after execution.
+     */
+    private boolean save = false;
+    /**
+     * Determines whether to overwrite selected data within the canvas when
+     * the close() function is called for output files.
+     */
+    private boolean overwrite = false;
+    /**
+     * Stores the file format of the file (used for translation).
+     */
+    private String format = null;
+    /**
+     * Stores the current canvas to interact with.
+     */
+    private PCDIO canvas = null;
+    /**
+     * The icon for the widget
+     */
+    public static final Icon WIDGET_ICON = new ImageIcon(
+            TempFile.class.getClassLoader().getResource(
+                    "org/biopcd/icons/tempfile.png"));
+
+    /**
+     * Creates a new instance of a text widget
+     * (this specific constructor is used by the PCD editor ONLY!).
+     **
+     * @param name  the PCD variable name (this name can be referenced
+     *              in the command using the % symbol; for example,
+     *              if the name value was set to "A", the value of this
+     *              widget could be accessed by using %A% (lower or
+     *              upper-case) within the PCD menu command string.
+     */
+    public TempFile(String name) {
+        super(name);
+
+        // Set the default values for the TempFile object
+        input = true;
+        output = false;
+        save = false;
+        overwrite = false;
+        format = "genbank";
+        forceall = false;
+        canvas = null;
+    }
+
+    /**
+     * Creates a new instance of temporary file widgets.
+     **
+     * @param name       the PCD variable name (this name can be referenced
+     *                   in the command using the % symbol; for example,
+     *                   if the name value was set to "A", the value of this
+     *                   widget could be accessed by using %A% (lower or
+     *                   upper-case) within the PCD menu command string.
+     * @param canvas     the canvas object to interact with
+     * @param input      whether the file should be used as input for a command.
+     *                   If true, content from the canvas is written to the file
+     *                   when getValue() is called.
+     * @param output     whether the file should be used as output for a
+     *                   command.  If true, when the close() method is called,
+     *                   the contents of the file will be written to the canvas.
+     * @param save       whether to delete file when
+     * @param overwrite  whether to overwrite the selected sequences in the
+     *                   canvas.  If true any sequences selected will be
+     *                   overwritten when the close() function is called.
+     * @param format     the format to use for file I/O
+     * @param forceall   if true, use the entire contents of the canvas instead
+     *                   of limiting file output to only the data selected by
+     *                   the user
+     */
+    public TempFile(String name, PCDIO canvas, boolean input, boolean output,
+            boolean save, boolean overwrite, String format, boolean forceall) {
+        super(name);
+
+        // Transfer the passed arguments to the class's member variables.
+        this.input = input;
+        this.output = output;
+        this.save = save;
+        this.overwrite = overwrite;
+        this.format = format;
+        this.forceall = forceall;
+        this.canvas = canvas;
+    }
+
+    /**
+     * <p>Creates a new widget instance of the widget</p>
+     *
+     * <p>A widget instance is an object that stores the value of a widget past
+     * after the widget has been closed.  This is useful for concurrency.
+     * Because more than one BioLegato PCD command can be run simultaneously,
+     * BioLegato needs to store the values used to run each command separately.
+     * For instance, if the user runs command A, then changing the value of a
+     * widget in A's parameter window should not affect the currently running
+     * job (i.e. command A).  This is achieved through WidgetInstance objects.
+     * </p>
+     *
+     * <p>In this case, the WidgetInstance contains the filename where the
+     * TempFile will write the content to be read by the command.  If the file
+     * does not exist, then this function creates a file to use for IO.  This
+     * function also writes the initial contents to the file, if the input flag
+     * is set.</p>
+     **
+     * @return a widget instance (which contains the filename to use for
+     *         command line substitution) for usage in the current menu.
+     */
+    public WidgetInstance getInstance() {
+        // The filename used to perform the I/O.
+        String result = "";
+        // The directory where the temporary file for I/O should be contained.
+        File location = new File(System.getProperty("user.dir"));
+        // The path to the temporary file for I/O.
+        File currentFile = null;
+
+        try {
+            // Create the file for I/O.
+            // Note: the method createTempFile comes from java.io.File, and NOT
+            // from the TempFile class found in this file.
+            currentFile = File.createTempFile("bio", null, location);
+
+            // If the save flag is not set, then set the deleteOnExit flag for
+            // the temporary file.  This is a failsafe in case there are any
+            // problems deleting the file within the code below (i.e. using
+            // the 'close' method of the WidgetInstance object generated).
+            if (!save) {
+                currentFile.deleteOnExit();
+            }
+
+            // If the input flag is set and the format is not null, then write
+            // the contents from the canvas to the temporary file.
+            if (input && format != null) {
+                // Create the file writer object to write the file with.
+                FileWriter writer = new FileWriter(currentFile);
+
+                // Write the contents of the canvas to the file.
+                canvas.writeFile(format, writer, forceall);
+
+                // Flush and close the file writer buffer to ensure that
+                // the file is written to.  (If you do not flush the buffer,
+                // sometimes the file will be empty because the data you wish
+                // to write will be in cache memory and not on disk).
+                writer.flush();
+                writer.close();
+            } else if (format == null) {
+                // Print an error message if the format field is set to null.
+                System.err.println("PCD TempFile (" + name
+                        + ") Invalid file format (null)");
+            }
+        } catch (IOException ex) {
+            // Print an error message if there are any problems that occur
+            // while setting up the temporary file for I/O.
+            ex.printStackTrace(System.err);
+        }
+
+        // If the file was generated properly, then get the filename/path, so
+        // we can do command line substitution.
+        if (currentFile != null) {
+            result = currentFile.getName();
+            // TODO: replace with getPath in the new file format
+        }
+
+        // Set the closeFile object to point to the current file.  The closeFile
+        // object is a bit of a hack for passing the file to the WidgetInstance
+        // for use in the overridden close method, while using the filename for
+        // all other WidgetInstance functions.
+        final File closeFile = currentFile;
+
+        // Generate and return the WidgetInstance.  The WidgetInstance object
+        // will be overridden, such that the close method will read the file
+        // and print the contents to the canvas IF and only if the output flag
+        // is set to true.  Also, if the save flag is set to false, the file
+        // will be deleted when the close method is called.
+        return new WidgetInstance((result != null && !"".equals(result.trim())
+                ? result : "nullfile")) {
+            /**
+             * <p>Notifies the variable that the program has now completed
+             * successfully.  This allowed the widget to perform operations
+             * based on no longer being visible.</p>
+             *
+             * <p>In the case of the temporary file widget, this method causes
+             * the widget to release any files currently in use and import
+             * any content that is designated to be imported into the canvas.
+             * This method, furthermore, deletes any temporary files which
+             * are not designated to be saved for post-program-termination use.
+             * </p>
+             */
+            @Override
+            public void close() {
+                // Ensure that the closeFile is not null and still exists.
+                if (closeFile != null && closeFile.exists()) {
+                    // If the output boolean is set, read the file into the
+                    // canvas.
+                    if (output) {
+                        // Make sure that the format is NOT null.
+                        if (format != null) {
+                            try {
+                                // Read the file into the canvas.
+                                canvas.readFile(format,
+                                        new FileReader(closeFile), overwrite, forceall);
+                            } catch (IOException ioe) {
+                                ioe.printStackTrace(System.err);
+                            }
+                        } else {
+                            // Print an error message if the format is null.
+                            System.err.println("PCD TempFile (" + name
+                                    + ") Invalid file format (null)");
+                        }
+                    }
+
+                    // Unless the save flag is set to true, delete the file.
+                    if (!save) {
+                        closeFile.delete();
+                    }
+                }
+            }
+        };
+    }
+
+    /**
+     * <p>Displays the current widget within the container 'dest'.</p>
+     *
+     * <p><i>NOTE: in the case of the temporary file widget, this method does
+     * nothing!</i></p>
+     **
+     * @param dest   the destination Container to display the widget.  Note that
+     *               this will almost definitely be different from the window
+     *               parameter, and in most cases, should be a JPanel object.
+     * @param window the parent window to communicate with.  The communication
+     *               involved is supposed to be limited to just using 'window'
+     *               to create modal dialog boxes when necessary (for example,
+     *               the AbstractFileChooser's "Browse" file choice dialog box).
+     *               Please note that this field may be null!! (e.g. displaying
+     *               the current state of the widget in the editor canvas)
+     */
+    public void display(Container dest, CloseableWindow window) {
+    }
+
+    /**
+     * <p>Populates a container with the component objects
+     * necessary for editing the current widget's properties.</p>
+     *
+     * <p>This method takes the Container 'dest' and populates it with
+     * components which can change the properties of the current widget.  In
+     * other words, this is the window which pops up when you double click on a
+     * widget in the PCD editor.  For instance, if you place a text box in a PCD
+     * menu, then double click on it, you can set its internal PCD 'name' and
+     * default value, among other things.</p>
+     *
+     * <p>This method returns an action listener, which is called when the
+     * widget should update.  The reason for this is class extension.  To allow
+     * sub-classes to use the same method ('editWindow') with only one button,
+     * and without re-writing code, an ActionListener object can be passed
+     * downwards to the child class.  The child class may add code to call its
+     * parent class's ActionListener.</p>
+     *
+     * <p>Please note that the ActionListener will likely be used by a calling
+     * method to create an "Update" button.</p>
+     **
+     * @param  dest  the destination Container object; this is where the
+     *               'editWindow' function will add add all of the Components
+     *               necessary for editing the Widget parameters (NOTE: this
+     *               class implements the Widget interface).
+     * @return the action listener associated with updating the current widget.
+     *         When this method is called, the Widget should be updated to use
+     *         the parameters specified in the Components displayed on 'dest'.
+     */
+    public ActionListener editWindow(Container dest) {
+        // Create objects for all of the known formats, so as to store both
+        // a human readable description of the file format and the internal
+        // PCD name of the format.  Thus, the human readable name can be
+        // presented to the user in a combobox, while the PCD internal name
+        // can be used by the pcdOut function to generate the widget PCD code.
+        Object[] knownFormats = new Object[] {
+            new Format("GenBank (sequence canvas)", "genbank"),
+            new Format("GDE format (sequence canvas)", "gde"),
+            new Format("GDE's flatfile format (sequence canvas)", "flat"),
+            new Format("FastA sequence (sequence canvas)", "gde"),
+            new Format("Tab Separated Values  - CSV/TSV(table canvas)", "tsv"),
+            new Format("Comma Separated Values - CSV (table canvas)", "csv"),
+            "other"
+        };
+
+        // Create the labels for displaying in the edit window.
+        final JLabel formatLbl = new JLabel("Label/name: ");
+        final JLabel otherFormatLbl = new JLabel("Specify: ");
+        JLabel ioLbl = new JLabel("I/O type: ");
+
+        /// Create the panels for ordering the edit window display.
+        final JPanel fullFormatPnl = new JPanel();
+        final Box formatPnl = new Box(BoxLayout.LINE_AXIS);
+        final Box otherFormatPnl = new Box(BoxLayout.LINE_AXIS);
+
+        // Create a radio button group to ensure that only
+        // one radio button is selected at a time.
+        ButtonGroup ioGrp = new ButtonGroup();
+
+        // Create a panel to store all of the radio buttons created.
+        JPanel ioPnl = new JPanel();
+
+        // Create a radio button to indicate (when selected) that the temporary
+        // file will be used as input for the command (i.e. BioLegato will write
+        // the contents of the canvas to this file when the PCD menu command
+        // is executed).
+        final JRadioButton inRB = new JRadioButton("program input", input);
+        // Create a radio button to indicate (when selected) that the temporary
+        // file will be used as output for the command (i.e. BioLegato will
+        // read the contents of the file into the current canvas, after the PCD
+        // menu command is executed.
+        final JRadioButton outRB = new JRadioButton("program output", output);
+        // The combobox to list all of the known file formats for the temporary
+        // file.  This will include an "other" option, so the user can enter
+        // any format not listed in the box (should such an occasion arise,
+        // e.g. a non-BioLegato version of BioPCD).
+        final JComboBox formatBox = new JComboBox(knownFormats);
+        // A text field to hold the name of the "other" format (when other is
+        // selected in the format Combobox).  This name should be the PCD
+        // internal name of the format to use, as it will be printed - verbatim
+        // - into the PCD code.
+        final JTextField otherFormatTxt = new JTextField(format, 20);
+        // The save file checkbox.  When checked, the temporary file generated
+        // by this widget will be not deleted by BioLegato after the program
+        // (represented by the PCD menu) has completed its execution.
+        final JCheckBox saveCB = new JCheckBox("do not delete this "
+                + "temporary file when BioLegato is closed", save);
+        // If this box is checked, and the temporary file type is set to output,
+        // then the contents of the file will not only be written to the canvas,
+        // but will also overwrite the current canvas selection.
+        final JCheckBox overwriteCB = new JCheckBox("overwrite the current "
+                + "BioLegato canvas selection with the program output "
+                + "(applies to output I/O type only)", overwrite);
+        // If this box ix checked, and the temporary file type is set to input,
+        // then the contents of the entire canvas will be written to the
+        // temporary file before program execution.  If this box is unchecked,
+        // the default behaviour of input temporary files is to only use the
+        // current selection of the canvas.
+        final JCheckBox forceallCB = new JCheckBox("Use entire canvas instead "
+                + "of current selection for input "
+                + "(applies to input I/O type only)", forceall);
+
+        // Set the format combobox selection to default to "other".
+        // Note that if the 'format' field of the temporary file is set, and the
+        // 'format' field is set to something that is displayed in the combo box
+        // 'formatBox', then BioLegato will make the 'formatBox' combo box point
+        // to that format instead (this will be done in the upcoming for-loop).
+        formatBox.setSelectedItem("other");
+
+        // Change 'formatBox' to select whatever format is contained within the
+        // 'format' field of this TempFile object.  Please note that if the
+        // field is not detected, the default setting will be "other"
+        // (set by the code above).
+        for (Object obj : knownFormats) {
+            if (obj instanceof Format && ((Format)obj).value.equals(format)) {
+                formatBox.setSelectedItem(obj);
+            }
+        }
+
+        // Set the action command for the two temporary file types.  The purpose
+        // of setting the action command is that an action listener will listen
+        // for changing the temporary file type, then change which options are
+        // available depending on the file type.
+        inRB.setActionCommand("input");
+        outRB.setActionCommand("output");
+
+        // Add the temporary file type radio buttons to the radio button group
+        // 'ioGrp'.
+        ioGrp.add(inRB);
+        ioGrp.add(outRB);
+
+        // Choose which radio button (file  type) should be selected based
+        // on whether the output flag is set.
+        if (output) {
+            outRB.setSelected(true);
+        } else {
+            inRB.setSelected(true);
+        }
+
+        // Configure the I/O radio button (file type radio button) panel.
+        ioPnl.setLayout(new BoxLayout(ioPnl, BoxLayout.LINE_AXIS));
+        ioPnl.add(ioLbl);
+        ioPnl.add(inRB);
+        ioPnl.add(outRB);
+
+        // Configure the file format panel.
+        formatPnl.add(formatLbl);
+        formatPnl.add(formatBox);
+
+        // Configure the "other format" panel.
+        otherFormatPnl.add(otherFormatLbl);
+        otherFormatPnl.add(otherFormatTxt);
+
+        // Configure the "full format" panel (this is a panel which holds both
+        // the file format combo box, and the other file format text box).
+        fullFormatPnl.add(formatPnl);
+
+        // Add action listeners to all of the file formats in the combo box.
+        // This action listener will listen to the current selection in the
+        // combo box.  If the current selection is "other", then the other
+        // format panel (and text field) will be displayed.  If the current
+        // selection is NOT "other", then the other format panel will be hidden.
+        formatBox.addActionListener (new ActionListener () {
+            public void actionPerformed(ActionEvent e) {
+                if (formatBox.getSelectedItem() instanceof Format) {
+                    fullFormatPnl.remove(otherFormatPnl);
+                } else {
+                    fullFormatPnl.add(otherFormatPnl);
+                }
+            }
+        });
+
+        // Add all of the panels to the editor window
+        // panel for the temporary file.
+        dest.add(ioPnl);
+        dest.add(fullFormatPnl);
+        dest.add(saveCB);
+        dest.add(overwriteCB);
+        dest.add(forceallCB);
+
+        // Return an action listener which will update all of the fields and
+        // flags for the current temporary file based on the selections within
+        // the widget parameter editor window.
+        return new ActionListener() {
+            /**
+             * Update the current temporary file widget based on the selections
+             * within the editor window.
+             **
+             * @param e  This event will be ignored, because the function
+             *           unconditionally updates the temporary file object
+             *           and does not need any specific auxiliary information
+             *           to do so.  (All of the information needed is available
+             *           directly from the Components used in the code above).
+             *           Note that 'final' objects may be accessed from within
+             *           classes extended in-body such as this class.
+             */
+            public void actionPerformed(ActionEvent e) {
+                Object formatObj = formatBox.getSelectedItem();
+
+                // Update the status for each checkbox/radio button parameter
+                input = inRB.isSelected();
+                output = outRB.isSelected();
+                save = saveCB.isSelected();
+                overwrite = overwriteCB.isSelected();
+                forceall = forceallCB.isSelected();
+
+                // Ensure the format is set properly: handle the "other" format
+                // separately from Format object options in the format combobox.
+                if (formatObj instanceof Format) {
+                    format = ((Format)formatBox.getSelectedItem()).value;
+                } else {
+                    format = otherFormatTxt.getText();
+                }
+            }
+        };
+    }
+
+    /**
+     * An object for storing the temp file formats inside the editor window
+     * combo box.  This object stores both the user readable name (presented
+     * in the combo box), and the PCD code for the file format.
+     */
+    private static class Format {
+        /**
+         * The human readable name of the file format.
+         */
+        public String name;
+        /**
+         * The BioPCD name of the file format.
+         */
+        public String value;
+
+        /**
+         * Creates a new Format object.
+         **
+         * @param name The human readable name of the file format.
+         * @param value The BioPCD name of the file format.
+         */
+        public Format (String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        /**
+         * Returns the human readable name of the file format, which
+         * can then be displayed to the user via a combo-box.
+         **
+         * @return The human readable name of the file format.
+         */
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    /**
+     * Writes the BioPCD representation of the menu widget to a writer object
+     * (see BioLegato's BioPCD editor for more details)
+     **
+     * @param scope the level of scope to write the menu widget.
+     * @param out the writer object to output the BioPCD code.
+     */
+    @Override
+    public void pcdOut (int scope, Appendable out) throws IOException {
+        // Call the parent class's pcdOut method.
+        super.pcdOut(scope, out);
+
+        /////////////////
+        // WIDGET TYPE //
+        /////////////////
+        // Generate the scope indentation for the next PCD line.
+        for (int count = 0; count < scope + 1; count++) {
+            out.append("    ");
+        }
+        // Print the widget type PCD code.
+        out.append("type tempfile\n");
+        /////////////////
+
+
+        ///////////////////
+        // TEMPFILE TYPE //
+        ///////////////////
+        // Generate the scope indentation for the next PCD line.
+        for (int count = 0; count < scope + 1; count++) {
+            out.append("    ");
+        }
+        // Print the temp file I/O direction PCD code.
+        out.append("direction ");
+        if (input) {
+            out.append("in\n");
+        } else {
+            out.append("out\n");
+        }
+
+
+        /////////////////
+        // FILE FORMAT //
+        /////////////////
+        // Generate the scope indentation for the next PCD line.
+        for (int count = 0; count < scope + 1; count++) {
+            out.append("    ");
+        }
+        // Print the temp file format PCD code.
+        out.append("format \"");
+        out.append(format.replaceAll("\"", "\"\""));
+        out.append("\"\n");
+
+
+        ///////////////
+        // SAVE FILE //
+        ///////////////
+        // Generate the scope indentation for the next PCD line.
+        for (int count = 0; count < scope + 1; count++) {
+            out.append("    ");
+        }
+        // Print the save file after execution flag PCD code.
+        out.append("save ");
+        out.append((save ? "true\n" : "false\n"));
+
+
+        ///////////////
+        // OVERWRITE //
+        ///////////////
+        // Generate the scope indentation for the next PCD line.
+        for (int count = 0; count < scope + 1; count++) {
+            out.append("    ");
+        }
+        // Print the overwrite canvas selection flag PCD code.
+        out.append("overwrite ");
+        out.append((overwrite ? "true\n" : "false\n"));
+
+
+        ////////////////////
+        // CANVAS CONTENT //
+        ////////////////////
+        // Generate the scope indentation for the next PCD line.
+        for (int count = 0; count < scope + 1; count++) {
+            out.append("    ");
+        }
+        // Print the canvas selection or complete canvas flag PCD code.
+        out.append("content ");
+        out.append((forceall ? "canvas\n" : "selection\n"));
+    }
+
+    /**
+     * Displays the current widget in an editor panel.  This is completely
+     * customizable; for example, TabbedWidgets display an JTabbedPane with
+     * buttons at the bottom for adding tabs.  To see this function in action,
+     * using the PCD editor, drag and drop a widget into a new menu.  What you
+     * see in the new menu is EXACTLY the Component object returned by this
+     * function.
+     **
+     * @param  mainFrame  a JFrame object for adding modality to any dialog
+     *                    boxes, which are created by this function.
+     * @return a component object to display in the editor.
+     */
+    @Override
+    public Component displayEdit (final JFrame mainFrame) {
+        // Create a new label for displaying a text description of the TempFile.
+        final JLabel lbl = new JLabel();
+
+        // Add the text and icon for displaying in the editor window.  The icon
+        // used for temp files is a slanted image of a blue 3.5" diskette.  The
+        // text displayed to the user is the name of the widget plus the text
+        // "(in)" for program input temporary files, and "(out)" for program
+        // output temporary files.  A program input temporary file is a file
+        // which is read by the executed command as part of its input.  A
+        // program output file is a file which is written to by the executed
+        // comand and read into BioLegato after command execution.
+        lbl.setText(name + (input ? "(in)" : "(out)"));
+        lbl.setIcon(WIDGET_ICON);
+
+        // Add a mouse listener to read double-clicks on the Component generated
+        // by this function.  A double-click signals to the editor that the user
+        // wishes to modify the parameters of this temporary file.
+        lbl.addMouseListener(new MouseAdapter() {
+            /**
+             * Listen for double-clicks.  If the user double-clicks on the
+             * Component (i.e. the JLabel 'lbl'), then create a new window to
+             * edit the parameters of this TempFile object.  The Components for
+             * editing the temporary file parameters are generated by the
+             * 'editWindow' function.  This method/function below additionally
+             * adds a text field for editing the variable's PCD name, and an
+             * update button (which updates the TempFile object's parameters).
+             **
+             * @param e  the MouseEvent containing information about the click
+             *           event.  In this case, this function only examines the
+             *           event object to see if the mouse click was a double or
+             *           single click.
+             */
+            @Override
+            public void mouseClicked(MouseEvent event) {
+                if (event.isPopupTrigger() || event.getClickCount() == 2) {
+                    // Create the dialog window for editing the widget's
+                    // properties and parameters.
+                    final JDialog pWindow
+                            = new JDialog(mainFrame, true);
+
+                    // Create panels for formatting the window's Components.
+                    JPanel panel = new JPanel();
+                    JPanel namePanel = new JPanel();
+
+                    // Create a text field to contain the BioPCD variable name.
+                    final JTextField nameField = new JTextField(name, 20);
+
+                    // Set the layout for all of the panels in the window.
+                    panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+                    namePanel.setLayout(new BoxLayout(namePanel,
+                            BoxLayout.LINE_AXIS));
+
+                    // Create the edit [BioPCD] variable name text box and
+                    // label, and add them to the edit widget parameters window.
+                    namePanel.add(new JLabel("Variable name"));
+                    namePanel.add(nameField);
+                    panel.add(namePanel);
+
+                    // Get all of the widgets, and the update ActionListener for
+                    // the edit parameters window.
+                    final ActionListener listener = editWindow(panel);
+
+                    // Add the update button to the edit widget parameters
+                    // window.
+                    panel.add(new JButton(new AbstractAction("Update") {
+                        /**
+                         * Update the widget's properties.
+                         **
+                         * @param e  the ActionEvent object representing the
+                         *           action triggering the widget to update.
+                         */
+                        public void actionPerformed(ActionEvent e) {
+                            // Call the editWindow's ActionListener object.
+                            listener.actionPerformed(e);
+
+                            // Get the new name from the 'nameField' text field.
+                            name = nameField.getText();
+
+                            // Dispose of the edit widget parameters window.
+                            pWindow.dispose();
+
+                            // Update the text in the 'lbl' JLabel to the new
+                            // name for the widget (if the widget name has
+                            // changed; if not, this will not affect the name
+                            // of the widget or the 'lbl' JLabel).
+                            lbl.setText(name + (input ? "(in)" : "(out)"));
+                            lbl.setIcon(WIDGET_ICON);
+                        }
+                    }));
+                    // Display the edit parameters window.
+                    pWindow.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+                    pWindow.add(panel);
+                    pWindow.pack();
+                    pWindow.setVisible(true);
+                }
+                // Consume the event object (so it does not call other methods).
+                event.consume();
+            }
+        });
+        return lbl;
+    }
+
+    /**
+     * <p>Changes the current value for the widget.  This is used to ensure that
+     * any Components that the widget creates for a PCD menu will update the
+     * widget object itself.  This is important because the widget is expected
+     * to store the last value it was set to after a window was closed.</p>
+     *
+     * <p>For example, if you opened a PCD menu and set a NumberWidget to 10,
+     * and then closed the window, if you reopen the window the NumberWidget
+     * should still be 10 (regardless of any default values).</p>
+     *
+     * <p><i>NOTE: because TempFile widgets do NOT use static values (the value
+     *       returned by a TempValue's getInstance method is a filename,
+     *       which is generated on the fly), this method is left blank.</i></p>
+     **
+     * @param newValue  the new value for the widget.
+     */
+    public void setValue(String newValue) {}
+}

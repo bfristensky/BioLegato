@@ -1,0 +1,31 @@
+TR - Replaces characters within text from standard in, and pipes the results to stdout.
+ 
+This command accepts input via standard input, replaces individual characters in the text (all occurrences), and prints the resulting output to standard output.
+ 
+For example:
+ 
+echo "apples" | tr 'pl' 'li'
+ 
+will produce the output 'allies'
+ 
+COMMAND LINE ARGUMENTS
+----------------------
+This command accepts two arguments:
+ 
+(1) A list of characters to replace within the text from standard in
+(2) The list of replacements for each of the characters in the first argument
+ 
+Each character in argument (2) will have a one-to-one correspondence with a character from argument (1).  For example:
+ 
+tr 'abc' 'def'
+ 
+will replace all occurrences of the letter 'a' with the letter 'd'
+will replace all occurrences of the letter 'b' with the letter 'e'
+will replace all occurrences of the letter 'c' with the letter 'f'
+ 
+EXECUTION STATUS
+----------------
+This command returns one (1) unless an exception is encountered.  In the case of an exception, this command will return zero (0)
+ 
+@author Graham Alvare
+@author Brian Fristensky

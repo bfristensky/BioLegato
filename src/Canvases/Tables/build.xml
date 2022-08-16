@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="BioPCD editor" default="help">
+    <property file="../../ants.properties" />
+    <property file="package.properties" />
+
+    <property name="javadoc.home" value="${basedir}/docs" />
+    <property name="target.home" value="${basedir}/bin" />
+    <property name="build.home" value="${basedir}/build" />
+    <property name="build.test" value="${basedir}/tmp" />
+    <property name="source.home" value="${basedir}/src" />
+    <property name="source.test" value="${basedir}/test" />
+    <property name="lib.home" value="../../lib" />
+
+    <path id="classpath">
+        <fileset dir="../bin">
+            <include name="*.jar" />
+        </fileset>
+        <fileset dir="../../bin">
+            <include name="*.jar" />
+        </fileset>
+        <pathelement path="${build.home}" />
+    </path>
+
+    <path id="classpath.test">
+        <fileset dir="../bin">
+            <include name="*.jar" />
+        </fileset>
+        <fileset dir="../../bin">
+            <include name="*.jar" />
+        </fileset>
+	<pathelement location="${lib.home}/junit.jar" />
+	<pathelement path="${build.test}" />
+        <pathelement path="${build.home}" />
+	<path refid="classpath" />
+    </path>
+
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath>
+            <pathelement location="${lib.home}/ant-contrib.jar" />
+        </classpath>
+    </taskdef>
+
+    <taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask">
+      <classpath>
+        <pathelement location="${lib.home}/junit.jar"/>
+        <pathelement location="${lib.home}/ant-junit.jar"/>
+      </classpath>
+    </taskdef>
+
+    <target name="help">
+        <echo><![CDATA[
+${package.name} build file:
+build - compiles ${package.name}
+clean - cleans the current build
+test  - tests program files
+docs  - generates ${package.name} API documentation
+]]></echo>
+    </target>
+
+    <target name="-init">
+        <available property="lib.ant.present" file="${lib.ant}" />
+    	<mkdir dir="${target.home}" />
+    </target>
+
+    <target name="-docsinit">
+    	<mkdir dir="${javadoc.home}" />
+    </target>
+
+    <target name="-gencode">
+        <!-- compile code -->
+        <delete file="${build.home}" quiet="true" />
+        <mkdir dir="${build.home}" />
+
+        <!-- do VERSION variable substitutions -->
+        <copy todir="${build.home}">
+            <fileset dir="${source.home}" />
+            <filterchain>
+                <replacetokens>
+                    <token key="VERSION"
+                           value="${app.version}"/>
+                </replacetokens>
+            </filterchain>
+        </copy>
+
+        <!-- compile all javacc grammars -->
+        <for param="file">
+            <path>
+                <fileset dir="${build.home}" includes="**/*.jj" />
+            </path>
+            <sequential>
+                <!-- the real work goes here -->
+                <javacc
+                    target="@{file}"
+                    javacchome="${lib.home}" />
+            </sequential>
+        </for>
+    </target>
+
+    <target name="build" depends="-init,-gencode" description="Compiles ${package.name}">
+        <!-- compile all java code -->
+        <javac
+                destdir="${build.home}"
+                srcdir="${build.home}"
+                classpathref="classpath"
+                target="${compile.target-vm}"
+                debug="${compile.debug}"
+                optimize="${compile.optimize}"
+                deprecation="true"
+                includeAntRuntime="false" />
+
+        <!-- create the jar file -->
+        <jar destfile="${target.home}/${package.jar}">
+            <manifest>
+                <attribute name="Class-Path" value="${package.classpath}" />
+                <attribute name="Main-Class" value="${package.main}" />
+                <attribute name="Specification-Title" value="${package.name}" />
+                <attribute name="Specification-Version" value="${app.version}" />
+                <attribute name="Specification-Vendor" value="http://home.cc.umanitoba.ca/~frist/" />
+                <attribute name="Implementation-Title" value="${package.name}" />
+                <attribute name="Implementation-Version" value="${app.version}" />
+                <attribute name="Implementation-Vendor" value="http://home.cc.umanitoba.ca/~frist/" />
+            </manifest>
+            <fileset dir="${build.home}" excludes="**/*.jar,**/*.java,**/*.jpage,**/.*" />
+        </jar>
+    </target>
+
+    <target name="check" depends="test" description="Runs ${package.name} test suite" />
+    
+    <target name="test" depends="build" description="Runs ${package.name} test suite">
+        <mkdir dir="${build.test}" />
+	<javac srcdir="${source.test}" destdir="${build.test}">
+	    <classpath refid="classpath.test" />
+	</javac>
+        <jar destfile="${build.test}/test-${package.jar}">
+            <manifest>
+                <attribute name="Class-Path" value="${target.home}/${package.jar}" />
+                <attribute name="Specification-Title" value="${package.name}" />
+                <attribute name="Specification-Version" value="${app.version}" />
+                <attribute name="Specification-Vendor" value="http://home.cc.umanitoba.ca/~frist/" />
+                <attribute name="Implementation-Title" value="${package.name}" />
+                <attribute name="Implementation-Version" value="${app.version}" />
+                <attribute name="Implementation-Vendor" value="http://home.cc.umanitoba.ca/~frist/" />
+            </manifest>
+            <fileset dir="${build.test}" excludes="**/*.jar" />
+        </jar>
+	
+	<junit>
+	    <classpath refid="classpath.test" />
+	    <formatter type="brief" usefile="false" />
+	    <test name="RootSuite" />
+	</junit>
+
+        <delete dir="${build.test}" quiet="true" />
+    </target>
+  
+    <target name="clean">
+        <tstamp>
+                <format property="dt-stamp" pattern="yyyy-MM-dd-HH-mm" />
+                <format property="d-stamp" pattern="yyyy-MM-dd" />
+        </tstamp>
+        <delete dir="${build.home}" quiet="true" />
+        <delete dir="${build.test}" quiet="true" />
+        <delete dir="${javadoc.home}" quiet="true" />
+        <delete dir="${target.home}" quiet="true" />
+    </target>
+
+    <target name="docs" depends="-docsinit,-gencode" description="Generates ${package.name} API Javadoc">
+        <javadoc
+                destdir="${javadoc.home}"
+                access="${javadoc.access}"
+                use="${javadoc.use}"
+                notree="${javadoc.notree}"
+                nonavbar="${javadoc.nonavbar}"
+                noindex="${javadoc.noindex}"
+                splitindex="${javadoc.splitindex}"
+                author="${javadoc.author}"
+                version="${javadoc.version}"
+                nodeprecatedlist="${javadoc.nodeprecatedlist}"
+                nodeprecated="${javadoc.nodeprecated}"
+                classpathref="classpath"
+                header="${package.name} v${app.version} API">
+            <doctitle><![CDATA[${package.name} (ver. ${app.version}) API]]></doctitle>
+            <bottom><![CDATA[<i>Copyright &#169; 2008-${app.year} University of Manitoba.</i>]]></bottom>
+            <packageset dir="${build.home}" />
+            <classpath path="${java.class.path}" /><!-- to make ant.jar available for javadoc -->
+            <group title="${package.name} API" />
+    	</javadoc>
+
+    </target>
+</project>

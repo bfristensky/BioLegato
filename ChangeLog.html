@@ -1,0 +1,214 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>BioLegato Change Log</title>
+  </head>
+  <body>
+    <h1 align="center">BioLegato Change Log</h1>
+    <hr size="2" width="100%">
+    <h4>Version 1.0.4</h4>
+    1. <b>overwrite implemented for Table canvas when direction=out</b><br>
+    <br>
+    See <a
+href="http://www.bioinformatics.org/wiki/PCD_SUMMARY#Tempfile_.28a_temporary_file_containing_all_of_the_data_selected_in_BioLegato.E2.80.99s_main_canvas.29">http://www.bioinformatics.org/wiki/PCD_SUMMARY#Tempfile_.28a_temporary_file_containing_all_of_the_data_selected_in_BioLegato.E2.80.99s_main_canvas.29</a><br>
+    <br>
+    Use of content=canvas with overwrite generates an error that is very
+    difficult to track down. <br>
+    <br>
+    See <a
+href="https://www.bioinformatics.org/support/index.php?func=detail_ticket&amp;bug_id=1218&amp;group_id=543">Bugzilla
+
+      #1218</a><br>
+    <br>
+    After running the shell command:<br>
+    <br>
+    <tt>Exception in thread "AWT-EventQueue-0"
+      java.lang.ArrayIndexOutOfBoundsException: 1 &gt;= 0</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      java.util.Vector.elementAt(Vector.java:477)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+javax.swing.table.DefaultTableModel.getValueAt(DefaultTableModel.java:648)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      javax.swing.JTable.getValueAt(JTable.java:2717)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      javax.swing.JTable.prepareRenderer(JTable.java:5706)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      javax.swing.plaf.basic.BasicTableUI.paintCell(BasicTableUI.java:2114)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      javax.swing.plaf.basic.BasicTableUI.paintCells(BasicTableUI.java:2016)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      javax.swing.plaf.basic.BasicTableUI.paint(BasicTableUI.java:1812)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      javax.swing.plaf.ComponentUI.update(ComponentUI.java:161)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      javax.swing.JComponent.paintComponent(JComponent.java:780)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      javax.swing.JComponent.paint(JComponent.java:1056)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      javax.swing.JComponent.paintToOffscreen(JComponent.java:5210)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+javax.swing.BufferStrategyPaintManager.paint(BufferStrategyPaintManager.java:290)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      javax.swing.RepaintManager.paint(RepaintManager.java:1272)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      javax.swing.JComponent._paintImmediately(JComponent.java:5158)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      javax.swing.JComponent.paintImmediately(JComponent.java:4969)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      javax.swing.RepaintManager$4.run(RepaintManager.java:831)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      javax.swing.RepaintManager$4.run(RepaintManager.java:814)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      java.security.AccessController.doPrivileged(Native Method)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:80)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      javax.swing.RepaintManager.paintDirtyRegions(RepaintManager.java:814)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      javax.swing.RepaintManager.paintDirtyRegions(RepaintManager.java:789)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      javax.swing.RepaintManager.prePaintDirtyRegions(RepaintManager.java:738)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      javax.swing.RepaintManager.access$1200(RepaintManager.java:64)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+javax.swing.RepaintManager$ProcessingRunnable.run(RepaintManager.java:1732)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      java.awt.event.InvocationEvent.dispatch(InvocationEvent.java:311)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      java.awt.EventQueue.dispatchEventImpl(EventQueue.java:758)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      java.awt.EventQueue.access$500(EventQueue.java:97)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      java.awt.EventQueue$3.run(EventQueue.java:709)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      java.awt.EventQueue$3.run(EventQueue.java:703)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      java.security.AccessController.doPrivileged(Native Method)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+java.security.ProtectionDomain$JavaSecurityAccessImpl.doIntersectionPrivilege(ProtectionDomain.java:80)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      java.awt.EventQueue.dispatchEvent(EventQueue.java:728)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+java.awt.EventDispatchThread.pumpOneEventForFilters(EventDispatchThread.java:205)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+java.awt.EventDispatchThread.pumpEventsForFilter(EventDispatchThread.java:116)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:105)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:101)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:93)</tt><tt><br>
+    </tt><tt>&nbsp;&nbsp;&nbsp; at
+      java.awt.EventDispatchThread.run(EventDispatchThread.java:82)</tt><br>
+    <br>
+    The error appears to occur in TableModel.java/getRowData. The
+    varialbe tableModel is of the type DefaultTableModel, which has the
+    getValueAt function. There are only two calls to this function, both
+    in getRowData (lines 439 &amp; 452). This code looks good, so when
+    overwrite/content were introduced to out files, I must have messed
+    up something upstream.<br>
+    <br>
+    If for example, columns was null when it shouldn't be, or was
+    non-null when it should be, then the wrong block of code would be
+    called, throwing off the column count.<br>
+    <br>
+    So who calls getRowData? There are only 2 calls, both in getData
+    (lines 353 &amp; 372). Each of these is in a separate block,
+    depending on whether or not forceall is true. I smell a rat!<br>
+    <br>
+    <br>
+    2. <b>Value fields for Text and Number variables allow environment
+      variable substitution</b>.<br>
+    <br>
+    See <a
+href="http://www.bioinformatics.org/wiki/PCD_SUMMARY#Environment_Variable_Substitution">http://www.bioinformatics.org/wiki/PCD_SUMMARY#Environment_Variable_Substitution</a>
+    for details.<br>
+    <br>
+    <hr size="2" width="100%">
+    <h4>Version 1.0.3 </h4>
+    1.Modified CommandThread.java to allow execution of jobs in the
+    background. See comments.<br>
+    <br>
+    2.Refactored some of the classes so that the word 'translate' was
+    not in the name. In the context of sequences, 'translate' could be
+    misleading. "Apply Rename on Comments" was used.<br>
+    <br>
+    <table cellspacing="2" cellpadding="2" width="100%" border="1">
+      <tbody>
+        <tr>
+          <td valign="top" bgcolor="#ccffff">File<br>
+          </td>
+          <td valign="top" bgcolor="#ccffff">old name<br>
+          </td>
+          <td valign="top" bgcolor="#ccffff">new name<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">GenBankFile2008.java<br>
+          </td>
+          <td valign="top">translateTo<br>
+          </td>
+          <td valign="top">convertTo<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">translateSequence<br>
+          </td>
+          <td valign="top">convertSequence<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top">DataFormat.java<br>
+          </td>
+          <td valign="top">translateTo<br>
+          </td>
+          <td valign="top">convertTo<br>
+          </td>
+        </tr>
+        <tr>
+          <td valign="top"><br>
+          </td>
+          <td valign="top">translateFrom<br>
+          </td>
+          <td valign="top">convertFrom<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+    <br>
+    3. Modified GenBankFile2008.java line 172 as follows:<br>
+    <br>
+    <big><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+        } else {</tt><tt><br>
+      </tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+        // We have to remove the last newline from the end of the
+        annotation.</tt><tt><br>
+      </tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+        // Apparently, the append function adds a newline, so if we
+        don't do</tt><tt><br>
+      </tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+        // this, an extra blank line appears between the end of the
+        annotation</tt><tt><br>
+      </tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+        // and the ORIGIN line.</tt><tt><br>
+      </tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+        result.append(seq.getOriginal().subSequence(0,
+        seq.getOriginal().length()-1));</tt><tt><br>
+      </tt><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+
+        }</tt></big><br>
+    <br>
+    <br>
+    <br>
+  </body>
+</html>

@@ -1,0 +1,187 @@
+options {
+/*    JAVA_UNICODE_ESCAPE=true;
+    UNICODE_INPUT=true;*/
+    LOOKAHEAD=2;
+    IGNORE_CASE=true;
+    KEEP_LINE_COLUMN=true;
+    STATIC=false;
+}
+
+
+
+PARSER_BEGIN(ValuesFile)
+
+package org.biopcd.canvas;
+/*
+ * ValuesFile.jj
+ *
+ * Created on January 30, 2008, 11:58 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+import java.io.BufferedReader;
+import javax.swing.filechooser.FileFilter;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
+import org.biopcd.widgets.Widget;
+import org.biolegato.main.DataCanvas;
+
+/**
+ * <p>File format parser for a PCD values file.<br />
+ * A PCD value file is specified as follows:</p>
+ *
+ * <p>Each line of a PCD values file contains a key value pair.  The key
+ *  corresponds to the name (used for command line substitutions) of the PCD
+ *  widget, the value corresponds to the new value to set the widget to.  The
+ *  line begins with the name of the key, followed by an equals sign or colon,
+ *  then the value.  The value may be enclosed in either single or double
+ *  quotation marks.  If the value is not enclosed in quotation marks then the
+ *  value MUST not have any whitespace in-between.  If the value is enclosed
+ *  in quotation marks (either single or double), then whitespace (including the
+ *  carriage-return and newline characters) may be used as part of the value.
+ *  Please note that if you wish to use the double-quote character as part of
+ *  a value which is enclosed in double-quotation marks, then you just need to
+ *  double the double-quotation marks.</p>
+ *
+ * <p><dl>
+ *   <dt>Example:</dt>
+ *     <dd>key_name="the ""quick"" brown fox jumped over the ""lazy"" dog."</dd>
+ *   <dt>Generates the value (for the widget 'key_name'):</dt>
+ *     <dd>the "quick" brown fox jumped over the "lazy" dog.</dd>
+ *   </dl></p>
+ *
+ * <p><b><i>
+ *  NOTE:  any whitespace between the key, colon or equals sign, and the value,
+ *         is allowed and ignored.</i></b></p>
+ *
+ * <p><b><i>
+ *  NOTE:  the key may ALSO be enclosed in quotation marks (single or double).
+ * </i></b></p>
+ **
+ * @author Graham Alvare
+ * @author Brian Fristensky
+ */
+public class ValuesFile {
+    /**
+     * Parse a PCD values file, and set all of the values for all widgets
+     * (with values specified in the file) contained in the map 'widgets'.
+     **
+     * @param currentFile  the PCD values file to parse.
+     * @param widgets      the map of widgets to set the values for.
+     */
+    public static void readValues(Reader currentFile,
+                               Map<String, Widget> widgets) throws IOException {
+        try {
+            // TODO: implement overwrite feature
+            ValuesFile parser = new ValuesFile(currentFile);
+            parser.parse(widgets);
+        } catch (ParseException pe) {
+            pe.printStackTrace(System.err);
+        }
+    }
+}
+
+PARSER_END(ValuesFile)
+
+/**
+ * Begin parsing the PCD values file.
+ **
+ * @param widgets the map of widgets to set the values for.
+ */
+void parse(Map<String, Widget> widgets) :
+{
+}
+{
+    parseRow(widgets) ( <RDELIM> parseRow(widgets) )*
+    [ <RDELIM> ]
+    <EOF>
+}
+
+/**
+ * Parse a single row/line in a PCD values file.
+ **
+ * @param results the map of widgets to set the values for.
+ */
+void parseRow(Map<String, Widget> results) :
+{
+    // The key name (within the widgets map) of the widget to set the value for.
+    String key;
+    // The parsed new value for the widget.
+    String value;
+}
+{
+    key = parseColumn()
+    <CDELIM> value = parseColumn() { results.get(key).setValue(value); }
+}
+
+/**
+ * Parse a column/cell in a PCD values file.
+ **
+ * @return a string representation of the data contained in the current
+ *         cell/column being parsed.
+ */
+String parseColumn() :
+{
+    // The token to extract the string value of.
+    Token t;
+    // The parsed string value of the column.
+    String result = "";
+}
+{
+    (
+    /* Handle unquoted strings */
+      t=<CHAR>                   { result = t.image; }
+    /* Handle single-quoted strings */
+    | <SQSTART>
+          t=<SCHAR>              { result = t.image; }
+      <SQEND>
+
+    /* Handle double-quoted strings */
+    | <DQSTART>
+          t=<DCHAR>              { result = t.image; }
+      <DQEND>
+    )?
+    { return result; }
+}
+
+/* Handle all non-quoted tokens */
+<DEFAULT> TOKEN: {
+           /* Parse strings enclosed in single-quotation marks (') */
+             < SQSTART: "'"   > : SQUOTE
+           /* Parse strings enclosed in double-quotation marks (") */
+           | < DQSTART: "\""  > : DQUOTE
+           /* Parse value delimiters (which separate field names from values) */
+           | < CDELIM:  ( [":","="] ) >
+           /* Handle new lines (which, outside of quotation marks, denote the
+            * end of one field and the beginning of another). */
+           | < RDELIM: ( "\r\n"
+	               | "\n"
+		       | "\r" )+ >
+           /* Parse any non-quoted character string. */
+           | < CHAR:    ( ~["=",":"," ","'","\"","\t","\n"] )+ >
+           }
+
+/* Tokens which handle the single quotation mark state (i.e. words enclosed
+ * in single-quotation marks ('). */
+<SQUOTE> TOKEN: {
+             < SQEND: "'" > : DEFAULT
+           | < SCHAR: ( ~["'"] | "''" )+ >
+           }
+
+/* Tokens which handle the double quotation mark state (i.e. words enclosed
+ * in double-quotation marks ("). */
+<DQUOTE> TOKEN: {
+             < DQEND: "\"" > : DEFAULT
+           | < DCHAR: ( ~["\""] | "\"\"" )+ >
+           }
+
+/* Skip all whitespace when not between quotation marks. */
+<DEFAULT> SKIP: {
+             < WSP: ( [" ","\t"] ) >
+           }

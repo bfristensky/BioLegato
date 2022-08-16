@@ -1,0 +1,150 @@
+package org.biolegato.gdesupport.data;
+/*
+ * FastAFile.java
+ *
+ * Created on January 30, 2008, 11:58 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Scanner;
+
+
+/**
+ * FastA file format parser.
+ *
+ * NOTE: this parser will automatically detect whether the sequencebuffer is protein, RNA or DNA.
+ *
+ * @author Graham Alvare
+ * @author Brian Fristensky
+ */
+public class FastAFile extends DataFormat {
+
+    private static final String DELIMITER = "(?m:^)>";
+
+    /**
+     * Creates a new instance of FastAFile
+     */
+    public FastAFile() {
+    }
+
+    /**
+     * Translates a sequence into the FastA file format.
+     **
+     * @param result the destination for the translated sequence
+     * @param seq the sequence to translate
+     */
+    public void translateTo(Appendable result, Seq seq, int offset, int length) throws IOException {
+        java.util.Map<String, Object> sequence;
+
+        // translate the sequencebuffer
+        if (seq != null) {
+            result.append(">").append(seq.getName());
+            /*if (seq.get("description") != null && !"".equals(seq.get("description"))) {
+            result.append(" ").append(seq.get("description"));
+            }*/
+            result.append("\n").append(seq.getSequence(), offset, offset + length).append("\n");
+        }
+    }
+
+    /**
+     * Translates a single sequence from a scanner into BioLegato
+     **
+     * @param datamodel the destination model to store the translated sequences
+     * @param source the data source to parse
+     * @param x the X-coordinate of the position where to insert the results
+     * @param y the Y-coordinate of the position where to insert the results
+     * @return whether there are any remaining sequences of the current format type in the scanner
+     * @throws IOException any exceptions that occur while reading the stream are passed
+     */
+    public boolean translateSequence(Dataset datamodel, Scanner source, int x, int y, boolean addonly) throws IOException {
+        final int modellength = datamodel.getSize();
+        String parsable = null;
+
+        // ensure usage of the proper delimiter
+        source.useDelimiter("(?m:^)>");
+
+        if (source.hasNext()) {
+            parsable = source.next();
+            parsable.replaceAll("[#;][^\n]*\n", "\n");
+            if (parsable.indexOf('\n') >= 0) {
+                String prefix = "";
+                String description = "";
+                String name = parsable.substring(0, parsable.indexOf('\n')).trim();
+                StringBuffer sequencebuffer = new StringBuffer(parsable.substring(parsable.indexOf('\n') + 1).replaceAll("[^A-Za-z\\*\\-]", "").trim());
+
+                // locate a description (if applicable)
+                if (name.indexOf(' ') > 0) {
+                    description = name.substring(name.indexOf(' ') + 1);
+                    name = name.substring(0, name.indexOf(' '));
+                }
+
+                // remove all GenBank | fields except GI number if applicable
+                if (name.indexOf('|') >= 0) {
+                    prefix = name.substring(0, name.indexOf('|'));
+                    name = name.substring(name.indexOf('|') + 1);
+                    if (name.indexOf('|') >= 0) {
+                        name = name.substring(0, name.indexOf('|'));
+                    }
+                    name = prefix + "|" + name;
+                }
+                if (y < modellength && !addonly) {
+                    char [] text = new char[sequencebuffer.length()];
+                    sequencebuffer.getChars(0, text.length, text, 0);
+                    datamodel.insert(x, y, text, 0, text.length, true);
+                } else {
+                    datamodel.add(y, new Seq(Seq.detectType(sequencebuffer), name, sequencebuffer, description));
+                }
+                y++;
+            }
+        }
+        return source.hasNext();
+    }
+
+    /**
+     * Determines whether a specified file is of type GenBank file (based on extension).
+     * Currently the only extensions supported are ".wrp", ".fasta", and ".fsa".
+     *
+     * @param file the file to test
+     * @return true if the file is of type FastA file (otherwise false)
+     * @see javax.swing.filechooser.FileFilter#accept
+     */
+    public boolean accept(File file) {
+        // there are four types of files that will be displayed
+        // from a file chooser filtered to only show FastA files
+        // these four types of files are:
+        //
+        // 1. directories
+        // 2. files ending with the extension .wrp
+        // 2. files ending with the extension .fasta
+        // 2. files ending with the extension .fsa
+        return (file.isDirectory()
+                || file.getAbsolutePath().toLowerCase().endsWith(".wrp")
+                || file.getAbsolutePath().toLowerCase().endsWith(".fasta")
+                || file.getAbsolutePath().toLowerCase().endsWith(".fsa"));
+    }
+
+    /**
+     * Returns a description of the file format that can be displayed to the user.
+     *
+     * @return the string description of the file format
+     * @see javax.swing.filechooser.FileFilter#getDescription
+     */
+    public String getDescription() {
+        return "FastA file (*.wrp,*.fasta,*.fsa)";
+    }
+
+    /**
+     * Used to auto-detect Bio Legato formats
+     **
+     * @param test the reader to parse data from
+     * @return whether the format is correct
+     */
+    @Override
+    public boolean isFormat(Scanner test) throws IOException {
+        return test.findInLine("(?=" + DELIMITER + ")") != null;
+    }
+}

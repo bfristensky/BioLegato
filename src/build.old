@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="BioLegato" default="help" basedir=".">
+    <property file="${basedir}/ants.properties"/>
+    <property name="build.list" value="Turtle,BioPCD,Core,Canvases" />
+    <property name="build.home" value="${basedir}/bin" />
+    <property name="dist.home" value="${basedir}/dist" />
+    <property name="lib.home" value="${basedir}/lib" />
+
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath>
+            <pathelement location="${basedir}/lib/ant-contrib.jar" />
+        </classpath>
+    </taskdef>
+
+    <path id="classpath">
+        <pathelement path="${build.home}" />
+    </path>
+
+    <!-- RECURSIVE TARGETS -->
+    <target name="build" description="Compiles entire project">
+        <for list="${build.list}" param="subdir">
+            <sequential>
+                <ant dir="@{subdir}" target="build" inheritAll="false" />
+            </sequential>
+        </for>
+    </target>
+    
+    <target name="clean">
+        <tstamp>
+                <format property="dt-stamp" pattern="yyyy-MM-dd-HH-mm" />
+                <format property="d-stamp" pattern="yyyy-MM-dd" />
+        </tstamp>
+        <delete dir="${build.home}" quiet="true" />
+        <for list="${build.list}" param="subdir">
+            <sequential>
+                <ant dir="@{subdir}" target="clean" inheritAll="false" />
+            </sequential>
+        </for>
+    </target>
+
+    <target name="docs" description="Compiles project documenation">
+        <for list="${build.list}" param="subdir">
+            <sequential>
+                <ant dir="@{subdir}" target="docs" inheritAll="false" />
+            </sequential>
+        </for>
+    </target>
+
+    <target name="test" depends="build" description="Tests BioLegato">
+        <for list="${build.list}" param="subdir">
+            <sequential>
+                <ant dir="@{subdir}" target="test" inheritAll="false" />
+            </sequential>
+        </for>
+    </target>
+
+    <!-- STATIC TARGETS -->
+    <target name="all" depends="clean,build,docs,test" description="Creates distribution packages" />
+
+    <target name="-distinit">
+        <mkdir dir="${dist.home}" />
+    </target>
+
+    <target name="dist" depends="all,-distinit" description="Creates distribution packages">
+    	<zip destfile="${dist.home}/${app.cmdname}-${app.version}.zip" duplicate="fail" update="false">
+            <fileset dir="${build.home}" includes="*.jar" />
+    	</zip>
+    </target>
+
+    <target name="help">
+        <echo><![CDATA[
+${app.name} build file:
+all   - builds and tests the project
+build - compiles entire project
+clean - cleans the current build
+dist  - creates a binary distribution
+docs  - generates documentation
+run   - runs BioLegato
+test  - runs BioLegato testsdel
+]]></echo>
+    </target>
+
+    <target name="run" depends="build" description="Runs BioLegato">
+    	<java jar="${build.home}/biolegato.jar">
+            <arg value="--debug"/>
+        </java>
+    </target>
+
+    <!--<target name="nbprofile" depends="build" description="Profile File">
+        <fail unless="netbeans.home">This target can only run inside the NetBeans IDE.</fail>
+
+        <nbprofiledirect>
+            <classpath>
+                <pathelement location="${build.home}/biolegato.jar" />
+                <pathelement path="${java.class.path}" />
+            </classpath>
+        </nbprofiledirect>
+
+    	<java classname="org.biolegato.main.BLMain">
+            <jvmarg value="${profiler.info.jvmargs.agent}" />
+            <classpath>
+                <pathelement location="${build.home}/biolegato.jar" />
+                <pathelement path="${java.class.path}" />
+            </classpath>
+    	</java>
+    </target>-->
+</project>

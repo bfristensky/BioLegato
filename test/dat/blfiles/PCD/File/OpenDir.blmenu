@@ -1,0 +1,12 @@
+name   "OpenDir - Open a directory (folder)"
+icon   "$BIRCH/dat/birch_black_ico.png"
+tip    "Open a new blreads window in a different directory (folder)."
+
+# No matter how many files are selected, ONLY open the first one in the list.
+exec   "bltsv2name.py %in1% %in1%.tsv; cd `head -n 1 %in1%.tsv`; blfiles"
+
+var "in1"
+    type        tempfile
+    direction   in
+    format      tsv
+    save        false

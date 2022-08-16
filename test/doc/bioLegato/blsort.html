@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;
+      charset=windows-1252">
+    <meta name="GENERATOR" content="Mozilla/4.05 [en] (X11; U; SunOS
+      5.5.1 sun4u) [Netscape]">
+    <title>blsort.py - Sort a BioLegato table</title>
+  </head>
+  <body>
+    <div style="text-align: right;">update January 23, 2019<br>
+    </div>
+    NAME<br>
+    <span style="font-weight: bold;"></span><br>
+    <div style="margin-left: 40px;">blsort.py - Sort a BioLegato table<br>
+      <br>
+    </div>
+    SYNOPSIS<br>
+    <div style="margin-left: 40px;"><span style="font-weight: bold;">blsort.py&nbsp;</span>
+      <i>infile</i>&nbsp;<b></b> <i>outfile</i> <b>-cols</b>&nbsp;<i>
+        integer[,integer]</i>&nbsp; [<b>-descending</b>]&nbsp; [<b>-sep</b>
+      <i>seperator</i>] <br>
+    </div>
+    <br>
+    DESCRIPTION<br>
+    <blockquote> blsort.py sorts a BioLegato table file using one or
+      more columns as the sort key.<br>
+      <br>
+      In the current implementation, columns containing float, integer,
+      or string are sorted. All other data types (eg. date, currency)
+      are sorted as strings.<br>
+      <br>
+      Comments may be included in the file, as illustrated in the
+      example. A comment is any line beginning with the hash symbol (#).
+      Comments are not sorted, but are simply echoed to the output file.
+      All comments will be written to the beginning of the output file,
+      regardless of where they appear in the input.<br>
+      <br>
+      blsort.py&nbsp; is a sort function for BioLegato, but can be run
+      as a standalone command.<br>
+      <br>
+      Before sorting, any rows that have fewer fields than the widest
+      row will be padded with empty fields so that all rows have the
+      same number of fields. As well, rows with empty fields in one of
+      the sort columns specified in -cols will not be included in the
+      sort process. If -descending is set, those unsortable rows will be
+      placed at the end of the table. Otherwise, unsortable rows will be
+      placed at after header lines, if any.<br>
+      <br>
+    </blockquote>
+    OPTIONS<br>
+    <blockquote><i>infile</i> - input file in BioLegato table format.
+      The file begins with an optional set of comments, beginning with
+      the hash symbol (#) in the first column. These are copied to
+      outfile and are not processed as part of the sort.<br>
+      <br>
+      <i>outfile</i> - output file, also in BioLegato table format.<br>
+      <br>
+      <b>-cols</b> <i>integer[,integer]</i> - A comma-separated list of
+      integers, telling which column(s) to use for sorting. By default,
+      only column 1 is used. If two or more integers are given, sort
+      priority goes left to right through the list. Invalid fields are
+      ignored eg. -cols 5 would be ignored if there are only four
+      columns.<br>
+      <br>
+      <b>-descending</b> - (default False). Sort in descending, rather
+      than ascending order.<br>
+      <br>
+      <b>-sep</b> <i>seperator</i> - (default TAB) - Character to use
+      as a column seperator, both for input and output. Common
+      alternatives include comma (,) and pipe (|). By convention,
+      tab-separated tables typically have the .tsv extension, while
+      comma-separated files have the .csv extension. <br>
+    </blockquote>
+    <br>
+    EXAMPLE<br>
+    <br>
+    Given the tab-separated input file example.tsv:<br>
+    <br>
+    <blockquote><font face="Courier New, Courier, monospace">#ncbiquery.py<br>
+        #DATABASE: nuccore<br>
+        #QUERY:&nbsp; Fristensky [AUTH]&nbsp; AND&nbsp; Pisum
+        [ORGN]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; AND
+        1:500000[SLEN]<br>
+        #FILTER: <br>
+        #WEBENV:
+        NCID_1_1256580311_130.14.22.215_9001_1407873498_1239736160_0MetA0<br>
+        #COUNT: 18<br>
+        #uid&nbsp;&nbsp;&nbsp; Title&nbsp;&nbsp;&nbsp;
+        BioMol&nbsp;&nbsp;&nbsp; Slen<br>
+        22552&nbsp;&nbsp;&nbsp; P. sativum disease resistance response
+        protein (PI49) mRNA&nbsp;&nbsp;&nbsp; mRNA&nbsp;&nbsp;&nbsp; 734<br>
+        20657&nbsp;&nbsp;&nbsp; P.sativum Cab II gene for chlorophyll
+        a/b-binding protein&nbsp;&nbsp;&nbsp; genomic&nbsp;&nbsp;&nbsp;
+        2368<br>
+        169079&nbsp;&nbsp;&nbsp; Pea (P.sativum) disease resistance
+        response protein (PI206) &nbsp;&nbsp;&nbsp;
+        mRNA&nbsp;&nbsp;&nbsp; 594<br>
+        169086&nbsp;&nbsp;&nbsp; Pea ferredoxin I (Fed-1)gene, complete
+        cds&nbsp;&nbsp;&nbsp; genomic&nbsp;&nbsp;&nbsp; 1995<br>
+        169060&nbsp;&nbsp;&nbsp; Pisum sativum chlorophyll a/b-binding
+        protein (Cab9) gene,&nbsp;&nbsp;&nbsp; genomic&nbsp;&nbsp;&nbsp;
+        1919</font><br>
+    </blockquote>
+    <br>
+    <blockquote><font face="Courier New, Courier, monospace">blsort.py
+        example.tsv example_sorted.tsv -cols 3,4</font><br>
+    </blockquote>
+    <blockquote>would write produce the following output file:<br>
+      <br>
+      <font face="Courier New, Courier, monospace">#ncbiquery.py<br>
+        #DATABASE: nuccore<br>
+        #QUERY:&nbsp; Fristensky [AUTH]&nbsp; AND&nbsp; Pisum
+        [ORGN]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; AND
+        1:500000[SLEN]<br>
+        #FILTER:<br>
+        #WEBENV:
+        NCID_1_1256580311_130.14.22.215_9001_1407873498_1239736160_0MetA0<br>
+        #COUNT: 18<br>
+        #uid&nbsp;&nbsp;&nbsp; Title&nbsp;&nbsp;&nbsp;
+        BioMol&nbsp;&nbsp;&nbsp; Slen<br>
+        169060&nbsp;&nbsp;&nbsp; Pisum sativum chlorophyll a/b-binding
+        protein (Cab9) gene,&nbsp;&nbsp;&nbsp; genomic&nbsp;&nbsp;&nbsp;
+        1919<br>
+        169086&nbsp;&nbsp;&nbsp; Pea ferredoxin I (Fed-1)gene, complete
+        cds&nbsp;&nbsp;&nbsp; genomic&nbsp;&nbsp;&nbsp; 1995<br>
+        20657&nbsp;&nbsp;&nbsp; P.sativum Cab II gene for chlorophyll
+        a/b-binding protein&nbsp;&nbsp;&nbsp; genomic&nbsp;&nbsp;&nbsp;
+        2368<br>
+        169079&nbsp;&nbsp;&nbsp; Pea (P.sativum) disease resistance
+        response protein (PI206) &nbsp;&nbsp;&nbsp;
+        mRNA&nbsp;&nbsp;&nbsp; 594<br>
+        22552&nbsp;&nbsp;&nbsp; P. sativum disease resistance response
+        protein (PI49) mRNA&nbsp;&nbsp;&nbsp; mRNA&nbsp;&nbsp;&nbsp; 734</font><br>
+    </blockquote>
+    <br>
+    <br>
+    AUTHOR<br>
+    <blockquote>Dr. Brian Fristensky<br>
+      Department of Plant Science <br>
+      University of Manitoba<br>
+      Winnipeg, MB &nbsp;Canada R3T 2N2<br>
+      <a href="mailto:frist@cc.umanitoba.ca">frist@cc.umanitoba.ca</a><br>
+      <a href="http://home.cc.umanitoba.ca/%7Efrist">http://home.cc.umanitoba.ca/~frist</a><br>
+    </blockquote>
+    <br>
+    <br>
+    <br>
+  </body>
+</html>

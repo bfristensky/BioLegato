@@ -1,0 +1,397 @@
+options {
+/*    JAVA_UNICODE_ESCAPE=true;
+    UNICODE_INPUT=true;*/
+    IGNORE_CASE=true;
+    KEEP_LINE_COLUMN=true;
+    STATIC=false;
+}
+
+
+
+PARSER_BEGIN(CSVFile)
+
+package org.biolegato.tables;
+/*
+ * CSVFile.java
+ *
+ * Created on January 30, 2008, 11:58 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+import java.io.BufferedReader;
+import javax.swing.filechooser.FileFilter;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.List;
+import java.util.ArrayList;
+import org.biolegato.main.DataCanvas;
+
+/**
+ * <p>CSV (Comma Separated Values) file format parser.  A CSV file is a
+ * spreadsheet, where the rows are separated by new line characters (i.e. each
+ * line of the file is a row), and the columns are separated by comma
+ * characters.  Thus an example of a CSV file would be:</p>
+ * <pre>
+ *       Name,Phone Num,Birthday
+ *       John,555-5123,Apr. 30, 1937
+ *       Jane,555-4352,Feb. 13, 1976
+ *       Sam,555-6333,Jan. 7, 1961
+ *       Tom,555-7777,Aug. 4, 1943</pre>
+ * <p>Where name, phone number, and birthday are all separated by comma
+ * characters and are each columns of a spreadsheet.</p>
+ *
+ * <p><i>NOTE: fields may be double or single quoted.  In such cases, the single
+ *       or double quotes character may be escaped by doubling it (e.g. "AB""C"
+ *       will be read as AB"C).</i></p>
+ **
+ * @author Graham Alvare
+ * @author Brian Fristensky
+ */
+public class CSVFile extends FileFilter {
+    /**
+     * An empty 1D string array for calling the List.toArray method.
+     */
+    public static final String[] EST = new String[0];
+    /**
+     * An empty 2D string array for calling the List.toArray method.
+     */
+    public static final String[][] DBL_EST = new String[0][];
+
+    /**
+     * Creates a new instance of CSVFile
+     */
+    public CSVFile () {
+    }
+    /**
+     * Determines whether a file is a CSV file (based on extension).
+     * Currently the only extension supported is ".csv"
+     **
+     * @param  file  the file to test for CSV format compatibility.
+     * @return true if the file is a CSV file (otherwise false).
+     * @see javax.swing.filechooser.FileFilter#accept
+     */
+    public boolean accept (File file) {
+        return (file.isDirectory() ||
+                file.getAbsolutePath().toLowerCase().endsWith(".csv"));
+    }
+    /**
+     * Returns a description of the file format that can be displayed to the
+     * user.  This allows the user to easily find and identify a file format
+     * in the file type combo box (within file chooser objects).
+     **
+     * @return the string description of the file format.
+     * @see javax.swing.filechooser.FileFilter#getDescription
+     */
+    public String getDescription () {
+        return "CSV - Comma Separated Values - file (*.csv)";
+    }
+    /**
+     * Used to auto-detect BioLegato table canvas formats.  This function will
+     * return true if the format is suspected to be a CSV file.  Otherwise, the
+     * function will return false.
+     **
+     * @param test the reader to attempt to detect the format of.
+     * @return whether the format is a CSV file.
+     */
+    public boolean isFormat (Reader test) {
+        // The current character being parsed (for auto-detection).
+        // If the check variable is a comma character ',' at the end of parsing,
+        // then the file is suspected to be a CSV file.  Note that we only
+        // parse the file until the end of line or comma character is
+        // encountered. Thus, our purpose is to see if there is at least one
+        // column (comma) on the first line (indicating the format could likely
+        // be a CSV file).
+        int check = ' ';
+
+        try {
+            // Iterate through the stream until either a comma or end-line
+            // character is encountered.  Store each character in the 'check'
+            // variable.  This will later be tested.  If the character is comma,
+            // then there is at least one column on the first line of the file.
+            while (check != '\n' && check != '\r' && check != ',') {
+                // Mark the stream, so we can later reset it to the beginning.
+                test.mark(2);
+
+                // Get the next character in the stream (to test).
+                check = test.read();
+            }
+
+            // Reset the stream to the beginning for parsing.
+            test.reset();
+        } catch (IOException e) {
+            e.printStackTrace(System.err);
+        }
+
+        // Return true if there is at least one column on the first line of the
+        // suspected CSV file.
+        return (check == ',');
+    }
+
+    /**
+     * Reads CSV data from a Reader object into a table canvas.
+     **
+     * @param table        the table canvas to read the CSV file into.
+     * @param currentFile  the Reader object to parsed the CSV data from.
+     * @param overwrite    whether to overwrite the currently selected content
+     *                     in the table canvas with the data parsed by this
+     *                     function.  Note that this currently does not work,
+     *                     and should be implemented in the future.
+     * @throws java.io.IOException thrown if there is any exception while
+     *                             reading from the Reader object.
+     */
+    public static void readFile(TableCanvas table, Reader currentFile,
+                                boolean overwrite, boolean forceall) throws IOException {
+        // TODO: implement overwrite feature
+        try {
+            if (overwrite) {
+                // If no data are selected, delete all data in the canvas
+                forceall = forceall || (table.tablePane.getSelectedColumnCount() == 0
+                    && table.tablePane.getSelectedRowCount() == 0);
+                if (forceall) {
+                    table.tablePane.selectAll();
+                }
+                table.deleteSelectedRows();
+                // An error would be generated if we had an empty canvas, so add a dummy
+                // first row and clear the selection.  
+                if (forceall) {
+                      String[] dummy = new String[1];
+                      dummy[0]="";
+                      table.addRow(dummy);
+                      table.tablePane.clearSelection();
+                }               
+            }
+            // Create a new parser object to read the CSV file.
+            CSVFile parser = new CSVFile(currentFile);
+
+            // Parse the CSV data from the Reader object.
+            parser.parseCSV(table);
+        } catch (ParseException pe) {
+            pe.printStackTrace(System.err);
+        }
+    }
+
+    /**
+     * Reads CSV data from a Reader object into a 2D string array.  Please note
+     * that the 2D string array is specified as follows: the rows are the first
+     * index of the array (e.g. data[0] is the first row of the array), and the
+     * columns are the second index of the array (e.g. data[0][1] is the second
+     * column of the first row of the array.
+     **
+     * @param currentFile the Reader object to parsed the CSV data from.
+     * @throws java.io.IOException thrown if there is any exception while
+     *                             reading from the Reader object.
+     */
+    public static String[][] readCSV(Reader currentFile) throws IOException {
+        // Stores the 2D string array parsed from the file.
+        // By default, this variable contains an empty 2D string array.
+        String[][] result = DBL_EST;
+
+        try {
+            // Create a new parser object to read the CSV file.
+            CSVFile parser = new CSVFile(currentFile);
+
+            // Parse the CSV data from the Reader object.
+            result = parser.parseDoubleArray();
+        } catch (ParseException pe) {
+            pe.printStackTrace(System.err);
+        }
+        return result;
+    }
+
+    /**
+     * Writes a 2D string array as CSV data into an Appendable object.  Please
+     * note that the rows are the first index of the array (e.g. data[0] is the
+     * first row of the array), and the columns are the second index of the
+     * array (e.g. data[0][1] is the second column of the first row of the
+     * array.
+     **
+     * @param writer the Appendable object to write the CSV data to.
+     * @param data   the 2D string array to parse into CSV data.
+     * @throws java.io.IOException thrown if there is any exception while
+     *                             writing to the Appendable object.
+     */
+    public static void writeFile(Appendable writer, String[][] data)
+                                                            throws IOException {
+        // The current table cell being written.
+        String cell;
+        
+        // Translate each row in the 2D array and write it to the file.
+        for (int y = 0; y < data.length; y++) {
+            // Translate each column in the row array and write it to the file.
+            // Start by writing the first column.
+            if (data[y].length > 0) {
+                writer.append('\"');
+                // Double all of the double-quotation marks.  This is to
+                // distinguish double-quotation marks in each field from
+                // double-quotation marks surrounding the fields.
+                writer.append(data[y][0].replaceAll("\"", "\"\""));
+                writer.append('\"');
+            }
+            // Write each additional column, appending the delimiter character
+            // before it (i.e. the comma character) -- e.g. ",ABC"
+            for (int x = 1; x < data[y].length; x++) {
+                cell = data[y][x];
+                writer.append(',');
+                writer.append('\"');
+                // If the cell is not null, double all of the double-quotation
+                // marks.  This is to distinguish double-quotation marks in each
+                // field from double-quotation marks surrounding the fields.
+                if (cell != null) {
+                    writer.append(cell.replaceAll("\"", "\"\""));
+                }
+                writer.append('\"');
+            }
+            writer.append('\n');
+        }
+    }
+}
+
+PARSER_END(CSVFile)
+
+
+/**
+ * Parse CSV data into a table canvas.
+ **
+ * @param table the table canvas to parse the data into.
+ * @see org.biolegato.tables.TableCanvas#namedHeaders
+ */
+void parseCSV(TableCanvas table) :
+{
+    /* Stores the spreadsheet row most recently parsed from the data. */
+    String[] row;
+}
+{
+    /* Read the first row of the CSV data. */
+    row = parseRow() {
+        /* If named column headers is enabled, then read the first row as column
+         * headers for the table. */
+        if (table.namedHeaders) {
+            table.addColumns(row);
+        } else {
+            table.addRow(row);
+        }
+    }
+
+    /* Keep reading additional columns in the file as long as there are
+     * instances of the token <RDELIM> (row delimiter -- new line character) */
+    ( <RDELIM> row = parseRow() { table.addRow(row); } )*
+    <EOF>
+}
+
+/**
+ * Parse CSV data into a table canvas.  Please note that the 2D string array is
+ * specified as follows: the rows are the first index of the array (e.g. data[0]
+ * is the first row of the array), and the columns are the second index of the
+ * array (e.g. data[0][1] is the second column of the first row of the array.
+ **
+ * @return the 2D string array generated from the parse.
+ */
+String[][] parseDoubleArray() :
+{
+    /* Stores the spreadsheet row most recently parsed from the data. */
+    String[] row;
+    /* An array list of all of the rows parsed in the file.  This will later
+     * be converted into a 2D string array via. the List.toString method */
+    List<String[]> rows = new ArrayList<String[]>();
+}
+{
+    /* Read the first row of the CSV data. */
+    row = parseRow() { rows.add(row); }
+
+    /* Keep reading additional columns in the file as long as there are
+     * instances of the token <RDELIM> (row delimiter -- new line character) */
+    ( <RDELIM> row = parseRow() { rows.add(row); } )*
+    <EOF>
+    { return rows.toArray(DBL_EST); }
+}
+
+/**
+ * Parses a row of the CSV data.
+ **
+ * @return the array of columns contained in the row.
+ */
+String[] parseRow() :
+{
+    /* Stores the spreadsheet column most recently parsed from the data. */
+    String col;
+    /* Stores all of the columns parsed from the current row.  This will later
+     * be converted into a string array via. the List.toString method */
+    List<String> columns = new ArrayList<String>();
+}
+{
+    /* Read the first column in the row. */
+    col = parseColumn() { columns.add(col); }
+
+    /* Keep reading additional columns in the file as long as there are
+     * instances of the token <CDELIM> (column delimiter -- comma) */
+    ( <CDELIM> col = parseColumn() { columns.add(col); } )*
+    { return columns.toArray(EST); }
+}
+
+/**
+ * Parses a column of the CSV data.
+ **
+ * @return a single column, represented as a string object.
+ */
+String parseColumn() :
+{
+    /* The most recently read in column token.  The string image of this token
+     * (which is the actual literal string read from the tokenizer) will be
+     * parsed into the String object returned by this function/method. */
+    Token t;
+    /* The string representaton of the column read by the tokenizer/parser. */
+    String result = "";
+}
+{
+    (
+    /* Handles non-quoted columns/cells. */
+        t=<CHAR>                 { result =  t.image; }
+      [ t=<CHARS>                { result += t.image; } ]
+
+    /* Handles single-quoted columns/cells. */
+    | <SQSTART>
+          t=<SCHAR>              { result =  t.image; }
+      <SQEND>
+
+    /* Handles double-quoted columns/cells. */
+    | <DQSTART>
+          t=<DCHAR>              { result =  t.image; }
+      <DQEND>
+    )?
+    { return result; }
+}
+
+/* THE ROW DELIMITER COLUMNS FOR CSV FILES */
+<DEFAULT,ACCEPTSQ> TOKEN: {
+             < CDELIM:  "," > : DEFAULT
+           | < RDELIM:  "\r\n"
+	               | "\n"
+		       | "\r" > : DEFAULT
+           }
+
+/* FIELD STARTING CHARACTERS (FOR STARTING QUOTED AND NON-QUOTED STRINGS) */
+<DEFAULT> TOKEN: {
+             < SQSTART: "'"   > : SQUOTE
+           | < DQSTART: "\""  > : DQUOTE
+           | < CHAR:    ( ~["'","\"",",","\n"] ) > : ACCEPTSQ
+           }
+
+/* HANDLES GROWING UNQUOTED FIELDS */
+<ACCEPTSQ> TOKEN: {
+             < CHARS:   ( ~[",","\n"] )+ >
+           }
+
+/* HANDLES GROWING SINGLE-QUOTED FIELDS */
+<SQUOTE> TOKEN: {
+             < SQEND: "'" > : DEFAULT
+           | < SCHAR: ( ~["'"] | "''" )+ >
+           }
+
+/* HANDLES GROWING DOUBLE-QUOTED FIELDS */
+<DQUOTE> TOKEN: {
+             < DQEND: "\"" > : DEFAULT
+           | < DCHAR: ( ~["\""] | "\"\"" )+ >
+           }

@@ -1,0 +1,24 @@
+EXPR - Performs mathematical operations
+
+This command performs basic mathematical operations within turtle shell. This command prints the result of the formula to standard out, and also returns the result of the formula as its execution status.
+
+COMMAND LINE ARGUMENTS
+----------------------
+This command accepts an mathematical formula as its command line argument
+
+Currently expr supports the following numerical operators:
+
+ 1. Multiplication (*)
+ 2. Division (*)
+ 3. Modululs (%)
+ 4. Addition (+)
+ 5. Subtraction (-)
+
+Currently expr ONLY SUPPORTS INTEGER MATH
+
+EXECUTION STATUS
+----------------
+This command returns the numerical result of the mathematical formula as its execution status.
+
+@author Graham Alvare
+@author Brian Fristensky

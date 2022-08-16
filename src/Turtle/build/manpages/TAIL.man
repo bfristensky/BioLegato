@@ -1,0 +1,36 @@
+TAIL - Deletes the trailing text of a stream (aka. removes the 'head' from a stream)
+ 
+This command accepts input via standard input, removes the 'head' from the input, and prints the resulting output to standard output.  The 'head' is defined as leading portion of the stream.  While a vague definition, an example will help illustrate this point:
+ 
+let's say you have a file 'shopping.list' containing the following text:
+ 
+     Shopping list
+     1. apple
+     2. banana
+     3. orange
+     4. rice
+     5. bread
+     6. milk
+ 
+if you only wanted the last 3 entries of the file, you could run the following command
+ 
+cat shopping.list | tail 3
+ 
+This would print the following:
+ 
+     4. rice
+     5. bread
+     6. milk
+ 
+the command line argument 3 means to print the last 3 lines (regardless of their content).
+ 
+COMMAND LINE ARGUMENTS
+----------------------
+This command accepts only one parameter: the number of lines to print.
+ 
+EXECUTION STATUS
+----------------
+This command returns one (1) unless an exception is encountered.  In the case of an exception, this command will return zero (0)
+ 
+@author Graham Alvare
+@author Brian Fristensky

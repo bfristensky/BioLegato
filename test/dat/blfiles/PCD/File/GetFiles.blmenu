@@ -1,0 +1,31 @@
+name        "GetFiles - Read a list of files into blreads"
+icon    "$BIRCH/dat/birch_black_ico.png"
+tip    "Reads a list of filenames from the specified directory. Defaults to current working directory."
+
+var "sourcedir"
+    type        dir
+    label       "Source Directory"
+    default     "."
+
+var "pattern"
+    type        text
+    label       "pattern to match (optional)"
+    default     "*"
+
+var "in1"
+    type        tempfile
+    direction   in
+    format      tsv
+
+panel
+    var "Run"
+        type        button
+        label       "Run"
+        shell       "cd %SOURCEDIR%; bldirtab.py %in1%.tsv '%PATTERN%' ; blfiles -noautonames %in1%.tsv &"
+        close       true
+
+    var "Help"
+        type        button
+        label       "Help"
+        shell       "$BIRCH/script/chooseviewer.py $BIRCH/doc/bioLegato/makelinks.help"
+        close       false

@@ -1,0 +1,35 @@
+name        "Save SELECTION As"
+icon    "$BIRCH/dat/birch_black_ico.png"
+var "save_func"
+    type        chooser
+    label       "File format"
+    default     0
+    choices
+        "csv"       "cat %in1% | tr -d '\042' > '%OUTNAME%'"
+        "tsv"       "cat %in2% | tr -d '\042' > '%OUTNAME%'"
+var "in1"
+    type        tempfile
+    direction   in
+    format      csv
+var "in2"
+    type        tempfile
+    direction   in
+    format      tsv
+var "in3"
+    type        tempfile
+    direction   in
+    format      tsv
+var "outname"
+    type        file
+    label       "File name?"
+panel
+    var "Run"
+        type        button
+        label       "Run"
+        shell       "%SAVE_FUNC%"
+        close       true
+    var "Help"
+        type        button
+        label       "Help"
+        shell       "$BIRCH/script/chooseviewer.py $BIRCH/doc/blmarker/save_selection.help"
+        close       false

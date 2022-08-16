@@ -1,0 +1,670 @@
+Tasks for the unknown future:
+-----------------------------
+? optimize storage of GenBank file within sequence object (to use entire format specification)
+? make biolegato support drag and drop
+    http://java.sun.com/docs/books/tutorial/uiswing/dnd/dropmodedemo.html
+- emboss/acd menu converter
+- Biolegato's own sequence file specification
+- external group set features
+- consider moving parts of biolegato to separate executables so as to further save on memory
+- extract using binary objects (serialization)
+- look into java multithreading -- be able to run jar files directly (saves memory)
+    // see code from http://www.javaworld.com/javaworld/javatips/jw-javatip127.html?page=2
+- make a multi-lined menu object
+    http://java.sun.com/docs/books/tutorial/uiswing/components/toolbar.html
+- Generate HTML in JWB
+- make each canvas have its own menubar
+- dynamic canvas
+- conditional compilation http://stackoverflow.com/questions/4526113/java-conditional-compilation-how-to-prevent-code-chunks-to-be-compiled
+
+Low priority:
+- resize columns in bltables (automatically, or resize multiple columns)
+- bltables colour masks
+
+Version 0.7.12:
+---------------
+- rebuild test suite
+    - core
+    - gde support
+    - table support
+- database hooks
+    - enable calling biolegato with a data source (table canvas)
+
+Version 0.7.11:
+---------------
+- client server, with RMI - for writing an applet BioLeagto
+- applet support
+    - convert File object references to URL/URI references where possible
+    - downloadable BioLegato client for connecting to BIRCH
+- PCD additions and modifications
+    - PCD menu pipelining (e.g. the ability to create a pipeline workflow in PCD that references other BioLegato menus)
+    - find a way to add functions to PCD, or general scripting language that can be plugged into PCD.
+    - allow multiple PCD exec sources??? (maybe PCD execpath?)
+    - turtle shell PCD exec extensions
+- work on making a separate pcd plugin, which can be generalized to any application!
+- tutrleshell improvements
+    - advanced internal commands
+        - internal find, diff, patch
+        - internal zip, unzip
+        - make paste accept a command as input instead of a file (this is good practice for many commands because of cat)
+    - make the command object able to accept Java strings and run commands when called from within Java
+    - non-static environment hash (this is necessary for running turtle shell scripts).
+
+Version 0.8.1:
+---------------
+- tutrleshell
+    - for statements (based on string tokenizer)
+    - improving expr functionality: http://ss64.com/bash/expr.html
+    - add test: http://ss64.com/bash/test.html
+    - add sed
+    - add more
+    - add rev (reverse the text on each line, but do NOT change the order the lines are printed),
+    - add tac (cat, printing the lines in reverse order)
+    - backward compatibility - mkdirs --> mkdir
+    - fix date parameters
+    - make turtle shell build script standalone (so it can be distributed separately)
+    * fix "man" with no arguments
+- BioLegato DB client for BIRCH, etc.
+    * add a prompt feature to prompt for the database username and password
+        * add a failskip feature to skip reading from the database, if the username and password are invalid
+            i.e. don't worry if the username and password fail (just skip if things fail)
+    * create DBPCD ( for storing schema information for databases)
+        * stores schema in separate files - like menu items
+    * create PCD mysql, jdbc, hsqldb shortcuts for entering driver names, etc.
+    - add error checking to the database canvas (when saving entries in the DB)
+        - check if a table or field already exists when selecting a name
+        - no _ allowed in name (_ will be used for adding information for the computer in the back-end of the database)
+    - test, test test!!!!
+    - automatically create directories if they don't exist for schemas and database
+    - if schema file exists but table does not (in DB) - create table in the database
+    - make sure that the bldb client will not try to create tables if the name of the table is already in the DB (e.g. try creating another table called ggg - this should be disallowed)
+        - use the select statement, etc. to test existence (?)
+    * implement the save function for creating entries in the DB
+        * for reference field, use a delete from table where key =, then insert ---- for updating
+    - add delete entry feature!
+    - add delete schema feature
+    * work on the reference field
+    - after the reference field works, work on command buttons
+    - make the buttons open the new functions in separate windows (instead of one window)
+    - make an acedb importer
+    - add reference field to root schema file (when adding a reference field) ??? - is this necessary, though
+    - Save choice in the File menu
+
+Version 0.8.0:
+---------------
+- BioPCD submenus (?)
+* BioPCD menu editor
+    * see http://docs.oracle.com/javase/tutorial/uiswing/examples/components/TabComponentsDemoProject/src/components/TabComponentsDemo.java
+        for help on deleting tabs
+    * add the ability to open PCD files and edit them!
+    - add display menu tool
+    - make it a BioLegato instance
+    - add a menu item to BIRCH for importing menu items into BIRCH from the BioPCD editor
+    - add doLayout, etc. to the JScrollPane! in the PCD editor
+* make ant build script generate manpage.txt and changelog automatically!
+* BioLegato list canvas
+* BioLegato widget canvas
+* make the PCD widget canvas accept a TSV file with values PROPERLY (i.e. multi-lined files) - using JavaCC!
+* make the PCD canvas accept multilined values file
+* remove list canvas in favour of a pure-PCD canvas replacement
+* change the values file to read numbers for choosers, etc (using the widgets!)
+* PCD SQL extensions (minor)
+* create BioPCD demo wrappers - in BIRCHDEV
+- delete obsolete gde menus properties file entries
+- update BioLegato manpage (e.g. PCD properties file parameters)
+- BioPCD - ensure that if there is an out tempfile that data must be selected in the canvas before the command parameters can be displayed by the menu!
+- fix README.txt file in the source main directory
+- ORs for gde2pcd.jar usage
+
+General goals (not todo)
+    - add even more comments to the code
+    - polish BLDB under the hood
+
+
+PCD BIRCH!!!!
+- BIRCH SCRIPTS FOR BIRCH UPDATING (CONVERT GDEMENUS LOCAL TO PCD MENUS LOCAL!!!)
+
+
+GETBIRCH
+- add an option to install BIRCHDEV
+- implement the update feature for BIRCHDEV
+- make get birch use birchconfig for the install process (but not the uninstall process)
+- make python versions of the following scripts
+        birchhome.sh
+        setplatform.sh
+        update-local.sh
+
++-------------------+
+|*******************|
+|* CURRENT VERSION *|
+|*******************|
++-------------------+
+
+Version 0.7.9:
+--------------
+* add a large notes section to all class files
+    (in the javadoc of all class files insert commenting that can help
+    any future programmers with writing code.  The comments should include
+    information about any possible caveats with code editing, or anything
+    non-intuitive about working with the code).
+* PCD additions and modifications
+    * a way to specify the order of menus (and menu items) going left to right in the biolegato menu. (pcd_order)
+    * fix converter and implementation of platform specificity
+    * fix the in1 bug from GDEMenus - i.e. for text files and entered text, if the user enters %in1%, it should output %in1% to the command directly (no substitution)
+    * add pcd_order to the PCD menu format converter
+    * implement pcd_order support for PCD
+* tutrleshell integration improvements
+    * if statements
+    * while statements
+    * basic internal commands
+        * internal cp, mv, rm
+        * internal cd, mkdirs, pwd (and path relativity)
+        * internal fgrep, grep, wc
+        * internal sort, uniq, head, tail, cut, paste, tr
+            * add command line parameters to head and tail
+        * internal echo, date, expr
+        * internal man (and manpages for each command)
+    * document the grammar file of turtle (javadoc)
+    * add documentation to each turtle command (internal)
+    * produce an external document outlining turtle shell's grammar
+    * environment on external processes is set to Turtle shell's localenv
+    * files are fixed to always be relative to pwd (using fixpath)
+* fix table canvas selection
+* add select all to table canvas
+
+Version 0.7.8:
+--------------
+* convert biolegato readfile to use reader objects
+* convert biolegato writefile to use Appendable objects
+* add piping ability to biolegato
+* improve bltable
+    * add a force selection property row to bltable
+    * import column headers from file
+    * property to use generic headers instead of first line of file
+    * export headers functionality (for non-generic headers
+* implement PCD
+    * add PCD.exec, so menus can be retrieved by executing a file
+    * find a way to skip bad menu items in PCD (may be as simple as try catch which handles parse exceptions, and then searches for the next item or menu token manually.
+    * compiled menus, or other menu format options (for complex menus) -- unless robust scripting language is built
+    * include PCD converter with code
+    * improve menu objects
+* birchshell integration
+* add --exec-properties, so BioLegato properties can be retrieved by executing a file
+* biolegato image canvas
+    * design blimage file format (PCD-like?)
+* add "readonly" property
+    * add support for tables canvas
+    * add support for GDE canvas
+* fixed a selection by name bug
+* make sure insertion mode is connected between text panes in GDECanvas
+
+Version 0.7.7 (last completely GDE-backward compatible BioLegato):
+------------------------------------------------------------------
+* corrected the implementation of outoverwrite: in GDE menus format
+* improved the code for file parsing to take advantage of Java's Scanner API
+
+Version 0.7.6:
+--------------
+* priority ---- evaluation of in1 in bltables
+    * DiscDist.item
+    * chooser $WHERE (inner variable substitution)
+* update the manpage
+    * make new deprecated section
+    * move GDE_MAKEMENUS_DIR and GDE_HELP_DIR to deprecated section
+* colour mask refresh errors (doesn't repaint immediately on colour mask change)
+* fix Genbank I/O issue
+* "reverse" gde.makemenus.path
+* change gde.makemenus.dir to gde.makemenus.path
+* all filenames should be singular (not plural)
+* copy menu items for bltables into the dat directory
+* add font properties to bltables
+* outall: --- allow an external save function
+* remove quotes on import
+* add export to spreadsheet (program)
+* update to latest build version
+* column headers should be letters
+* row headers
+	http://www.java2s.com/Code/Java/Swing-Components/TableRowHeaderExample.htm
+* fix doc2ace
+* make all biolegatos use properties instead of environment variables
+* remove ldir.param dependency
+* make all path environment variables and properties accept path lists and accept environment variables
+
+
+Version 0.7.5:
+--------------
+* more performance and code improvements
+* bltable optimization
+* improved copy and paste features
+* created "Java Web Browser" for BioLegato/BIRCH (JWB)
+
+
+Version 0.7.4:
+--------------
+* many performance and code improvements
+
+
+Version 0.7.3 (current release):
+--------------------------------
+* PCD code refactoring and reworking
+* Genbank file I/O fix
+* Tables support
+* CSV input support
+* Cleaned up menu java code
+* Improved memory usage and code performance
+* Added BL_PROPERTIES environment variable support
+* fixed a bug in the sequence pane
+
+
+Version 0.7.2:
+--------------
+* bugs from Andrea's emails
+* Makemenus plugin
+* some fixes
+* "PCD" format
+    * design PCD parser
+    * GDE2PCD menu converter
+* fix methods without parameters
+* remove greying out when window not focused
+* only have greying selection based on which pane is being used
+* move menu plugins out of the code - only support one menu type natively
+* search for "default.csv" to be the default colour schema for the canvas (replaces GDEColourMap.java)
+* integrate colour map support with GDETextArea
+* fix bldna import foreign format
+
+
+Version 0.7.1:
+--------------
+* optimizations
+    * linked list usage
+    * canvas printing
+    * grouping
+    * ezmenu (make parsing more general for PCD format)
+* add messages to test suite assertions
+* begin BIRCH makemenus plugin
+
+
+Version 0.7.0:
+--------------
+* <default> for colour mask if nothing is selected
+* <multiple selected...> for dropdowns in getsequence that have multiple selections
+* copy/paste ensure that it creates new objects
+* remove subseq method to improve speed and memory usage
+* character based colour mask support (CSV based)
+    * header: AA<tab>Colour
+    * each line after: characters<tab>#RGB
+	example: RHKSY<tab>#A077EF
+* add seqcolourdir to properties (will represent the directory with all of the default character colour masks)
+* add GDE file format "group" feature
+    * add saving of group number
+    * add support to read group numbers from files
+* add BIOLEGATO_HOME support to BioLegato
+* add parsing of other environment variables work for properties
+* make seqcolour dirs only load .csv files
+* add current directory to .blproperties search path
+* updated manpage
+* make build.xml generate non-core documentation (currently documentation exists, but is not generated by build.xml)
+* environment variable for colour masks
+
+
+Version 0.6.2:
+--------------
+* undo/redo
+    * make undo/redo objects that are x,y compatible
+    * add undo/redo objects to BLTextArea & GDETextArea
+    * update undoable commenting
+    * add undo/redo support to GDEList
+    * undo/redo on/off property
+* make multiple sequence getinfo
+* make all group sequences highlighted when one sequence is highlighted
+* fix group deletion bug
+* seperate list/canvas delete functions (list can remove sequences, canvas can only remove characters from a sequence)
+* fix menu windows
+    * order of options
+    * saving of defaults
+    * fix combobox/choicelist saving of defaults
+* fix right click menus
+* make clipboard able to paste strings from texteditors into biolegato
+* implement limit undo stack size parameter
+* fix @returns javadoc
+* improve how undo/redo on/off property works (make memory conservative versions of functions - booleans)
+* improve how textarea scrolls
+* fix issue with windows not disposing
+* fix undo support
+* highlight groups within a list on double click
+* select group right menu and Edit menu feature
+* fixed choiceorder issue
+* make standard contrasting colours properties controlled
+* static BLMain
+* fix filechooser new file display bugs
+* fix filechooser name bug
+
+
+Version 0.6.1:
+--------------
+* standardize variable name for BLMain to program
+* remove selection objects
+* join/split canvas (GDE) into two parts
+* restructure menu reading to make more abstract (ezmenu)
+* minimize memory imprint of menu widgets
+    * RunWindow
+    * GDEComboBox
+    * GDEChoiceList
+    * GDEFileChooser
+    * GDETextField
+    * GDEChooser
+    * GDESlider
+* remove selections objects
+* attach biolegato to the system clipboard
+    http://www.exampledepot.com/egs/java.awt.datatransfer/ToClip.html
+* fix features program
+* improve SeqDoc finalize method
+
+
+Version 0.6.0:
+--------------
+* put quotation marks around all filenames from file_chooser
+* optimize refresh size (obtaining length of longest line)
+* make commands launch automatically if there are no arguments
+* split canvas into seperate plugin jar from menu
+* move seqdoc character insertions into Sequence
+* implement GDE group editing (all modifications are done on the group of sequences simultaneously)
+    * make all text operations x,y based (should increase biolegato speed)
+	* make seqdoc x,y based
+	    * add x,y seqdoc functions
+	    * change all calls to use x,y functions
+	    * remove all linear insert/delete functions
+	    * remove offset support for seqdoc elements
+		* remove offset related functions
+		* remove sequence wrapper
+	    * fix co-ordinate retrieval
+	* make bltextarea insert/delete x,y based
+	* make gdetestarea insert/delete x,y based
+	* make all x and y's final ints
+	* make seqdoc x,y deletion non-rectangular (same as textlines function
+	* fix textlines and textrectangle deletion functions
+    * add grouping functionality
+	* group and an ungroup button
+	* add simple group support
+	* add group insert/delete code
+	* add group number indicator in canvas pane (in front of list - can be inside the list)
+	* group permissions (change permissions so if you change one sequence, you change the entire group)
+* make rectangular section the default
+* remove linear selection option
+* make sure that textarea foreground colours do not get greyed out when working with the jlist
+* fix selection painting
+* add change case menu item
+* fix vertical scroll bar
+
+
+Version 0.5.8:
+--------------
+* add pseudo-comment parsing (#@)
+* file chooser plugin for GDE menu format argtype:file_chooser
+* make type detection intrinsic to the sequence class
+* fix BLProperties reset function
+* factor out colour mask into own package
+    * ImportFileAction
+    * GDEColourMaskMap
+    * GDEColourMaskFile
+* make Sequence class intrinsic character testing (Unambiguous/Ambiguous/Alignment Gap)
+    * update GDEPositionColour map to use intrinsic testing (for skipdash setting)
+* make colour mask support more generic
+    * make different map types
+    * all maps have a name
+    * make masks into file filters which create maps
+* make version/command prompt displayable independent of whether a windowing system is installed
+* add autodetect type support for GenBank files written by readseq (i.e., no type field)
+
+
+Version 0.5.7:
+--------------
+* look over and update entire BioLegato javadoc and commenting
+    * look over and update entire javadoc and commenting for biolegato core
+        * org.biolegato.core.data.seqdoc
+        * org.biolegato.core.data.seqdoc.undo
+        * org.biolegato.core.data.sequence
+        * org.biolegato.core.main
+        * org.biolegato.core.plugins
+        * org.biolegato.core.plugintypes
+        * org.biolegato.core.properties
+    * look over and update entire javadoc and commenting for biolegato GDE support
+        * org.biolegato.ezmenu
+        * org.biolegato.ezmenu.variables
+        * org.biolegato.gdesupport.canvas
+        * org.biolegato.gdesupport.canvas.colour
+        * org.biolegato.gdesupport.canvas.listeners
+        * org.biolegato.gdesupport.canvas.selections
+        * org.biolegato.gdesupport.files
+        * org.biolegato.gdesupport.menu
+    * look over and update entire javadoc and commenting for biolegato standalone plugins
+        * GenBank2008
+        * FastA
+* update manpage content
+* optimize colour map draw function to use character array directly
+* remove CommandWindow
+* add deselect button to SelectByNameWindow
+* add J and O to protein unambiguos
+* FastA
+    * autodetect sequence type
+	* default to DNA
+	* U only found in RNA
+	* F,E,J,L,O,Q,X,Z,* only found in protein
+    * only read gi number for name in fasta format
+    * see why fasta does not default its colours
+    * everything after first space on > line on fasta file is a description
+* fix .equals when using a constant to put the constant first
+* translateTo bug
+* Ribosome produces out1 file with 1 byte in it
+    * check priority of parsing (make sure that arg choices of out1, etc. get parsed)
+
+
+Version 0.5.6:
+--------------
+* add "I" (synonymous to "D") to ambiguous DNA characters
+* fix orignalgb storage
+* fix genbank parsing
+* make genbank parsing more robust
+* make protections sequence dependent
+* make protections also protect against insertions
+* change colour for letters R,K,H (make teal more obvious)
+* add minimum size to help textbox
+* updated column numbers to start at 1,1
+* updated selectAll function to select name pane
+* fixed greying out of text canvas
+
+
+Version 0.5.5:
+--------------
+* change originalgb not to store redundant information
+* get default DNA/RNA colours to agree with GDE
+* get default protein colours to agree with GDE
+* fix defaults for character protections
+* fix error handling to be more robust
+* fix which characters are considered unambiguous
+
+
+Version 0.5.4:
+--------------
+* optimize selection canvas repaints
+* optimize GenBank file parsing (look at I/O methods)
+    * optimize I/O speed
+    * optimize string concatenation - use string buffer
+* optimize all string concats to use string buffers
+* make standard colouring more distinct (colourmap)
+* make font spacing smaller in text area
+* fix GenBank file parsing bug
+
+
+Version 0.5.3:
+--------------
+* fix select all + cut list bug
+* fix textarea delete bug
+* further optimize textarea painting so each repaint call is co-ordinate specific
+* fix textarea font width to look better (center each letter in the column).
+* optimize seqdoc insert/delete to use arrays
+* change how textarea and list are greyed out
+
+
+Version 0.5.2:
+--------------
+* fix bugs regarding "text sequences" (#3 low priority from email) --- can't reproduce bug
+* optimize textarea painting to use repaint
+* fix deletion problem
+* Get rid of New sequence from the GDE canvas, when bioLegato first starts up. (#1 low priority from email)
+* empty canvas support (so biolegato can start off without any sequences)
+* add "select by name" from GDE
+* look into _ (underscore) bug for fonts larger than 20pt (textarea)
+* fix file bug
+
+
+Version 0.5.1:
+--------------
+* optimized file write algorithm
+* add source parameter to seqdoc listener methods
+* put co-ordinates closer together
+* fix select all bug (in textarea)
+* fix select all list bug - copy out
+* check "extract by features"
+* remove files after closed (if supposed to be deleted)
+
+
+Version 0.5.0:
+--------------
+* move "Get info..." from the "Canvas" heading to the "Edit" heading
+* fix canvas scrolling (high priority)
+    * fix oversized canvas bug
+    * look at scroll speed of big sequences
+    * look at scroll vertical for new sequences loaded from files/command line
+* reorganize seqdoc listener structure
+* reorganize seqdoc to use addSequence and removeSequence for data manipulation
+* global clipboard support
+* fix refresh on font changes
+* fix selection position issues (end of line)
+* fix choice_list make only able to select one
+* make choice list scrollable
+* scroll support for big combo boxes (#1 high priority from email)
+* fix genbank reading circular sequences (#2 high priority from email)
+* change where paste inserts sequences (#3 high priority from email)
+* disable "ENTER" key new sequence creation
+* File --> New sequence - If a sequence name is already selected, the new sequence gets the same name (fix this bug).  (#2 low priority from email)
+* In sequence properties, grey out non applicable fields based on type (#4 low priority from email)
+    (below is a list of what fields are used for each type)
+    * DNA/RNA: Direction, Topoplogy, Strandedness, Colour Mask
+    * Protein: Colour Mask
+    * Text: Colour Mask
+* restructure properties
+
+
+Version 0.4.4:
+--------------
+* deprecate choice_list in favour of choice_menu --- list as warning
+* add select all
+* add copy/cut/paste to GDEList
+* add copy/cut/paste/selectAll to GDEList right click menu
+* look into further improvement in GDE argument replacement
+* fix multiple file creation problem
+* fix output file reading
+* refactor GDE subclasses
+* change default help path
+
+
+Version 0.4.3:
+--------------
+* Add items to edit menu
+    * cut
+    * copy
+    * paste
+* fixed edit menu position
+* fixed makefile "clean"
+* fix gde JList
+* check out temporary file creation bug
+* check :CDS issue
+
+
+Version 0.4.2:
+--------------
+* Statistics line in GDE Canvas
+    * row and column of the cursor
+    * Insert status
+* implement insert key
+* make colours contrast
+* Right click menus
+    * TextArea
+        * Cut
+        * Copy
+        * Paste
+        * Canvas properties
+    * Sequence list
+        * Get info
+        * Canvas properties
+* position colour mask support
+    * interface support
+    * file support
+    * internal support
+* fixed colour map bug (selected text does not appear blue for DNA/RNA and PROTEIN sequences
+* change sequence direction default to "5' to 3'"
+
+
+Version 0.4.1:
+--------------
+* move canvas properties to menu
+* Colour themes
+    * internal rendering support
+    * default GDE canvas character based colour scheme
+        * DNA/RNA
+            * A = red
+            * B,D,H,N,M,R,S,V,W,Y = yellow
+            * C = blue
+            * G = black
+            * U,T = lime green
+            * X = yellow 'N'
+            * all others = grey '-'
+        * PROTEIN
+            * A,G,P,S,T = fuchsia
+            * B,D,E,N,Q,Z = black
+            * C = red
+            * F,W,Y = blue
+            * H,K,R = turquoise
+            * I,L,M,V = lime green
+            * X,* = yellow
+            * all others = grey
+* fix caret scroll issues in GDE canvas
+* add jar plugin support
+* add menu shortcut to "Get info"
+* package GDE support into a jar plugin
+* fix font change cursor error
+* fix deletion bug
+* fix temporary file creation bug
+* fix GDE argument replacement order bug
+* ensure BIOLEGATO_ON works properly
+
+
+Version 0.4.0:
+--------------
+* Add filename handler to command line (limit to biolegato native formats) --
+high priority
+* Update canvas on changes
+* GDE get info (add to root canvas)
+    * name
+    * type
+    * strandedness
+    * direction
+    * topology
+* Properties for BioLegato GDE canvas
+    * Set protections (default: only alignment gaps)
+        * Alignment gaps (-)
+        * Unambiguous characters
+            * DNA/RNA (A,C,G,T,U)
+            * Protein (all non-ambiguous)
+        * Ambiguous characters
+            * DNA/RNA (all other characters)
+            * Protein (B,Z,*,X)
+
+
+Version 0.3.3:
+--------------
+* Fix off by one error in Text selection
+* Implement choice_list as a dropdown
+* Double check defaults
+* Fix ordering

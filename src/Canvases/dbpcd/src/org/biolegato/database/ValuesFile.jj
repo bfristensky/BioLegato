@@ -1,0 +1,113 @@
+options {
+/*    JAVA_UNICODE_ESCAPE=true;
+    UNICODE_INPUT=true;*/
+    LOOKAHEAD=2;
+    IGNORE_CASE=true;
+    KEEP_LINE_COLUMN=true;
+    STATIC=false;
+}
+
+
+
+PARSER_BEGIN(ValuesFile)
+
+package org.biolegato.database;
+/*
+ * ValuesFile.jj
+ *
+ * Created on January 30, 2008, 11:58 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+import java.io.BufferedReader;
+import javax.swing.filechooser.FileFilter;
+import java.io.File;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Collections;
+import org.biopcd.widgets.Widget;
+import org.biolegato.main.DataCanvas;
+
+/**
+ * File format parser for a PCD values file
+ **
+ * @author Graham Alvare
+ * @author Brian Fristensky
+ */
+public class ValuesFile {
+    public static void readValues(Reader currentFile, Map<String, Widget> widgets) throws IOException {
+        try {
+            // TODO: implement overwrite feature
+            ValuesFile parser = new ValuesFile(currentFile);
+            parser.parse(widgets);
+        } catch (ParseException pe) {
+            pe.printStackTrace(System.err);
+        }
+    }
+}
+
+PARSER_END(ValuesFile)
+
+void parse(Map<String, Widget> widgets) :
+{
+}
+{
+    parseRow(widgets) ( <RDELIM> parseRow(widgets) )*
+    [ <RDELIM> ]
+    <EOF>
+}
+
+void parseRow(Map<String, Widget> results) :
+{
+    String key;
+    String value;
+}
+{
+    key = parseColumn()
+    <CDELIM> value = parseColumn() { results.get(key).setValue(value); }
+}
+
+String parseColumn() :
+{
+    Token t;
+    String result = "";
+}
+{
+    (
+      t=<CHAR>                   { result = t.image; }
+    | <SQSTART>
+          t=<SCHAR>              { result = t.image; }
+      <SQEND>
+    | <DQSTART>
+          t=<DCHAR>              { result = t.image; }
+      <DQEND>
+    )?
+    { return result; }
+}
+
+<DEFAULT> TOKEN: {
+             < SQSTART: "'"   > : SQUOTE
+           | < DQSTART: "\""  > : DQUOTE
+           | < CDELIM:  ( [":","="] ) >
+           | < RDELIM: ( "\r\n"
+	               | "\n"
+		       | "\r" )+ >
+           | < CHAR:    ( ~["=",":"," ","'","\"","\t","\n"] )+ >
+           }
+
+<SQUOTE> TOKEN: {
+             < SQEND: "'" > : DEFAULT
+           | < SCHAR: ( ~["'"] | "''" )+ >
+           }
+
+<DQUOTE> TOKEN: {
+             < DQEND: "\"" > : DEFAULT
+           | < DCHAR: ( ~["\""] | "\"\"" )+ >
+           }
+<DEFAULT> SKIP: {
+             < WSP: ( [" ","\t"] ) >
+           }

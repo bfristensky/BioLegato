@@ -1,0 +1,35 @@
+name        "ConcatFiles - concatenate files"
+icon    "$BIRCH/dat/birch_black_ico.png"
+tip    "Combines text files into a single file."
+
+var "in1"
+    type        tempfile
+    direction   in
+    format      tsv
+    save        false
+
+var "outfile"
+    type        text
+    label       "Name for output file"
+    default     "concatfile"
+
+var "out1"
+    type        tempfile
+    direction   out
+    format      tsv
+    save        false
+    overwrite   true
+    content     canvas
+
+panel
+    var "Run"
+        type        button
+        label       "Run"
+        shell       "bltsv2name.py %in1% %in1%.nam; FILES=`cat %in1%.nam`; cat $FILES > %OUTFILE%; rm %in1%.nam; bldirtab.py %out1%"
+        close       true
+
+    var "Help"
+        type        button
+        label       "Help"
+        shell       "chooseviewer.py https://man7.org/linux/man-pages/man1/cat.1.html"
+        close       false

@@ -1,0 +1,221 @@
+
+/*
+ * Copyright © 2002 Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+ * California 95054, U.S.A. All rights reserved.  Sun Microsystems, Inc. has
+ * intellectual property rights relating to technology embodied in the product
+ * that is described in this document. In particular, and without limitation,
+ * these intellectual property rights may include one or more of the U.S.
+ * patents listed at http://www.sun.com/patents and one or more additional
+ * patents or pending patent applications in the U.S. and in other countries.
+ * U.S. Government Rights - Commercial software. Government users are subject
+ * to the Sun Microsystems, Inc. standard license agreement and applicable
+ * provisions of the FAR and its supplements.  Use is subject to license terms.
+ * Sun,  Sun Microsystems,  the Sun logo and  Java are trademarks or registered
+ * trademarks of Sun Microsystems, Inc. in the U.S. and other countries.  This
+ * product is covered and controlled by U.S. Export Control laws and may be
+ * subject to the export or import laws in other countries.  Nuclear, missile,
+ * chemical biological weapons or nuclear maritime end uses or end users,
+ * whether direct or indirect, are strictly prohibited.  Export or reexport
+ * to countries subject to U.S. embargo or to entities identified on U.S.
+ * export exclusion lists, including, but not limited to, the denied persons
+ * and specially designated nationals lists is strictly prohibited.
+ */
+
+options {
+  LOOKAHEAD = 2;
+  CHOICE_AMBIGUITY_CHECK = 2;
+  OTHER_AMBIGUITY_CHECK = 1;
+  STATIC = false;
+  DEBUG_PARSER = false;
+  DEBUG_LOOKAHEAD = false;
+  DEBUG_TOKEN_MANAGER = false;
+  ERROR_REPORTING = true;
+  JAVA_UNICODE_ESCAPE = false;
+  UNICODE_INPUT = false;
+  IGNORE_CASE = false;
+  USER_TOKEN_MANAGER = false;
+  USER_CHAR_STREAM = false;
+  BUILD_PARSER = true;
+  BUILD_TOKEN_MANAGER = true;
+  SANITY_CHECK = true;
+  FORCE_LA_CHECK = false;
+}
+
+PARSER_BEGIN(EXPR)
+
+package org.turtleshell.cmd;
+
+import java.io.Closeable;
+import java.io.Reader;
+import java.io.StringReader;
+import org.turtleshell.TEnv;
+
+/**
+ * Performs mathematical operations
+ **
+ * This command performs basic mathematical operations within turtle shell.
+ * This command prints the result of the formula to standard out, and also returns
+ * the result of the formula as its execution status.
+ *
+ * COMMAND LINE ARGUMENTS
+ * ----------------------
+ * This command accepts an mathematical formula as its command line argument
+ *
+ * Currently expr supports the following numerical operators:
+ *
+ *  1. Multiplication (*)
+ *  2. Division (*)
+ *  3. Modululs (%)
+ *  4. Addition (+)
+ *  5. Subtraction (-)
+ *
+ * Currently expr ONLY SUPPORTS INTEGER MATH
+ *
+ * EXECUTION STATUS
+ * ----------------
+ * This command returns the numerical result of the mathematical formula as its
+ * execution status.
+ **
+ * @author Graham Alvare
+ * @author Brian Fristensky
+ */
+public class EXPR {
+    /**
+     * The main calling method for this command
+     **
+     * @param args see class description for a list of available command line arguments
+     * @return the execution status of this command (see class description)
+     */
+    public static int main(String[] args) {
+        return exec(null, args, System.out, null);
+    }
+
+    /**
+     * The functional body of this command
+     **
+     * @param env the Turtle shell environment to read any necessary variable values from.
+     * @param args see class description for a list of available command line arguments
+     * @param output the standard output for this command
+     * @param input the standard input for this command
+     * @return the execution status of this command (see class description)
+     */
+    public static int exec (TEnv env, String[] args, Appendable output, Reader input) {
+        int result = 0;
+        StringBuilder builder = new StringBuilder();
+        for (String arg : args) {
+            builder.append(arg);
+        }
+
+        try {
+            result = new EXPR(new StringReader(builder.toString())).eval();
+            output.append(String.valueOf(result)).append("\n");
+        } catch (Exception ex) {
+            ex.printStackTrace(System.err);
+        }
+
+        return result;
+    }
+}
+
+PARSER_END(EXPR)
+
+/**
+ * Performs a top level evaluation of a mathematical formula.
+ * This formula branches based on level of scope.  Mult() is for multiplication,
+ * division and modulus, Add() is for addition and subtraction, and Number() is
+ * for numbers, and bracketed expressions.
+ **
+ * @return the result of the formula
+ */
+int eval () : {
+    int result = 0;
+}
+{
+    (
+      result = Mult()
+    | result = Add()
+    | result = Number()
+    )
+
+    { return result; }
+}
+
+/**
+ * Performs multiplication, division and modulus operations
+ **
+ * @return the result of the formula
+ */
+int Mult() : {
+    int result;
+}
+{
+      result = Number()
+    (
+      <MULT>  { result *= Number(); }
+    | <DIV>   { result /= Number(); }
+    | <MOD>   { result %= Number(); }
+    )+
+
+    { return result; }
+}
+
+/**
+ * Performs addition and subtraction operations
+ **
+ * @return the result of the formula
+ */
+int Add() : {
+    int result;
+}
+{
+      result = Number()
+    (
+      <PLUS>  { result += Number(); }
+    | <MINUS> { result -= Number(); }
+    )+
+
+    { return result; }
+}
+
+/**
+ * Parses numbers and bracketed formulae.
+ **
+ * @return the parsed number
+ */
+int Number() : {
+    Token t;
+    int result = 0;
+}
+{
+    (
+      t=<NUMBER> {
+        try {
+            result = Integer.parseInt(t.image);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+      }
+    | <OPENP> result = eval() <CLOSEP>
+    )
+    { return result; }
+}
+
+<*> TOKEN: { < NUMBER: ( ["0"-"9"] )+ >
+           | < PLUS:      "+"  >
+           | < MINUS:     "-"  >
+           | < MULT:      "*"  >
+           | < DIV:       "/"  >
+           | < MOD:       "%"  >
+           | < LE:        "<=" >
+           | < GE:        ">=" >
+           | < LT:        "<"  >
+           | < GT:        ">"  >
+           | < EQ:        "="  >
+           | < OR:        "|"  >
+           | < AND:       "&"  >
+           | < OPENP:     "("  >
+           | < CLOSEP:    ")"  >
+           | < OPENB:     "["  >
+           | < CLOSEB:    "]"  >
+           }
+<*> SKIP: { < ~[] > }

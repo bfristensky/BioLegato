@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# In the interim, until biolegato can completely replace GDE
+# we need a way to get gde menu items, used from biolegato,
+# to call biolegato, when
+# it would normally be calling GDE.
+# The gde script will call biolegato, rather than gde, if
+# BIOLEGATO_ON=1
+BIOLEGATO_ON=1; export BIOLEGATO_ON
+$ANT_CMD build && java -jar bin/biolegato.jar $*
+BIOLEGATO_ON=0; export BIOLEGATO_ON
+

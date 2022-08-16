@@ -1,0 +1,498 @@
+options {
+/*    JAVA_UNICODE_ESCAPE=true;
+    UNICODE_INPUT=true;*/
+    IGNORE_CASE=true;
+    KEEP_LINE_COLUMN=true;
+    STATIC=false;
+}
+
+
+
+PARSER_BEGIN(DBPCD)
+
+package org.biolegato.database ;
+
+import java.awt.image.BufferedImage ;
+import java.io.File                 ;
+import java.io.Reader               ;
+import java.io.FileReader           ;
+import java.io.FileInputStream      ;
+import java.io.IOException          ;
+import java.io.InputStreamReader    ;
+import java.io.BufferedReader       ;
+import java.sql.Connection          ;
+import java.sql.DriverManager       ;
+import java.util.Set                ;
+import java.util.Map                ;
+import java.util.List               ;
+import java.util.HashSet            ;
+import java.util.HashMap            ;
+import java.util.ArrayList          ;
+import java.util.Collection         ;
+import java.util.Collections        ;
+import java.util.LinkedList         ;
+import java.util.LinkedHashMap      ;
+import javax.swing.Action           ;
+import javax.swing.BoxLayout        ;
+import javax.swing.JButton          ;
+import javax.swing.JFrame           ;
+import javax.swing.JMenu            ;
+import javax.swing.JList            ;
+import javax.swing.JPanel           ;
+import javax.swing.JSlider          ;
+import javax.swing.JTabbedPane      ;
+import javax.swing.JTextField       ;
+import javax.swing.JMenuItem        ;
+import javax.swing.ImageIcon        ;
+import javax.imageio.ImageIO        ;
+import org.biopcd.sql.*             ;
+import org.biopcd.widgets.*         ;
+import org.biolegato.database.fields.*;
+
+/**
+ * A class used to parse PCD schema files into BioLegato.
+ */
+public class DBPCD {
+    /**
+     * The main database to connect to for the SQL queries within PCD file
+     */
+    private JDBCDBConnection mainConnection = null;
+    /**
+     * Whether to operate in debug mode
+     */
+    public static boolean debug = false;
+
+
+    public static void main (String[] args) {
+        try {
+            File path = new File(args[0]);
+            DBPCD parser = new DBPCD(new FileReader(path));
+            DBSchema schema = parser.parseSchema(path.getParentFile(), false);
+
+            schema.pcdOut(0, System.out);
+        } catch (Throwable th) {
+            th.printStackTrace(System.err);
+        }
+    }
+} 
+
+PARSER_END(DBPCD)
+
+
+
+/* PRODUCTIONS */
+
+
+/**
+ * Parses a PCD database schema.
+ **
+ * @param parent the parent path of the PCD database file - this is used for DB referencing
+ * @param norecurse if true, recursion through reference fields and the like will be skipped (this prevents infinite recursion when parsing reference fields)
+ * @return the parsed schema object
+ */
+DBSchema parseSchema(File parent, boolean norecurse) :
+{
+    // the name of the primary key for the main table
+    KeyableField key;
+    // the name of the main table in the database that the schema is derived from
+    String table;
+    // the column to be used for displaying a human readable description of each entry stored in the database
+    String name;
+    // the current field being parsed
+    DBField field = null;
+    // the schema object to create
+    Map<String,DBField> fields = new LinkedHashMap<String,DBField>();
+}
+{
+    assertIndent(0) <T_SCHEMA>  <WSP> { table = Text(); } nl()
+    assertIndent(1) <T_NAMECOL> <WSP> { name  = Text(); } nl()
+    assertIndent(1) <T_KEY>     <WSP> { key   = parseKeyableField(); }
+    ( LOOKAHEAD( { testIndent(1) } ) field=parseField(table, key, parent, norecurse)
+        {
+            if (field != null) {
+                fields.put(field.getName(), field);
+            }
+        } )*
+    { return new DBSchema(table, key, fields.get(name), fields.values()); }
+}
+
+/**
+ * Parses a single PCD database field.
+ **
+ * @param table the name of the table that the field belongs to
+ * @param key the name of the primary key withing table that the field belongs to
+ * @param parent the parent path of the PCD database file - this is used for DB referencing
+ * @param norecurse if true, recursion through reference fields and the like will be skipped (this prevents infinite recursion when parsing reference fields)
+ * @return the parsed field object
+ */
+DBField parseField(String table, KeyableField key, File parent, boolean norecurse) :
+{
+    // the name of the current field in the database
+    String fieldName;
+    // the human readable version of the current field in the database
+    String fieldLabel;
+    // the object representing the current database field
+    DBField field = null;
+
+    ///////
+    // For reference objects
+    ///////
+    // the table to reference
+    String refTable;
+    // the primary key of the table to reference
+    String refKey;
+    // the column in the reference table to display
+    String refName;
+
+    ///////
+    // For command objects
+    ///////
+    // the label to display on the command button
+    String commandLabel;
+    // the command for the button to execute
+    String commandExec;
+}
+{
+    ( field = parseKeyableField()
+        /* new DecimalWidget (extended from TextWidget!) */
+    | ( <T_DEC>  <WSP> fieldName=Text() nl() { fieldLabel = fieldName; }
+        [ LOOKAHEAD( { testIndent(2) } ) <T_LABEL> <WSP> fieldLabel=Text()   nl() ] )
+        { field = new DecimalField(fieldName, fieldLabel); }
+        /* make from choice list, add button for adding references,
+           add a button for searching - similar to the select sequence
+           under edit in sequence canvas */
+    | ( <T_REF>  <WSP> fieldName=Text() nl() { fieldLabel = fieldName; }
+        assertIndent(2)
+            [ <T_LABEL> <WSP> fieldLabel=Text()   nl() assertIndent(2) ]
+              <T_TABLE> <WSP> refTable=Text()     nl()
+         )
+        {
+            try {
+                if (!norecurse) {
+                    DBPCD parser = new DBPCD(new FileReader(parent + File.separator + refTable + ".schema"));
+                    DBSchema schema = parser.parseSchema(parent, true);
+                    field = new ReferenceField(fieldName, fieldLabel, table, key, refTable, schema.getKey(), schema.getNameCol());
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace(System.err);
+            }
+        }
+    | ( <T_BOOL> <WSP> fieldName=Text() nl() { fieldLabel = fieldName; }
+        [ LOOKAHEAD( { testIndent(2) } ) <T_LABEL> <WSP> fieldLabel=Text()   nl() ] )
+        { field = new BooleanField(fieldName, fieldLabel); }
+    | ( <T_BTN>  <WSP> commandLabel=Text() nl()
+          LOOKAHEAD( { testIndent(2) } ) <T_EXEC>  <WSP> commandExec=Text()  nl()   )
+        { field = new DBCommand(commandLabel, commandExec); }
+    )
+    { return field; }
+}
+
+
+/**
+ * Parses a single Keyable (i.e. may be used as a database key) PCD database field.
+ **
+ * @return the parsed field object
+ */
+KeyableField parseKeyableField() :
+{
+    // the name of the current field in the database
+    String fieldName;
+    // the human readable version of the current field in the database
+    String fieldLabel;
+    // the object representing the current database field
+    KeyableField field = null;
+    // the minimum value for the field (if it is a number field)
+    int fieldMin = 0;
+    // the maximum value for the field (if it is a number field)
+    int fieldMax = 5000000;
+}
+{
+        /* new NumberWidget (String name, String label, int min, int max, int value) */
+    ( ( <T_INT>  <WSP> fieldName=Text() nl() { fieldLabel = fieldName; }
+        [ LOOKAHEAD( { testIndent(2) } ) <T_LABEL> <WSP> fieldLabel=Text()   nl() ]
+        [ LOOKAHEAD( { testIndent(2) } ) <T_MIN>   <WSP> fieldMin=Number()   nl() ]
+        [ LOOKAHEAD( { testIndent(2) } ) <T_MAX>   <WSP> fieldMax=Number()   nl() ] )
+        { field = new NumberField(fieldName, fieldLabel, fieldMin, fieldMax); }
+        /* new DecimalWidget (extended from TextWidget!) */
+    | ( <T_TEXT> <WSP> fieldName=Text() nl() { fieldLabel = fieldName; }
+        [ LOOKAHEAD( { testIndent(2) } ) <T_LABEL> <WSP> fieldLabel=Text()   nl() ] )
+        { field = new DBTextField(fieldName, fieldLabel); }
+        /* use name and values for true/false - new Chooser(String name, String label,
+           String[] names, String[] values, int index) */
+    )
+    { return field; }
+}
+
+
+
+//////////////////////////
+// SHARED PCD CODE      //
+//////////////////////////
+
+/**
+ * Parses an identifier token from a PCD file into a Java String
+ **
+ * @return the coresponding Java String object
+ */
+String Ident () :
+{
+    /* The token to parse into a String value */
+    Token t = null;
+}
+{
+    /* Match a text token */
+    t=<ID>
+    
+    /* Return the token's "image" field */
+    { return t.image; }
+}
+
+/**
+ * Parses a text token from a PCD file into a Java String
+ **
+ * @return the coresponding Java String object
+ */
+String Text () :
+{
+    /* The token to parse into a String value */
+    Token t = null;
+}
+{
+    /* Match a text token */
+    t=<TEXT>
+    
+    /* Return the token's "image" field */
+    { return t.image.substring(1, t.image.length() - 1).replaceAll("\"\"", "\""); }
+}
+
+
+/**
+ * Parses a decimal number from a PCD file into a Java double
+ **
+ * @return the coresponding Java double value
+ */
+double Decimal () :
+{
+    /* The double value parsed by the function */
+    double value = 0d;
+    
+    /* The token to parse into a double value */
+    Token t = null;
+}
+{
+    /* Match a decimal token to parse, then parse
+     * the token into a Java integer value
+     * - OR - 
+     * Call the Number() function to parse an integer
+     * (Integers are considered decimal numbers, too) */
+    ( t=<DECIMAL>
+        {
+            try {
+                value = Double.parseDouble(t.image);
+            } catch (NumberFormatException nfe) {
+                /* NOTE: this statement should never be reached because the
+	         *       token manager will only pass proper decimal numbers
+		 *       to this code; however, Java requires a try-catch
+		 *       clause in order to parse Strings into doubles */
+	        throw new ParseException("Invalid decimal number on line: " +
+	            t.endLine);
+	    }
+        }
+    | value = Number() )
+    
+    /* Return the parser result */
+    { return value; }
+}
+
+
+/**
+ * Parses a non-decimal number from a PCD file into a Java integer
+ **
+ * @return the coresponding Java int value
+ */
+int Number() :
+{
+    /* The integer value parsed by the function */
+    int value = 0;
+    
+    /* The token to parse into an integer value */
+    Token t = null;
+}
+{
+    (
+        /* Match the number token to parse */
+        t=<NUMBER>
+
+        /* Parse the token into a Java integer value */
+        {
+            try {
+                value = Integer.parseInt(t.image);
+            } catch (NumberFormatException nfe) {
+                /* NOTE: this statement should never be reached because the
+                 *       token manager will only pass proper numbers to this
+                 *       code; however, Java requires a try-catch clause in
+                 *       order to parse Strings into integers */
+                throw new ParseException("Invalid number on line: " +
+                    t.endLine);
+            }
+        }
+    )
+    
+    /* Return the parser result */
+    { return value; }
+}
+
+/**
+ * Parses a boolean token into a java boolean
+ **
+ * @return the value of the boolean
+ */
+boolean Bool () : {}
+{
+    /* Return true if match the T_TRUE token */
+    ( <T_TRUE>  { return true;  }
+    
+    /* Return false if match the T_FALSE token */
+    | <T_FALSE> { return false; } )
+}
+
+
+/**
+ * Asserts indentation level (calls token_source.testIndent)
+ **
+ * @param scope the number of indents required
+ */
+void assertIndent (int scope) :
+{}
+{
+    {
+        if (!testIndent(scope)) {
+	    throw new ParseException("Indentation error on line: "
+	        + getToken(1).beginLine + " with an indentation of "
+                + (token_source.getIndent() * token_source.INDENT_SIZE)
+                + " spaces (expected "
+		+ (scope * token_source.INDENT_SIZE) + " spaces)");
+	}
+    }
+}
+
+/**
+ * Tests indentation (NOTE: this calls the token manager)
+ **
+ * @param scope the number of indents required
+ */
+boolean testIndent (int scope) :
+{}
+{
+    { getToken(1); }
+    { return (token_source.getIndent() == scope && getToken(1).kind != EOF); }
+}
+
+
+/**
+ * Matches new line characters including preceding whitespace
+ */
+void nl() : {}
+{
+    [ <WSP> ] ( <NL> | <EOF> )
+}
+
+
+/**************/
+/* LEXER DATA */
+/**************/
+
+TOKEN_MGR_DECLS: {
+    /**
+     * Stores the current indentation scope
+     */
+    private int indent = 0 ;
+    
+    /**
+     * Used to store the size of an indent in spaces
+     * This is necessary for calculations within the Java program
+     */
+    public  static final int INDENT_SIZE = 4 ;
+    
+    /**
+     * Returns the current indentation level
+     **
+     * @return the current indentation level
+     */
+    public int getIndent() {
+        return indent;
+    }
+}
+
+/* KEYWORD CLASSES */
+
+/* BOOLEAN KEYWORDS */
+<*> TOKEN: {
+             < T_FALSE:  "false"  > : DATA
+           | < T_TRUE:   "true"   > : DATA
+           }
+
+/* TYPE KEYWORDS */
+<*> TOKEN: {
+             < T_INT:     "int"     > : DATA
+           | < T_REF:     "ref"     > : DATA
+           | < T_DEC:     "float"   > : DATA
+           | < T_BTN:     "button"  > : DATA
+           | < T_BOOL:    "bool"    > : DATA
+           | < T_TEXT:    "text"    > : DATA
+           | < T_SCHEMA:  "schema"  > : DATA
+           }
+
+/* FIELD PARAMETER. KEYWORDS */
+<*> TOKEN: {
+             < T_KEY:     "key"     > : DATA
+           | < T_EXEC:    "exec"    > : DATA
+           | < T_LABEL:   "label"   > : DATA
+           | < T_MIN:     "min"     > : DATA
+           | < T_MAX:     "max"     > : DATA
+           | < T_TABLE:   "table"   > : DATA
+           | < T_NAME:    "name"    > : DATA
+           | < T_NAMECOL: "namecol" > : DATA
+           }
+
+/* DATA TOKENS */
+<*> TOKEN: {
+             < TEXT:    "\""( ~["\""] | <DOUBLEQ> )*"\""                                     > : DATA
+           | < DECIMAL: ( <NUMBER> "."  | <NUMBER> "." <DIGITS> | ( <SIGN> )? "." <DIGITS> ) > : DATA
+	   | < NUMBER:  ( <SIGN> )? <DIGITS>                                                 > : DATA
+           | < ID:      (["a"-"z","A"-"Z"])(["a"-"z","A"-"Z","_","0"-"9", "."])*             > : DATA
+           }
+
+/* HANDLE NEW LINES */
+<DATA>    TOKEN: {
+               < NL: ( <EOL>
+                   | <COEL> )  >  { indent = 0; } : DEFAULT
+	   }
+
+/* SKIP COMMENTS! */
+<*> SKIP:  { < COMMENT: ("#"(~["\n","\r"])+) > : DEFAULT }
+
+<DATA>    TOKEN: {
+	     < WSP: ( <SP>  | <TAB> )+  >
+	   }
+
+<DEFAULT> SKIP: {
+               < <EOL>  >        { indent = 0; }
+             | < <COEL> >        { indent = 0; }
+             | < <TAB>  >
+             | < ( <SP> ){4}   > { indent++;   }
+             | < ( <SP> ){1,3} >
+           }
+
+/* DATA SUPPORT TOKENS */
+<*> MORE:  {
+             < #SIGN:      "-"                  >
+           | < #DIGITS:  (["0"-"9"  ])+         >
+	   | < #SP:        " "                  >
+           | < #TAB:       "\t"                 >
+           | <  EOL:       "\r\n"
+	                 | "\n"
+		         | "\r"                 >
+           | < #COEL:    ( "#" (~["\n","\r"])+) >
+           | < #DOUBLEQ:   "\"\""               >
+           }

@@ -1,0 +1,110 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;
+      charset=windows-1252">
+    <meta name="GENERATOR" content="Mozilla/4.05 [en] (X11; U; SunOS
+      5.5.1 sun4u) [Netscape]">
+    <title>bl_compress.sh - Compress selected files in the current
+      directory</title>
+  </head>
+  <body>
+    <div style="text-align: right;">update July 17, 2018<br>
+    </div>
+    NAME<br>
+    <span style="font-weight: bold;"></span><br>
+    <div style="margin-left: 40px;">bl_compress.sh - Compress selected
+      files in the current directory.<br>
+      <br>
+    </div>
+    SYNOPSIS<br>
+    <div style="margin-left: 40px;"><span style="font-weight: bold;">bl_compress.sh</span>&nbsp;
+
+      <span style="font-style: italic;">filelist extension</span><span
+        style="font-style: italic;"></span><br>
+      <br>
+    </div>
+    DESCRIPTION<br>
+    <span style="font-weight: bold;"></span>
+    <blockquote><span style="font-weight: bold;"></span><i>filelist</i>
+      - This is a list of filenames, one name per line.<br>
+      <br>
+      <i>extension</i> - File extension, indicating the compression
+      method to use.<br>
+      <br>
+      All files in <i>filelist</i> are compressed. The compression
+      program is chosen based on <i>extension</i>.<br>
+      <br>
+      <br>
+      <br>
+      The following file formats are currently supported:<br>
+      <table cellspacing="2" cellpadding="2" width="100%" border="1">
+        <tbody>
+          <tr>
+            <td valign="top" bgcolor="#99ffff">Compressed file format<br>
+            </td>
+            <td valign="top" bgcolor="#99ffff">File extension<br>
+            </td>
+            <td valign="top" bgcolor="#99ffff">program<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">GNU Zip<br>
+            </td>
+            <td valign="top">gz<br>
+            </td>
+            <td valign="top">pigz<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">Zip<br>
+            </td>
+            <td valign="top">zip<br>
+            </td>
+            <td valign="top">zip<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">bzip2<br>
+            </td>
+            <td valign="top">bz2<br>
+            </td>
+            <td valign="top">bzip2<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">7z<br>
+            </td>
+            <td valign="top">7z<br>
+            </td>
+            <td valign="top">p7zip<br>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+      Exceptions:<br>
+      <br>
+      1. Files that already have the file extension are skipped.<br>
+      2. Nothing is done if a file extension is found that is not in the
+      table above.<br>
+      <br>
+    </blockquote>
+    REFERENCES<br>
+    <blockquote><a
+        href="https://en.wikipedia.org/wiki/List_of_archive_formats">https://en.wikipedia.org/wiki/List_of_archive_formats</a><br>
+    </blockquote>
+    <br>
+    AUTHOR<br>
+    <blockquote>Dr. Brian Fristensky<br>
+      Department of Plant Science <br>
+      University of Manitoba<br>
+      Winnipeg, MB &nbsp;Canada R3T 2N2<br>
+      <a href="mailto:brian.fristensky@umanitoba.ca">brian.fristensky@umanitoba.ca</a><br>
+      <a href="http://home.cc.umanitoba.ca/%7Efrist">http://home.cc.umanitoba.ca/~frist</a><br>
+    </blockquote>
+    <br>
+    <br>
+    <br>
+  </body>
+</html>

@@ -1,0 +1,6 @@
+name        "Print Selection (TSV)"
+exec        "cat %in1%"
+var "in1"
+    type        tempfile
+    direction   in
+    format      tsv

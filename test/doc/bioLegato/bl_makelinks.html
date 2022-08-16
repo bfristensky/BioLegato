@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;
+      charset=windows-1252">
+    <meta name="GENERATOR" content="Mozilla/4.05 [en] (X11; U; SunOS
+      5.5.1 sun4u) [Netscape]">
+    <title>makelinks.sh - Create symbolic links to files in another
+      directory</title>
+  </head>
+  <body>
+    <div style="text-align: right;">update January 6, 2019<br>
+    </div>
+    NAME<br>
+    <span style="font-weight: bold;"></span><br>
+    <div style="margin-left: 40px;">makelinks.sh - Create symbolic links
+      to files in another director.<br>
+      <br>
+    </div>
+    SYNOPSIS<br>
+    <div style="margin-left: 40px;"><span style="font-weight: bold;">makelinks.sh</span>&nbsp;
+
+      <i>sourcedir</i> [<i>pattern</i>]<br>
+    </div>
+    <br>
+    DESCRIPTION<br>
+    <span style="font-weight: bold;"></span>
+    <blockquote><span style="font-weight: bold;"></span><i>sourcedir</i>
+      - Make links to files in this directory. sourcedir may be either a
+      fully-qualified path or a relative path. Relative paths are
+      preferred for purposes of portability. If <i>sourcedir</i> is a
+      relative path, the link will be relative paths. If <i>sourcedir</i>
+      is a fully-qualified path, the links will be fully qualified
+      paths.<br>
+      <br>
+      <i>pattern</i> - A regular expression in the syntax of the bash
+      shell. (Optional)<br>
+    </blockquote>
+    EXAMPLES<br>
+    <blockquote>Make links to all fq.gz files in reads.corrected:<font
+        size="+1"><tt><br>
+          <br>
+          makelinks.sh ../reads.corrected *.fq.gz<br>
+        </tt></font><br>
+      Make links to all .gff or .gtf&nbsp; files in reads.corrected:<font
+        size="+1"><tt><font size="+1"><tt><br>
+            </tt></font><br>
+          makelinks.sh ../genome *.g[ft]f<br>
+          <br>
+        </tt></font>Both of the following make links to all files in <i>sourcedir</i>:<br>
+    </blockquote>
+    <blockquote><font size="+1"><tt><font size="+1"><tt>makelinks.sh </tt><tt><i>sourcedir</i></tt></font><br>
+          makelinks.sh </tt><tt><i>sourcedir</i></tt><tt> *</tt></font>&nbsp;
+
+      <br>
+      <br>
+    </blockquote>
+    AUTHOR<br>
+    <blockquote>Dr. Brian Fristensky<br>
+      Department of Plant Science <br>
+      University of Manitoba<br>
+      Winnipeg, MB &nbsp;Canada R3T 2N2<br>
+      <a href="mailto:brian.fristensky@umanitoba.ca">brian.fristensky@umanitoba.ca</a><br>
+      <a href="http://home.cc.umanitoba.ca/%7Efrist">http://home.cc.umanitoba.ca/~frist</a><br>
+    </blockquote>
+    <br>
+  </body>
+</html>

@@ -1,0 +1,9 @@
+BL_TextEditor='open -We'
+BL_PDFViewer=open
+BL_ImageViewer=open
+BL_Document=open
+BL_Spreadsheet=open
+BL_PSViewer=open
+BL_Browser=open
+BL_Terminal='open -a Terminal'
+export  BL_Browser BL_PDFViewer BL_PSViewer BL_TextEditor BL_Terminal BL_ImageViewer BL_Document BL_Spreadsheet

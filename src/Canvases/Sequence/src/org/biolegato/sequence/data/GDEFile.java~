@@ -1,0 +1,257 @@
+package org.biolegato.gdesupport.data;
+/*
+ * GDEFile.java
+ *
+ * Created on January 30, 2008, 11:58 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+import org.biolegato.gdesupport.data.Seq.Direction;
+import org.biolegato.gdesupport.data.Seq.Strandedness;
+import org.biolegato.gdesupport.data.Seq.Topology;
+import org.biolegato.gdesupport.data.Seq.Type;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Scanner;
+import java.util.regex.*;
+import org.biolegato.main.BLMain;
+
+/**
+ * This class acts as a parser/translator for standard GDE files.
+ *
+ * @author Graham Alvare
+ * @author Brian Fristensky
+ */
+public class GDEFile extends DataFormat {
+    private static final String DELIMITER = "\\{";
+    private static final Pattern FIELD_PATTERN = Pattern.compile("^(\\w+)\\s+(\".*?\"|[^\"].*?$)", Pattern.MULTILINE | Pattern.DOTALL);
+
+    /**
+     * Creates a new instance of GDEFile
+     */
+    public GDEFile () {
+    }
+
+    /**
+     * Translates a sequence into the GDE file format.
+     **
+     * @param seq the sequence to translate
+     */
+    public void translateTo (Appendable result, Seq seq, int offset, int length) throws IOException {
+        // translate the data
+        // NOTE: append is faster than + or concat operators
+        if (seq != null) {
+            result.append("{\nname            \"").append(
+		    quote(seq.getName())).append(
+// TODO: reimplement longname
+//			"\"\nlongname        \"").append(quote(seq.getName())).append(
+// TODO: reimplement accession numbers
+//			"\"\nsequence-ID     \"").append(quote(seq.getAccession())).append(
+			"\"\ncreation-date   \"").append((new SimpleDateFormat("MM/dd/yy kk:mm:ss")).format(new Date())).append(
+			"\"\ndirection       ").append((Direction.FROM5TO3.equals(seq.getDirection()) ? "1" : "-1")).append(
+			"\nstrandedness    ").append((Strandedness.SINGLE.equals(seq.getStrandedness()) ? "1" : "2")).append(
+			"\ntype            ").append(blTypetoGDE(seq.getType())).append(
+			"\n").append((Topology.CIRCULAR.equals(seq.getTopology()) ? "circular        1\n" : "")).append(
+			"offset          0\ngroupID         ").append(Integer.toString(Math.min(0, seq.getGroupID() - 1))).append(
+			"\ncreator         \"").append(quote("")).append(
+			"\"\ndescrip         \"").append(quote(seq.getDescription())).append(
+// TODO: reimplement comments section?
+/*			"\"\ncomments        \"").append(quote(seq.get("comments"))).append(*/
+			"\"\nsequence        \"").append(quote(seq.getSequence().toString()), offset, offset + length).append("\"\n}\n");
+        }
+    }
+
+    /**
+     * Translates a single sequence from a scanner into BioLegato
+     **
+     * @param datamodel the destination model to store the translated sequences
+     * @param source the data source to parse
+     * @param x the X-coordinate of the position where to insert the results
+     * @param y the Y-coordinate of the position where to insert the results
+     * @return whether there are any remaining sequences of the current format type in the scanner
+     * @throws IOException any exceptions that occur while reading the stream are passed
+     */
+    public boolean translateSequence(Dataset datamodel, Scanner source, int x, int y, boolean addonly) throws IOException {
+        final int modellength = datamodel.getSize();
+        char[] sequencearray;
+        Matcher matches = null;
+
+        // ensure usage of the proper delimiter
+        source.useDelimiter(DELIMITER);
+
+        // translate the data
+        if (source.hasNext()) {
+            int groupID = 0;
+            Type type = Type.DNA;
+            String name = "";
+            String sequence = "";
+            Direction direction = Direction.FROM5TO3;
+            Strandedness strandedness = Strandedness.SINGLE;
+            Topology topology = Topology.LINEAR;
+            String description = null;
+            String fname = "";
+            String fvalue = "";
+
+            if (matches == null) {
+                matches = FIELD_PATTERN.matcher(source.next().trim());
+            } else {
+                matches.reset(source.next().trim());
+            }
+            while (matches.find()) {
+                fname = matches.group(1);
+                fvalue = matches.group(2);
+                if (fvalue.startsWith("\"")) {
+                    fvalue = fvalue.substring(1, fvalue.length() - 1);
+                }
+                if ("".equals(fname)) {
+                } else if ("type".equals(fname)) {
+                    if ("RNA".equalsIgnoreCase(fvalue)) {
+                        type = Type.RNA;
+                    } else if ("PROTEIN".equalsIgnoreCase(fvalue)) {
+                        type = Type.PROTEIN;
+                    } else if ("TEXT".equalsIgnoreCase(fvalue)) {
+                        type = Type.TEXT;
+                    } else if ("MASK".equalsIgnoreCase(fvalue)) {
+                        type = Type.MASK;
+                    } else {
+                        type = Type.DNA;
+                    }
+                } else if ("groupID".equals(fname)) {
+		    if (BLMain.testNumber(fvalue.trim())) {
+			try {
+			    groupID = Integer.parseInt(fvalue);
+			} catch (Exception ex) {
+			}
+		    }
+                } else if ("circular".equals(fname)) {
+                    if ("0".equals(fvalue)) {
+                        topology = Topology.LINEAR;
+                    } else {
+                        topology = Topology.CIRCULAR;
+                    }
+                } else if ("direction".equals(fname)) {
+                    if ("-1".equals(fvalue)) {
+                        direction = Direction.FROM3TO5;
+                    } else {
+                        direction = Direction.FROM5TO3;
+                    }
+                } else if ("strandedness".equals(fname)) {
+                    if ("1".equals(fvalue)) {
+                        strandedness = Strandedness.SINGLE;
+                    } else {
+                        strandedness = Strandedness.DOUBLE;
+                    }
+                } else if ("name".equals(fname)) {
+                    name = fvalue;
+                } else if ("descrip".equals(fname)) {
+                    description = fvalue;
+                } else if ("sequence".equals(fname)) {
+                    sequence = fvalue.replaceAll("[\\r\\n]", "");
+// TODO: reimplement cration date for GDE files
+/*              } else if ("creation-date".equals(fname)) {
+                    creationDate = new Date(fvalue);*/
+// TODO: reimplement creator section for GDE files
+/*                } else if ("creator".equals(fname)) {
+                    sequence.put("creator", fvalue);*/
+// TODO: reimplement accession numbers
+/*                } else if ("sequence-ID".equals(fname)) {
+                    sequence.setAccession(value);*/
+// TODO: reimplement comments section for GDE files
+/*                } else if ("comments".equals(fname)) {
+                    sequence.put("comments", fvalue);*/
+// TODO: reimplement longname section for GDE files
+/*              } else if ("longname".equals(fname)) {
+                    sequence.put("longname", fvalue);*/
+
+                } else if (BLMain.debug) {
+                    BLMain.warning("Unsupported attribute (" + fname
+                            /*+ " = " + fvalue */ + " )", "GDEFile plugin");
+                }
+            }
+            if (y < modellength && !addonly) {
+                sequencearray = sequence.toCharArray();
+                datamodel.insert(x, y, sequencearray, 0, sequencearray.length, true);
+            } else {
+                datamodel.add(y, new Seq(type, name, new StringBuffer(sequence),
+                        direction, topology, strandedness, groupID, description));
+            }
+
+            source.skip("\\}?");
+        }
+        return source.hasNext();
+    }
+
+    /**
+     * Determines whether a specified file is of type GDE file (based on extension)
+     * Currently the only extension supported is ".gde".
+     **
+     * @param file the file to test
+     * @return true if the file is of type GDE file (otherwise false)
+     * @see javax.swing.filechooser.FileFilter#accept
+     */
+    public boolean accept (File file) {
+        return (file.isDirectory() || file.getAbsolutePath().toLowerCase().
+                endsWith(".gde"));
+    }
+
+    /**
+     * Returns a description of the file format that can be displayed to the user.
+     **
+     * @return the string description of the file format
+     * @see javax.swing.filechooser.FileFilter#getDescription
+     */
+    public String getDescription () {
+        return "GDE file (*.gde)";
+    }
+
+    /**
+     * Quotes a GDE string (replaces " with ' and {} with [])
+     **
+     * @param input	the string to quote
+     * @return the quoted string
+     */
+    public static String quote (String input) {
+        return (input != null ? input.replaceAll("\"", "\'").replaceAll("\\{", "\\[").replaceAll(
+                "\\}", "\\]") : "");
+    }
+
+    /**
+     * Converts a sequence's type enum to the GDE file format
+     **
+     * @param type the type enum to convert
+     * @return the GDE equivilent
+     */
+    private static String blTypetoGDE (Type type) {
+        String result = "DNA";
+        switch (type) {
+            case RNA:
+                result = "RNA";
+                break;
+            case PROTEIN:
+                result = "PROTEIN";
+                break;
+            case MASK:
+                result = "MASK";
+                break;
+            case TEXT:
+                result = "TEXT";
+                break;
+        }
+        return result;
+    }
+
+    /**
+     * Used to auto-detect Bio Legato formats
+     **
+     * @param test the reader to parse data from
+     * @return whether the format is correct
+     * @throws IOException returns any possible io exceptions (such as mark not supported)
+     */
+    @Override
+    public boolean isFormat(Scanner test) throws IOException {
+        return test.findInLine("(?=" + DELIMITER + ")") != null;
+    }
+}

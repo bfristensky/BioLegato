@@ -1,0 +1,44 @@
+name        "Create symbolic links with short names"
+icon    "$BIRCH/dat/birch_black_ico.png"
+tip    "Create symbolic links with short names to files with long names"
+
+var "fn"
+    type        file
+    label       "link to this file"
+    default     ""
+
+var "target"
+    type        text
+    label       "target pattern to match"
+
+var "shortname"
+    type        text
+    label       "change target to short pattern"
+
+var "in1"
+    type        tempfile
+    direction   in
+    format      tsv
+    overwrite   true
+    content     canvas
+
+var "out1"
+    type        tempfile
+    direction   out
+    format      tsv
+    overwrite   true
+    content     canvas
+    
+
+panel
+    var "Run"
+        type        button
+        label       "Run"
+        shell       "bl_alias.py %FN% %TARGET% %SHORTNAME%;  bldirtab.py %OUT1%"
+        close       true
+
+    var "Help"
+        type        button
+        label       "Help"
+        shell       "$BIRCH/script/chooseviewer.py $BIRCH/doc/bioLegato/bl_alias.html"
+        close       false

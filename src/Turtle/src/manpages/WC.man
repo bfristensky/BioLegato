@@ -1,0 +1,22 @@
+WC - Prints either a character, word or line count of the input stream.
+ 
+NOTE: the output of this command differs from its UNIX counterpart.
+ 
+Unlike UNIX, this will print only one count, and will print the count with a new line.  There will be no spacing before or after the count.
+ 
+COMMAND LINE ARGUMENTS
+----------------------
+This command accepts either ZERO (0) OR ONE (1) of the following arguments:
+ 
+ -c      Perform a character count
+ -w      word line count (using whitespace as a delimiter)
+ -l      Perform a line count
+ 
+The default behaviour is to print a word count (i.e., if no parameters are specified, wc will act as if the -w parameter was specified).
+ 
+EXECUTION STATUS
+----------------
+This command returns one (1) unless an exception is encountered.  In the case of an exception, this command will return zero (0)
+ 
+@author Graham Alvare
+@author Brian Fristensky

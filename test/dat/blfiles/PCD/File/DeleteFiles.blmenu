@@ -1,0 +1,20 @@
+name   "DeleteFiles - delete selected files"
+icon   "$BIRCH/dat/birch_black_ico.png"
+tip    "Delete selected files"
+exec   "bltsv2name.py %in1% %in1%.tsv; bl_deletefiles.sh %in1%.tsv; rm %in1%.tsv;  bldirtab.py %out1%"       
+
+var "in1"
+    type        tempfile
+    direction   in
+    format      tsv
+    save        false
+    content     selection
+
+var "out1"
+    type        tempfile
+    direction   out
+    format      tsv
+    save        false
+    overwrite   true
+    content     canvas
+

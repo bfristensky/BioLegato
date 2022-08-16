@@ -1,0 +1,12 @@
+name        "Refresh - Refresh view of current directory"
+icon    "$BIRCH/dat/birch_black_ico.png"
+tip    "Replace the contents of the current window with fresh listing of current working directory."
+exec        "bldirtab.py %out1%"
+
+var "out1"
+    type        tempfile
+    direction   out
+    format      tsv
+    save        false
+    overwrite   true
+    content     canvas

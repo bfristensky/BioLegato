@@ -1,0 +1,539 @@
+/*
+ * Cell.java
+ *
+ * Created on August 28, 2008, 2:44 PM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+package org.biolegato.sequence.data;
+
+import org.biolegato.sequence.canvas.ColourMask;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import org.biolegato.sequence.canvas.GDECanvas;
+import org.biolegato.main.BLMain;
+
+/**
+ * This class is used to contain all sequence related functions.
+ *
+ * @author Graham Alvare
+ * @author Brian Fristensky
+ */
+public final class Seq implements Cloneable, Serializable {
+
+    /**
+     * This enum is used for typing/storing sequence types.
+     * This method of storage ensures proper type casting.
+     * Feel free to add more types as necessary.
+     */
+    public static enum Type {
+
+        /**
+         * Sequence type DNA
+         */
+        DNA {
+
+            /**
+             * Prints a nicely formatted string represenation for "DNA type" enum object (Type.DNA).
+             *
+             * @return "DNA"
+             */
+            @Override
+            public String toString() {
+                return "DNA";
+            }
+        },
+        /**
+         * Sequence type RNA
+         */
+        RNA {
+
+            /**
+             * Prints a nicely formatted string represenation for "RNA type" enum object (Type.RNA).
+             *
+             * @return "RNA"
+             */
+            @Override
+            public String toString() {
+                return "RNA";
+            }
+        },
+        /**
+         * Sequence type protein
+         */
+        PROTEIN {
+
+            /**
+             * Prints a nicely formatted string represenation for the "protein type" enum object (Type.PROTEIN).
+             *
+             * @return "Protein"
+             */
+            @Override
+            public String toString() {
+                return "Protein";
+            }
+        },
+        /**
+         * Sequence type colour mask
+         */
+        MASK {
+
+            /**
+             * Prints a nicely formatted string represenation for the "colour mask type" enum object (Type.MASK).
+             *
+             * @return "Colour mask"
+             */
+            @Override
+            public String toString() {
+                return "Colour mask";
+            }
+        },
+        /**
+         * Sequence type is text
+         * (represented as '"')
+         */
+        TEXT {
+
+            /**
+             * Prints a nicely formatted string represenation for the "text type" enum object (Type.TEXT).
+             *
+             * @return "Text"
+             */
+            @Override
+            public String toString() {
+                return "Text";
+            }
+        };
+    }
+
+    /**
+     * Used for typing/storing sequence direction.
+     * This is used for all sequences which may have direction.
+     * This enum may be ignored if you are dealing with non-sequence
+     * test types (such as text), or any type of test that either
+     * doesn't have or doesn't need to distinguish direction.
+     */
+    public static enum Direction {
+
+        /**
+         * Direction of the sequence goes from 3' to 5'
+         */
+        FROM3TO5 {
+
+            /**
+             * Prints a nicely formatted string represenation for the "From 3' to 5'" enum object (Direction.FROM3TO5).
+             *
+             * @return "From 3' to 5'"
+             */
+            @Override
+            public String toString() {
+                return "From 3' to 5'";
+            }
+        },
+        /**
+         * Direction of the sequence goes from 5' to 3'
+         */
+        FROM5TO3 {
+
+            /**
+             * Prints a nicely formatted string represenation for  the "From 5' to 3'" enum object (Direction.FROM5TO3).
+             *
+             * @return "From 5' to 3'"
+             */
+            @Override
+            public String toString() {
+                return "From 5' to 3'";
+            }
+        };
+    }
+
+    /**
+     * Used for typing/storing sequence topology.
+     * This is used for all sequences which may have topology.
+     * This enum may be ignored if you are dealing with non-sequence
+     * test types (such as text), or any type of test that either
+     * doesn't have or doesn't need to distinguish topology.
+     */
+    public static enum Topology {
+
+        /**
+         * Linear topology
+         */
+        LINEAR {
+
+            /**
+             * Prints a nicely formatted string represenation for the "linear topology" enum object (Topology.LINEAR).
+             *
+             * @return "Linear"
+             */
+            @Override
+            public String toString() {
+                return "Linear";
+            }
+        },
+        /**
+         * Circular topology
+         */
+        CIRCULAR {
+
+            /**
+             * Prints a nicely formatted string represenation for the "circular topology" enum object (Topology.CIRCULAR).
+             *
+             * @return "Circular"
+             */
+            @Override
+            public String toString() {
+                return "Circular";
+            }
+        };
+    }
+
+    /**
+     * Used for typing/storing sequence strandedness.
+     * This is used for all sequences which may have strandedness.
+     * This enum may be ignored if you are dealing with non-sequence
+     * test types (such as text), or any type of test that either
+     * doesn't have or doesn't need to distinguish strandedness.
+     */
+    public static enum Strandedness {
+
+        /**
+         * Single stranded sequence
+         */
+        SINGLE {
+
+            /**
+             * Prints a nicely formatted string represenation for the "single stranded" enum object (Strandedness.SINGLE).
+             *
+             * @return "Single stranded"
+             */
+            @Override
+            public String toString() {
+                return "Single stranded";
+            }
+        },
+        /**
+         * Double stranded sequence
+         * (represented as 'D')
+         */
+        DOUBLE {
+
+            /**
+             * Prints a nicely formatted string represenation for the "double stranded" enum object (Strandedness.DOUBLE).
+             *
+             * @return "Double stranded"
+             */
+            @Override
+            public String toString() {
+                return "Double stranded";
+            }
+        },
+        /**
+         * Mixed stranded sequence
+         * (represented as 'M')
+         */
+        MIXED {
+
+            /**
+             * Prints a nicely formatted string represenation for the "mixed stranded" enum object (Strandedness.MIXED).
+             *
+             * @return "Mixed strandedness"
+             */
+            @Override
+            public String toString() {
+                return "Mixed strandedness";
+            }
+        };
+    }
+
+    /**
+     * Used for typing characters within a sequence.
+     * This is especially useful for intrinsic functions which rely upon detecting alignment gaps,
+     * ambiguous characters and unambiguous characters (such as certain colour maps).
+     */
+    public static enum CharacterClass {
+
+        /**
+         * Alignment gap class.
+         */
+        ALIGNMENT,
+        /**
+         * Ambiguous character class.
+         */
+        AMBIGUOUS,
+        /**
+         * Unambiguous character class.
+         */
+        UNAMBIGUOUS;
+    }
+    
+    // only allow package access -- all
+    //
+    // because the access is restricted to only the package level, there should
+    // not be any major issues with regard to code bugs
+    //
+    // http://java.dzone.com/articles/getter-setter-use-or-not-use-0
+    // http://www.artima.com/intv/sway2.html
+    transient int groupID = 0;
+    Type type = Type.DNA;
+    String name;
+    StringBuffer sequence;
+    Direction direction = Direction.FROM5TO3;
+    Strandedness strandedness = Strandedness.SINGLE;
+    Topology topology = Topology.LINEAR;
+    transient ColourMask mask = null;
+    // In addition to the above reasoning:
+    // -----------------------------------
+    // because these variables do not have to be validated (they can be any value even null)
+    // and they are only changed within the package there is no reason for accessor methods
+    // accessor methods for the below would only cause a slow-down (i.e. additional overhead)
+    //
+    // also the variables are given explicitly package level access only, so as to minimize
+    // the amount of code that can change them.
+    transient boolean protect_align = false;
+    transient boolean protect_ambig = true;
+    transient boolean protect_unambig = true;
+    transient String description = null;
+    CharSequence original = null;
+    /**
+     * Used for serialization purposes.
+     */
+    private static final long serialVersionUID = 7526472295622777024L;
+
+///////////////
+//***********//
+//* METHODS *//
+//***********//
+///////////////
+    /**
+     * Constructs new instances of Cell objects.
+     */
+    public Seq() {
+        this(Type.DNA, "", new StringBuffer());
+    }
+
+    /**
+     * Constructs new instances of sequence.
+     **
+     * @param type the type of data to store
+     * @param name the name of the data sequence
+     * @param sequence the text of the sequence
+     */
+    public Seq(Type type, String name, StringBuffer sequence) {
+        this.name = name;
+        this.type = type;
+        this.sequence = sequence;
+
+        if (this.sequence != null && sequence.length() == 0) {
+            protect_align = false;
+            protect_ambig = false;
+            protect_unambig = false;
+        }
+    }
+
+    /**
+     * Constructs new instances of sequence.
+     **
+     * @param type the type of data to store
+     * @param name the name of the data sequence
+     * @param sequence the text of the sequence
+     */
+    public Seq(Type type, String name, StringBuffer sequence, String description) {
+        this(type, name, sequence);
+        
+        this.description = description;
+    }
+
+    /**
+     * Constructs new instances of sequence.
+     **
+     * @param type the type of data to store
+     * @param name the name of the data sequence
+     * @param sequence the text of the sequence
+     * @param direction the direction of the sequence
+     * @param topology the topology of the sequence
+     * @param strandedness the strandedness of the sequence
+     */
+    public Seq(Type type, String name, StringBuffer sequence, Direction direction,
+            Topology topology, Strandedness strandedness) {
+        this(type, name, sequence);
+
+        this.topology = topology;
+        this.direction = direction;
+        this.strandedness = strandedness;
+    }
+
+    /**
+     * Constructs new instances of sequence.
+     **
+     * @param type the type of data to store
+     * @param name the name of the data sequence
+     * @param sequence the text of the sequence
+     * @param direction the direction of the sequence
+     * @param topology the topology of the sequence
+     * @param strandedness the strandedness of the sequence
+     * @param original the original genbank file entry of the sequence
+     */
+    public Seq(Type type, String name, StringBuffer sequence, Direction direction, Topology topology,
+            Strandedness strandedness, CharSequence original) {
+        this(type, name, sequence, direction, topology, strandedness);
+
+        this.original = original;
+    }
+
+    /**
+     * Constructs new instances of sequence.
+     **
+     * @param type the type of data to store
+     * @param name the name of the data sequence
+     * @param sequence the text of the sequence
+     * @param direction the direction of the sequence
+     * @param topology the topology of the sequence
+     * @param strandedness the strandedness of the sequence
+     * @param groupID the group ID for the sequence
+     * @param description the description of the sequence
+     */
+    public Seq(Type type, String name, StringBuffer sequence, Direction direction,
+            Topology topology, Strandedness strandedness, int groupID, String description) {
+        this(type, name, sequence, direction, topology, strandedness);
+
+        this.groupID = groupID;
+        this.description = description;
+    }
+
+    /**
+     * Constructs new instances of sequence.
+     **
+     * @param data the sequence to copy
+     */
+    public Seq(Seq data) {
+        this.name = data.name;
+        this.type = data.type;
+        this.topology = data.topology;
+        this.direction = data.direction;
+        this.strandedness = data.strandedness;
+        this.protect_align = data.protect_align;
+        this.protect_ambig = data.protect_ambig;
+        this.protect_unambig = data.protect_unambig;
+        this.sequence = data.sequence;
+        this.original = data.original;
+    }
+
+//////////////////////////
+//**********************//
+//* SEQUENCE FUNCTIONS *//
+//**********************//
+//////////////////////////
+
+    final Type getType() {
+        return type;
+    }
+
+    final String getName() {
+        return name;
+    }
+
+    final Direction getDirection() {
+        return direction;
+    }
+
+    final Topology getTopology() {
+        return topology;
+    }
+
+    final Strandedness getStrandedness() {
+        return strandedness;
+    }
+
+    final int getGroupID() {
+        return groupID;
+    }
+
+    final CharSequence getOriginal() {
+        return original;
+    }
+
+    final String getDescription() {
+        return description;
+    }
+
+    final StringBuffer getSequence() {
+        return sequence;
+    }
+    
+    final ColourMask getMask() {
+        return mask;
+    }
+
+    /**
+     * Creates a string representation of the Cell and its fields
+     * This representation is limited to '[GROUP#|_] NAME' because the toString
+     * method will be called when the sequence is displayed in any JList.
+     **
+     * The reasoning behind this choice is reliability and performance.
+     * 1. Reliability: this is because the code will be simpler than alternative methods
+     *      (e.g. writing multiple external methods to "wrap" the sequence)
+     * 2. Performance: because the code is smaller and can be accessed directly by
+     *      the Java API (little or no "wrapping" necessary), there are less lines
+     *      of code to cause performance decreases
+     * 3. Readability: smaller code is almost always more readable (as long as it is
+     *      documented properly)
+     **
+     * @return the corresponding sequence
+     */
+    @Override
+    public String toString() {
+        StringBuilder string = new StringBuilder();
+
+        // append the group ID if not 0
+        // otherwise append _
+        if (groupID > 0) {
+            string.append(groupID).append(" ");
+        } else {
+            string.append("_ ");
+        }
+        string.append(name);
+        
+        return string.toString();
+    }
+
+    /**
+     * Clones the current sequence object.
+     **
+     * @return a cloned copy of the sequence.
+     */
+    @Override
+    public Object clone() {
+        // since Cell implements Map as a child of Hashtable, this code works
+        return new Seq(this);
+    }
+
+    /**
+     * This function detects the type of a sequence
+     **
+     * @param data the sequence to detect the type for.
+     * @return the sequence type
+     */
+    public static Type detectType(StringBuffer data) {
+        Seq.Type result = Seq.Type.DNA;
+
+        char test;
+        char[] array = new char[data.length()];
+        data.getChars(0, data.length(), array, 0);
+
+        for (int count = 0; count < array.length && result == Seq.Type.DNA; count++) {
+            test = Character.toUpperCase(array[count]);
+            if (test == 'U') {
+                result = Seq.Type.RNA;
+            } else if (test == 'F' || test == 'E' || test == 'J' || test == 'L'
+                    || test == 'O' || test == 'Q' || test == 'X' || test == 'Z') {
+                result = Seq.Type.PROTEIN;
+            }
+        }
+        return result;
+    }
+}

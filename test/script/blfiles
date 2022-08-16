@@ -1,0 +1,88 @@
+#!/bin/sh
+
+# This is a simple script for running the BioLegato blfiles application
+# for testing purposes.
+
+#------------------------ BIRCH and BIRCH_PLATFORM ---------------
+#
+#  Set these two variables and everything else should work unchanged.
+#
+# In a full BIRCH system, these variables are set by getbirch as
+# part of an install or update.
+
+# Set BIRCH environment variable, on which everything else depends
+BIRCH=/home/psgendb/BIRCHDEV/java/bioLegato/test
+export BIRCH
+
+# Uncomment one choice for BIRCH_PLATFORM
+BIRCH_PLATFORM="linux-x86_64"
+#BIRCH_PLATFORM="osx-x86_64"
+export BIRCH_PLATFORM
+#-----------------------------------------------------------------
+
+
+#Path should include the script directory
+PATH=$BIRCH/script:$BIRCH/bin-$BIRCH_PLATFORM:$PATH
+export PATH
+
+# Set environment variables for helper applications
+. $BIRCH/admin/setblenv.profile.$BIRCH_PLATFORM.source
+
+# Location of BioLegato .jar files
+BIOLEGATO_HOME=$BIRCH/java/bioLegato
+export BIOLEGATO_HOME
+
+# The location of anciliary data files used by bioLegato.
+BL_TABLES_DIR=$BIRCH/dat/blfiles
+export BL_TABLES_DIR
+
+BL_PROPERTIES=$BIRCH/dat/blfiles/blfiles.properties
+export BL_PROPERTIES
+
+NOAUTONAMES="0"
+# The -dir switch is mainly for launching bioLegato from the birch launcher. By 
+# prompting the user for a working folder, we help enforce good file organization
+# habits.
+if [ $# -gt 0 ]
+then
+   if [ ${1} = "-dir" ]
+   then
+
+      # Get rid of the -dir switch, and send the remaining command line arguments to bioLegato
+      shift
+
+      #Prompt the user to choose a working directory
+      CHANGEDIR=`java -jar $BIRCH/script/DirChooser2.jar "Where do you want to work? Choose a folder."`
+
+      if [ -d "$CHANGEDIR" ]; then
+	  cd "$CHANGEDIR"
+      fi
+   elif [ ${1} = "-noautonames" ]; then
+      NOAUTONAMES="1"
+   fi
+fi
+
+# blfiles starts with a list of files in the current working directory
+# If that list is empty, bldirtab.py will create a list of all files
+# in the current working directory.
+if [ "$NOAUTONAMES" -eq "0" ]
+then
+    # $$ in bash is the process id of the current shell
+    DIRFILE=$$.filelist
+    #echo '#'$PWD > $DIRFILE
+    #ls -1 >> $DIRFILE
+    bldirtab.py $DIRFILE
+else
+    DIRFILE=""
+fi
+
+
+# We need to explicitly set the default look and feel. On Mac OSX, the default for the 
+# table canvas has no borders around cells, which detracts from readability.
+java -Dswing.defaultlaf=javax.swing.plaf.metal.MetalLookAndFeel -jar $BIOLEGATO_HOME/table.jar $* $DIRFILE
+
+if [ ! "$DIRFILE" == "" ]
+then
+    rm $DIRFILE
+fi
+

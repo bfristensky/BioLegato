@@ -1,0 +1,13 @@
+CP - A class to copy paths (always recursively).
+ 
+COMMAND LINE ARGUMENTS
+----------------------
+The parameters of this command are as follows:
+     cp [source path] [destination path]
+ 
+EXECUTION STATUS
+----------------
+This command returns one (1) unless an exception is encountered.  In the case of an exception, this command will return zero (0)
+ 
+@author Graham Alvare
+@author Brian Fristensky

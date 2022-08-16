@@ -1,0 +1,9 @@
+BL_Browser='firefox'
+BL_PDFViewer='evince'
+BL_PSViewer='evince'
+BL_TextEditor='nedit'
+BL_Terminal='gnome-terminal -e'
+BL_ImageViewer='eog'
+BL_Document='oowriter'
+BL_Spreadsheet='oocalc'
+export  BL_Browser BL_PDFViewer BL_PSViewer BL_TextEditor BL_Terminal BL_ImageViewer BL_Document BL_Spreadsheet

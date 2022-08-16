@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="BioLegato sequence canvas support plugin" default="build" basedir=".">
+    <property file="../ants.properties"/>
+
+    <property name="javadoc.home" value="../docs/sequence" />
+    <property name="target.home" value="../bin" />
+    <property name="build.home" value="${basedir}/build" />
+    <property name="source.home" value="${basedir}/src" />
+    <property name="lib.home" value="../lib" />
+
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath>
+            <pathelement location="${lib.home}/ant-contrib.jar" />
+        </classpath>
+    </taskdef>
+
+    <taskdef name="junit" classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask">
+      <classpath>
+        <pathelement location="${lib.home}/junit.jar"/>
+        <pathelement location="${lib.home}/ant-junit.jar"/>
+      </classpath>
+    </taskdef>
+
+    <path id="classpath">
+        <fileset dir="../bin">
+            <include name="*.jar" />
+        </fileset>
+        <pathelement path="${build.home}" />
+    </path>
+
+    <target name="-init">
+        <mkdir dir="${target.home}" />
+        <mkdir dir="${build.home}" />
+        <available property="lib.ant.present" file="${lib.ant}" />
+    </target>
+
+    <target name="-docsinit">
+    	<mkdir dir="../docs" />
+    	<mkdir dir="../docs/plugins" />
+    </target>
+    
+    <target name="help">
+        <echo><![CDATA[
+${app.name} core build file:
+build - compiles core
+clean - cleans the current build
+]]></echo>
+    </target>
+    
+    <target name="build" depends="-init" description="Compiles plugins">
+        <!-- compile BioLegato's plugins -->
+        <javac destdir="${build.home}"
+            srcdir="${source.home}"
+            classpathref="classpath"
+            target="${compile.target-vm}"
+            debug="${compile.debug}"
+            optimize="${compile.optimize}"
+            deprecation="true"
+            includeAntRuntime="false" />
+        <jar destfile="${target.home}/sequence.jar">
+            <manifest>
+                <attribute name="Main-Class" value="org.biolegato.sequence.canvas.SequenceCanvas" />
+                <attribute name="Class-Path" value="biolegato.jar turtle.jar sequence.jar" />
+                <attribute name="Specification-Title" value="BioLegato" />
+                <attribute name="Specification-Version" value="${app.version}" />
+                <attribute name="Specification-Vendor" value="http://home.cc.umanitoba.ca/~frist/" />
+                <attribute name="Implementation-Title" value="BioLegato Sequence canvas support" />
+                <attribute name="Implementation-Version" value="${app.version}" />
+                <attribute name="Implementation-Vendor" value="http://home.cc.umanitoba.ca/~frist/" />
+            </manifest>
+            <fileset dir="${build.home}" />
+        </jar>
+    </target>
+
+    <target name="clean">
+        <tstamp>
+                <format property="dt-stamp" pattern="yyyy-MM-dd-HH-mm" />
+                <format property="d-stamp" pattern="yyyy-MM-dd" />
+        </tstamp>
+        <delete dir="${build.home}" quiet="true" />
+    </target>
+
+    <target name="docs" depends="-docsinit" description="Generates BioLegato API Javadoc">
+    	<delete dir="${javadoc.home}" quiet="true" />
+    	<mkdir dir="${javadoc.home}" />
+        <javadoc
+                destdir="${javadoc.home}"
+                access="${javadoc.access}"
+                use="${javadoc.use}"
+                notree="${javadoc.notree}"
+                nonavbar="${javadoc.nonavbar}"
+                noindex="${javadoc.noindex}"
+                splitindex="${javadoc.splitindex}"
+                author="${javadoc.author}"
+                version="${javadoc.version}"
+                nodeprecatedlist="${javadoc.nodeprecatedlist}"
+                nodeprecated="${javadoc.nodeprecated}"
+                classpathref="classpath"
+                header="BioLegato ${app.version} Sequence canvas plugin">
+            <doctitle><![CDATA[BioLegato (ver. ${app.version}) Sequence canvas plugin]]></doctitle>
+            <bottom><![CDATA[<i>Copyright &#169; 2008-${app.year} University of Manitoba.</i>]]></bottom>
+            <packageset dir="${source.home}" />
+            <classpath path="${java.class.path}" /><!-- to make ant.jar available for javadoc -->
+            <group title="BioLegato API" />
+    	</javadoc>
+    </target>
+</project>

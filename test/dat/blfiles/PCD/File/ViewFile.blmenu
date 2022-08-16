@@ -1,0 +1,10 @@
+name        "View file"
+icon    "$BIRCH/dat/birch_black_ico.png"
+tip    "View a file in the appropriate program, based on the file extension."
+exec   "bltsv2name.py %in1% %in1%.tsv; FILE=`head -n 1 %in1%.tsv`; rm %in1%.tsv%; chooseviewer.py $FILE"
+
+var "in1"
+    type        tempfile
+    direction   in
+    format      tsv
+    save        false

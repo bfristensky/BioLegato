@@ -1,0 +1,452 @@
+LOCUS       ARBLKSP      2958 bp    DNA   circular  SYN       11-JUN-1998
+DEFINITION  pBluescript KS(+) vector DNA, phagemid excised from lambda ZAP.
+ACCESSION   X52331
+VERSION     X52331.1  GI:58065
+KEYWORDS    artificial sequence; cloning vector; expression vector; vector.
+SOURCE      synthetic construct.
+  ORGANISM  synthetic construct
+            artificial sequence.
+REFERENCE   1  (bases 1 to 2958)
+  AUTHORS   Thomas,E.A.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (20-FEB-1990) Thomas E.A., Stratagene Clonin Systems,
+            11099 North Torney Pines Rd., La Jolla, CA 92037, USA
+REFERENCE   2  (bases 1 to 2958)
+  AUTHORS   Short,J.M., Fernandez,J.M., Sorge,J.A. and Huse,W.D.
+  TITLE     Lambda ZAP: a bacteriophage lambda expression vector with in vivo
+            excision properties
+  JOURNAL   Nucleic Acids Res. 16 (15), 7583-7600 (1988)
+  MEDLINE   88319944
+REFERENCE   3  (bases 1 to 2958)
+  AUTHORS   Alting-Mees,M.A. and Short,J.M.
+  TITLE     pBluescript II: gene mapping vectors
+  JOURNAL   Nucleic Acids Res. 17 (22), 9494 (1989)
+  MEDLINE   90067967
+REFERENCE   4  (bases 1 to 2958)
+  AUTHORS   Lampe,D.J., Grant,T.E. and Robertson,H.M.
+  TITLE     Factors affecting transposition of the Himar1 mariner transposon in
+            vitro
+  JOURNAL   Genetics 149 (1), 179-187 (1998)
+  MEDLINE   98250682
+FEATURES             Location/Qualifiers
+     source          1..2958
+                     /organism="synthetic construct"
+                     /db_xref="taxon:32630"
+     misc_feature    1..2958
+                     /note="phagemid pBluescript KS(+)"
+BASE COUNT      749 a    734 c    751 g    724 t
+ORIGIN
+        1 cacctaaatt gtaagcgtta atattttgtt aaaattcgcg ttaaattttt gttaaatcag
+       61 ctcatttttt aaccaatagg ccgaaatcgg caaaatccct tataaatcaa aagaatagac
+      121 cgagataggg ttgagtgttg ttccagtttg gaacaagagt ccactattaa agaacgtgga
+      181 ctccaacgtc aaagggcgaa aaaccgtcta tcagggcgat ggcccactac gtgaaccatc
+      241 accctaatca agttttttgg ggtcgaggtg ccgtaaagca ctaaatcgga accctaaagg
+      301 gagcccccga tttagagctt gacggggaaa gccggcgaac gtggcgagaa aggaagggaa
+      361 gaaagcgaaa ggagcgggcg ctagggcgct ggcaagtgta gcggtcacgc tgcgcgtaac
+      421 caccacaccc gccgcgctta atgcgccgct acagggcgcg tcccattcgc cattcaggct
+      481 gcgcaactgt tgggaagggc gatcggtgcg ggcctcttcg ctattacgcc agctggcgaa
+      541 agggggatgt gctgcaaggc gattaagttg ggtaacgcca gggttttccc agtcacgacg
+      601 ttgtaaaacg acggccagtg aattgtaata cgactcacta tagggcgaat tggagctcca
+      661 ccgcggtggc ggccgctcta gaactagtgg atcccccggg ctgcaggaat tcgatatcaa
+      721 gcttatcgat accgtcgacc tcgagggggg gcccggtacc cagcttttgt tccctttagt
+      781 gagggttaat ttcgagcttg gcgtaatcat ggtcatagct gtttcctgtg tgaaattgtt
+      841 atccgctcac aattccacac aacatacgag ccggaagcat aaagtgtaaa gcctggggtg
+      901 cctaatgagt gagctaactc acattaattg cgttgcgctc actgcccgct ttccagtcgg
+      961 gaaacctgtc gtgccagctg cattaatgaa tcggccaacg cgcggggaga ggcggtttgc
+     1021 gtattgggcg ctcttccgct tcctcgctca ctgactcgct gcgctcggtc gttcggctgc
+     1081 ggcgagcggt atcagctcac tcaaaggcgg taatacggtt atccacagaa tcaggggata
+     1141 acgcaggaaa gaacatgtga gcaaaaggcc agcaaaaggc caggaaccgt aaaaaggccg
+     1201 cgttgctggc gtttttccat aggctccgcc cccctgacga gcatcacaaa aatcgacgct
+     1261 caagtcagag gtggcgaaac ccgacaggac tataaagata ccaggcgttt ccccctggaa
+     1321 gctccctcgt gcgctctcct gttccgaccc tgccgcttac cggatacctg tccgcctttc
+     1381 tcccttcggg aagcgtggcg ctttctcata gctcacgctg taggtatctc agttcggtgt
+     1441 aggtcgttcg ctccaagctg ggctgtgtgc acgaaccccc cgttcagccc gaccgctgcg
+     1501 ccttatccgg taactatcgt cttgagtcca acccggtaag acacgactta tcgccactgg
+     1561 cagcagccac tggtaacagg attagcagag cgaggtatgt aggcggtgct acagagttct
+     1621 tgaagtggtg gcctaactac ggctacacta gaaggacagt atttggtatc tgcgctctgc
+     1681 tgaagccagt taccttcgga aaaagagttg gtagctcttg atccggcaaa caaaccaccg
+     1741 ctggtagcgg tggttttttt gtttgcaagc agcagattac gcgcagaaaa aaaggatctc
+     1801 aagaagatcc tttgatcttt tctacggggt ctgacgctca gtggaacgaa aactcacgtt
+     1861 aagggatttt ggtcatgaga ttatcaaaaa ggatcttcac ctagatcctt ttaaattaaa
+     1921 aatgaagttt taaatcaatc taaagtatat atgagtaaac ttggtctgac agttaccaat
+     1981 gcttaatcag tgaggcacct atctcagcga tctgtctatt tcgttcatcc atagttgcct
+     2041 gactccccgt cgtgtagata actacgatac gggagggctt accatctggc cccagtgctg
+     2101 caatgatacc gcgagaccca cgctcaccgg ctccagattt atcagcaata aaccagccag
+     2161 ccggaagggc cgagcgcaga agtggtcctg caactttatc cgcctccatc cagtctatta
+     2221 attgttgccg ggaagctaga gtaagtagtt cgccagttaa tagtttgcgc aacgttgttg
+     2281 ccattgctac aggcatcgtg gtgtcacgct cgtcgtttgg tatggcttca ttcagctccg
+     2341 gttcccaacg atcaaggcga gttacatgat cccccatgtt gtgcaaaaaa gcggttagct
+     2401 ccttcggtcc tccgatcgtt gtcagaagta agttggccgc agtgttatca ctcatggtta
+     2461 tggcagcact gcataattct cttactgtca tgccatccgt aagatgcttt tctgtgactg
+     2521 gtgagtactc aaccaagtca ttctgagaat agtgtatgcg gcgaccgagt tgctcttgcc
+     2581 cggcgtcaat acgggataat accgcgccac atagcagaac tttaaaagtg ctcatcattg
+     2641 gaaaacgttc ttcggggcga aaactctcaa ggatcttacc gctgttgaga tccagttcga
+     2701 tgtaacccac tcgtgcaccc aactgatctt cagcatcttt tactttcacc agcgtttctg
+     2761 ggtgagcaaa aacaggaagg caaaatgccg caaaaaaggg aataagggcg acacggaaat
+     2821 gttgaatact catactcttc ctttttcaat attattgaag catttatcag ggttattgtc
+     2881 tcatgagcgg atacatattt gaatgtattt agaaaaataa acaaataggg gttccgcgca
+     2941 catttccccg aaaagtgc
+//
+LOCUS       GMCAB2       1354 bp    DNA             PLN       09-MAY-1995
+DEFINITION  Soybean Cab2 gene for minor PSII LHCII chlorophyll a/b binding
+            protein.
+ACCESSION   X12980
+VERSION     X12980.1  GI:18547
+KEYWORDS    Cab gene; Cab-2 gene; chlorophyll a/b-binding protein; light
+            harvesting complex; membrane protein; photosystem II.
+SOURCE      soybean.
+  ORGANISM  Glycine max
+            Eukaryota; Viridiplantae; Streptophyta; Embryophyta; Tracheophyta;
+            euphyllophytes; Spermatophyta; Magnoliophyta; eudicotyledons;
+            Rosidae; Fabales; Fabaceae; Papilionoideae; Glycine.
+REFERENCE   1  (bases 1 to 1354)
+  AUTHORS   Walling,L.L.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (20-SEP-1988) Walling L.L., Dept of Botany and Plant
+            Sciences, University of California, Riverside, CA 92521, USA
+REFERENCE   2  (bases 1 to 1354)
+  AUTHORS   Walling,L.L., Chang,Y.C., Demmin,D.S. and Holzer,F.M.
+  TITLE     Isolation, characterization and evolutionary relatedness of three
+            members from the soybean multigene family encoding chlorophyll a/b
+            binding proteins
+  JOURNAL   Nucleic Acids Res. 16 (22), 10477-10492 (1988)
+  MEDLINE   89083477
+FEATURES             Location/Qualifiers
+     source          1..1354
+                     /organism="Glycine max"
+                     /strain="Merr."
+                     /cultivar="Forrest"
+                     /db_xref="taxon:3847"
+                     /clone_lib="Ch4 partial RI"
+                     /clone="lambda Cab18"
+     misc_feature    104..113
+                     /note="AGA consensus sequence"
+     promoter        118..122
+                     /note="pot. TATA-box"
+     misc_feature    145..154
+                     /note="AGA consensus sequence"
+     promoter        162..167
+                     /note="pot. alt. TATA-box"
+     promoter        182..187
+                     /note="pot. alt. TATA-box"
+     misc_feature    185..194
+                     /note="AGA consensus sequence"
+     CDS             251..1021
+                     /codon_start=1
+                     /product="chlorophyll a/b binding preprotein (AA -33 to
+                     223)"
+                     /protein_id="CAA31418.1"
+                     /db_xref="GI:18548"
+                     /db_xref="SWISS-PROT:P09755"
+                     /translation="MAASTMALSSSSLAGQAMKLAPSTPELGVGRVSMRKTAPKTVSS
+                     GSPWYGPDRVKYLGPFSGEAPSYLTGEFHGLSADPETFAKNRELEVIHSRWAMLGALG
+                     CVFPELLARNGVKFGEAVWFKAGSQIFSEGGLDYLGNPSLIHAQSILAIWATQVILMG
+                     AVEGYRIAGGPLGEVTDPIYPGGSFDPLGLADDPEALAELKVKELKNGRLAMFSMFGF
+                     FVQAIVTGKGPLENLADHLADPVNNNAWAYATKLCPGK"
+BASE COUNT      378 a    277 c    296 g    403 t
+ORIGIN
+        1 cttgggtgag acttggtaat attacacata atctattacc taaatcatac tggcagattc
+       61 ttactggata gaataggtac ttaatgatat ttttgagata ttcgaataga aattcagata
+      121 tagatctagt aaagataagt gtacccctct cttctttaag ctatatattg tgcacaaaaa
+      181 aatataagtg tacccctctc ttcactttgt aagttacaaa gcatttcatt gttttactaa
+      241 atctagaata atggctgctt caacaatggc tctctcttca tcatcattgg ctggtcaagc
+      301 aatgaagctt gccccctcca cccctgagct tggtgttgga agagttagca tgaggaaaac
+      361 agcccccaag actgtttcct caggaagccc atggtatggc ccagaccgtg tcaagtactt
+      421 gggcccattt tccggtgaag ctccctccta ccttactggt gaattccatg ggctttctgc
+      481 tgatccagag acttttgcca aaaaccgaga actcgaagtc atccactcca gatgggccat
+      541 gttgggagcc ctgggctgtg ttttccccga actcttggcc cgcaatggtg tcaagtttgg
+      601 agaggccgta tggttcaagg ccgggtctca gatattcagt gagggtgggc ttgactactt
+      661 gggcaaccca agcctgatcc atgcacaaag cattcttgcc atctgggcca cccaagttat
+      721 cttgatgggt gccgttgagg gttaccgtat tgcaggtggg cctcttggtg aggtgactga
+      781 cccaatctac ccaggtggca gctttgatcc attgggcctt gctgatgacc cagaggcttt
+      841 ggccgagtta aaggtgaaag agctcaagaa tggtaggttg gctatgtttt ccatgtttgg
+      901 attctttgtt caggctattg tgactggaaa gggaccctta gagaacttgg ccgaccacct
+      961 tgctgatcca gtaaacaaca atgcctgggc ctatgccacc aaactttgtc ctggaaagtg
+     1021 agaaaaaaat aaaaaaataa cattcaaaga acaagaaatg acttgtgaat tttatgttat
+     1081 ttagtgaagt atgtattaga tctatcaagt gagaatgtga attatattgt tatattttat
+     1141 atatctcttt taagtccatt tggatgtatc tccaaggttc tacttttatg cactttatta
+     1201 accaaactaa ttaaagctca aatgacaagt cttaaacatt agaagcgagt tagcttctaa
+     1261 aatttaatgc agtaggagga aggtgagaaa cagaaatcac caaggcaaac aagtgcttta
+     1321 aattttgcat ttgattctcc tcttgtggat cacg
+//
+LOCUS       GMCAB3       1361 bp    DNA             PLN       09-MAY-1995
+DEFINITION  Soybean Cab3 gene for PSII LHCII chlorophyll a/b binding protein.
+ACCESSION   X12981
+VERSION     X12981.1  GI:18551
+KEYWORDS    Cab gene; Cab-3 gene; chlorophyll a/b-binding protein; light
+            harvesting complex; membrane protein; photosystem II.
+SOURCE      soybean.
+  ORGANISM  Glycine max
+            Eukaryota; Viridiplantae; Streptophyta; Embryophyta; Tracheophyta;
+            euphyllophytes; Spermatophyta; Magnoliophyta; eudicotyledons;
+            Rosidae; Fabales; Fabaceae; Papilionoideae; Glycine.
+REFERENCE   1  (bases 1 to 1361)
+  AUTHORS   Walling,L.L.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (20-SEP-1988) Walling L.L., Dept of Botany and Plant
+            Sciences, University of California, Riverside, CA 92521, USA
+REFERENCE   2  (bases 1 to 1361)
+  AUTHORS   Walling,L.L., Chang,Y.C., Demmin,D.S. and Holzer,F.M.
+  TITLE     Isolation, characterization and evolutionary relatedness of three
+            members from the soybean multigene family encoding chlorophyll a/b
+            binding proteins
+  JOURNAL   Nucleic Acids Res. 16 (22), 10477-10492 (1988)
+  MEDLINE   89083477
+FEATURES             Location/Qualifiers
+     source          1..1361
+                     /organism="Glycine max"
+                     /strain="Merr."
+                     /cultivar="Forrest"
+                     /db_xref="taxon:3847"
+                     /clone_lib="Ch4 partial EcoRI"
+                     /clone="lambda cab30"
+     promoter        113..117
+                     /note="CAAT-box"
+     promoter        154..159
+                     /note="TATA-box"
+     misc_feature    222..233
+                     /note="AGA consensus sequence"
+     CDS             251..1042
+                     /codon_start=1
+                     /product="chlorophyll a/b binding preprotein (AA - 32 to
+                     231)"
+                     /protein_id="CAA31419.1"
+                     /db_xref="GI:18552"
+                     /db_xref="SWISS-PROT:P09756"
+                     /translation="MAAASSMALSSPSLAGKAVKLGPSAPEVGRVSMRKTVTKQVSSG
+                     SPWYGPDRVKYLGPFSGEPPSYLTGEFPGDYGWDTAGLSADPETFAKNRELEVIHSRW
+                     AMLGALGCVFPELLSRNGVKFGEAVWFKAGSQIFSEGGLDYLGNPSLIHAQSILAIWA
+                     TQVILMGAVEGYRIAGGPLGEVTDPIYPGGSFDPLGLADDPEAFAELKVKELKNGRLA
+                     MFSMFGFFVQAIVTGKGPLENLADHLAGPVNNNAWAYATNFVPGK"
+BASE COUNT      370 a    368 c    304 g    319 t
+ORIGIN
+        1 cgtggaagac ccacattggc cacaaaacca tacgaagaat ctaacccatt tagtggatta
+       61 tgggggtgcc aagtgtacca aacaaaatct caaaccccca atgagattgt agcaatagat
+      121 agcccaagat aagaacccaa ccacttcaac cccatataaa taaacccgga cacaacttca
+      181 ccaagtcact caccacttca aaacactcat aacacaaagc acaaagcaaa gctcatcctt
+      241 gagttaaaaa atggcagcag cttcttccat ggctctctca tccccatcct tggctggcaa
+      301 ggccgtgaag ctgggcccat cagccccaga agtgggaagg gtgagcatga ggaagaccgt
+      361 caccaagcag gtctcctcag gaagcccatg gtacggccca gaccgagtca agtacttggg
+      421 cccattctct ggcgagcccc cgtcctacct aaccggtgag ttcccaggcg actacggctg
+      481 ggacactgct gggctttccg cagacccaga aaccttcgcc aagaaccgtg aactcgaagt
+      541 gatccactcc aggtgggcca tgctcggagc cttgggctgc gtcttcccgg agttgctgtc
+      601 ccgcaacggg gtgaagttcg gagaagccgt gtggttcaag gccgggtccc agatcttcag
+      661 cgagggtggg ctcgactact tgggcaaccc aagcctgatc cacgcccaga gcatcctcgc
+      721 catctgggcc acacaagtta tcctaatggg tgccgttgaa ggttaccgta ttgctggtgg
+      781 ccccctcggt gaggtcactg acccaatcta cccaggtggc agcttcgacc cattgggcct
+      841 tgctgatgac ccagaggctt ttgctgagct taaggtgaag gaactcaaga acggacgatt
+      901 ggccatgttc tctatgtttg gcttctttgt tcaggccatt gtcaccggaa agggtccatt
+      961 ggagaacctc gccgatcacc ttgctggacc tgtcaacaac aacgcctggg cctatgccac
+     1021 caacttcgtc cccggaaagt gagcgtcaaa gaacgaaatg acttttgaga gtttttagat
+     1081 ttgtgtttgg tgaagtactt cagataatgt gaattatctt gtgtatccga atccaactta
+     1141 atgttacttg ctttttacaa aactcaagtg tcaatttgtt ctctcatttt atacttctaa
+     1201 gcttttgacg ccacattgaa tttgaactct aattgaacta aaaaatgttt cccttctctc
+     1261 atactaatac taatactaag cagggccact aataatcaca caaaaggaaa gaaacaatat
+     1321 gacaacaaaa ttcgaccatt attatcactg tcatcgaatt c
+//
+LOCUS       KPLACBG      1565 bp    DNA             BCT       12-SEP-1993
+DEFINITION  Klebsiella pneumonia beta-lactamase gene.
+ACCESSION   X04515
+VERSION     X04515.1  GI:43812
+KEYWORDS    beta-lactamase; inverted repeat; lactamase.
+SOURCE      Klebsiella pneumoniae.
+  ORGANISM  Klebsiella pneumoniae
+            Bacteria; Proteobacteria; gamma subdivision; Enterobacteriaceae;
+            Klebsiella.
+REFERENCE   1  (bases 1 to 1565)
+  AUTHORS   Arakawa,Y., Ohta,M., Kido,N., Fujii,Y., Komatsu,T. and Kato,N.
+  TITLE     Close evolutionary relationship between the chromosomally encoded
+            beta-lactamase gene of Klebsiella pneumoniae and the TEM
+            beta-lactamase gene mediated by R plasmids
+  JOURNAL   FEBS Lett. 207 (1), 69-74 (1986)
+  MEDLINE   87030906
+FEATURES             Location/Qualifiers
+     source          1..1565
+                     /organism="Klebsiella pneumoniae"
+                     /strain="LEN-1"
+                     /db_xref="taxon:573"
+     promoter        199..204
+                     /note="pot. -35 region"
+     promoter        223..228
+                     /note="pot. -10 region"
+     CDS             286..1125
+                     /note="put. pre-beta-lactamase (aa 1-279)"
+                     /codon_start=1
+                     /transl_table=11
+                     /protein_id="CAA28198.1"
+                     /db_xref="GI:43813"
+                     /db_xref="SWISS-PROT:P05192"
+                     /translation="MRYVRLCVISLLATLPLVVYAGPQPLEQIKQSESQLSGRVGMVE
+                     MDLANGRTLAAWRADERFPMVSTFKVLLCGAVLARVDAGLEQLDRRIHYRQQDLVDYS
+                     PVSEKHLVDGMTIGELCAAAITLSDNSAGNLLLATVGGPAGLTAFLRQIGDNVTRLDR
+                     WETALNEALPGDARDTTTPASMAATLRKLLTAQHLSARSQQQLLQWMVDDRVAGPLIR
+                     AVLPPGWFIADKTGAGERGARGIVALLGPDGKPERIVVIYLRDTPASMAERNQHIAGI
+                     GQR"
+     repeat_unit     1140..1146
+                     /note="inverted repeat A"
+     terminator      1140..1168
+                     /note="region of dyad symmetry (pot. terminator)"
+     repeat_unit     1151..1154
+                     /note="inverted repeat B"
+     repeat_unit     1155..1158
+                     /note="inverted repeat B'"
+     repeat_unit     1162..1168
+                     /note="inverted repeat A'"
+BASE COUNT      318 a    461 c    478 g    308 t
+ORIGIN
+        1 cccgggatgg cgtatatcat tggcgaacgg cggagtccgg cgggcattgt cgtcaacaaa
+       61 cggcgccacg tgagtgcggc attacgtact ttcttatagt tcatcgcggc cttgagtcaa
+      121 aaaatagcgt gctgaggcag ggctaaatat tgattattcg aaataaaaga tgacaaatga
+      181 tgaaggaaaa aagaggaatt gtgaatcagc aaaacgccgg gttattctta tttgtcgccc
+      241 ctttgctcgc ccttatcggc cctcactcaa ggaagtattg cggttatgcg ttatgttcgc
+      301 ctgtgtgtta tctccctgtt agccaccctg ccactggtgg tatacgccgg tccacagccg
+      361 cttgagcaga ttaaacaaag cgaaagccag ctgtcgggcc gcgtggggat ggtggaaatg
+      421 gatctggcca acggccgcac gctggccgcc tggcgcgccg atgaacgctt tcccatggtg
+      481 agcaccttta aagtgctgct gtgcggcgcg gtgctggcgc gggtggatgc cgggctcgaa
+      541 caactggatc ggcggatcca ctaccgccag caggatctgg tggactactc cccggtcagc
+      601 gaaaaacacc ttgtcgacgg gatgacgatc ggcgaactct gcgccgccgc catcaccctg
+      661 agcgataaca gcgctggcaa tctgctgctg gccaccgtcg gcggccccgc gggattaact
+      721 gcctttctgc gccagatcgg tgacaacgtc acccgtcttg accgctggga aacggcactg
+      781 aatgaggcgc ttcccggcga cgcgcgcgac accaccaccc cggccagcat ggccgccacg
+      841 ctgcgcaaac tactgaccgc gcagcatctg agcgcccgtt cgcaacagca actcctgcag
+      901 tggatggtgg acgatcgggt tgccggcccg ctgatccgcg ccgtgctgcc gccgggctgg
+      961 tttatcgccg acaaaaccgg ggctggcgaa cggggtgcgc gcggcattgt cgccctgctc
+     1021 ggcccggacg gcaaaccgga gcgcattgtg gtgatctatc tgcgggatac cccggcgagt
+     1081 atggccgagc gtaatcaaca tatcgccggg atcggccagc gctgatcgag cactggcaac
+     1141 gctaacccgg cggtaccgtg cgttagcgcg gcccgcagca cctggcaggc gtgccgcgcg
+     1201 atatgactgg cggcggcatc ggacagatcc atcggtaata atagttgtaa ccgggtcaag
+     1261 ggtaacgcca taaaggtcgc ctcctgattg tatttcgaac tgtcgcacag caggatgctt
+     1321 ctcgcgctga cctggctgac ggtctccttg acggtaacct tgttctcatc aggggtgaaa
+     1381 atagctgtcc cagcgctggc ggagataaag gccgtatcga tagccaggtg gagtaacgtt
+     1441 cgcgccgccg attcgcccac gcaggagcga ttctccgcac acgtgccgcc ggtgtggatc
+     1501 acgccgcact ggctggcatc gatcagcagt tgggttatct caaaatcatt ggtcaccacc
+     1561 tgcag
+//
+LOCUS       PEACAB15      822 bp    mRNA            PLN       27-APR-1993
+DEFINITION  Pea major chlorophyll a/b-binding thylakoid protein (polypeptide
+            15) mRNA, clone pAB96.
+ACCESSION   J01253
+VERSION     J01253.1  GI:169050
+KEYWORDS    chlorophyll-binding protein; major chlorophyll binding protein;
+            polypeptide 15.
+SOURCE      Pea, cDNA to mRNA, clone pAB96.
+  ORGANISM  Pisum sativum
+            Eukaryota; Viridiplantae; Streptophyta; Embryophyta; Tracheophyta;
+            euphyllophytes; Spermatophyta; Magnoliophyta; eudicotyledons; core
+            eudicots; Rosidae; eurosids I; Fabales; Fabaceae; Papilionoideae;
+            Pisum.
+REFERENCE   1  (bases 1 to 822)
+  AUTHORS   Coruzzi,G., Broglie,R.M., Cashmore,A. and Chua,N.-H.
+  TITLE     Nucleotide sequences of two pea cDNA clones encoding the small
+            subunit of ribulose 1,5-bisphosphate carboxylase and the major
+            chlorophyll a/b-binding thylakoid polypeptide
+  JOURNAL   J. Biol. Chem. 258, 1399-1402 (1983)
+  MEDLINE   83108917
+COMMENT     The mRNA encoding polypeptide 15 of the light-harvesting
+            chlorophyll a/b-protein complex is translated on free cytoplasmic
+            polysomes as a larger precursor, which is imported
+            post-translationally into chloroplasts by an ATP-dependent process.
+            The precursor chain extension (transit sequence) is thought to
+            function in the post-translational translocation across the
+            chloroplast envelope.
+            [1] also reported the cDNA clone pSS15 (separate entry) which
+            encodes the small subunit of ribulose 1,5-bisphosphate carboxylase.
+FEATURES             Location/Qualifiers
+     source          1..822
+                     /organism="Pisum sativum"
+                     /db_xref="taxon:3888"
+     mRNA            <1..822
+                     /note="polypeptide 15 mRNA"
+     mat_peptide     <1..685
+                     /note="polypeptide 15"
+     CDS             <1..688
+                     /note="polypeptide 15 precursor"
+                     /codon_start=2
+                     /protein_id="AAA33650.1"
+                     /db_xref="GI:169051"
+                     /translation="TTKKVASSSSPWHGPDGVKYLGPFSGESPSYLTGEFPGDYGWDT
+                     AGLSADPETFAKNRELEVIHSRWAMLGALGCVFPELLSRNGVKFGEAVWFKAGSQIFS
+                     EGGLDYLGNPSLVHAQSILAIWATQVILMGAVEGYRIAGGPLGEVVDPLYPGGSFDPL
+                     GLAEVPEAFAELKVKELKNGRLAMFSMFGFFVPAIVTGKGPLENLADHLADPVNNNAW
+                     SYATNFVPGK"
+BASE COUNT      188 a    173 c    204 g    257 t
+ORIGIN
+        1 caccaccaag aaagtagcct cctctagtag cccatggcac ggcccagacg gtgttaagta
+       61 cctaggccca ttctccggtg agtctccatc atacttgacc ggagagttcc caggtgacta
+      121 cggttgggac actgctggac tttctgccga tccagagaca tttgccaaga accgtgagct
+      181 tgaagttatc cactccagat gggctatgtt gggagccttg ggatgtgtct tcccagagct
+      241 tttgtctcgc aacggtgtta aattcggtga agctgtatgg ttcaaggcag gatctcaaat
+      301 ctttagcgag ggtggacttg actacttggg caacccaagc ttggtccatg ctcaaagcat
+      361 ccttgccatc tgggccactc aggttatctt gatgggagct gttgaaggtt accgtattgc
+      421 cggtggccct cttggtgagg ttgttgaccc actttatcct ggtggtagct ttgatccatt
+      481 aggcttagct gaagtaccag aagcttttgc agaattaaag gtaaaggaac tgaagaacgg
+      541 tagattagcc atgttctcta tgtttggttt ctttgttcca gctattgtaa ctggaaaggg
+      601 tcctttggag aaccttgccg atcatcttgc cgacccagtg aacaacaacg catggtcata
+      661 tgctaccaac tttgttcccg gaaagtgaac actattatgt ttatgttatt ggtgaagtat
+      721 gttattgtta ttgtaatgtt cttccaattt aatgtgaatt gttatggtta tcgtgtgtgt
+      781 atgcgtaggt taactaatat gaactgattc gttttttttt tc
+//
+LOCUS       WHTCAB       1191 bp    DNA             PLN       27-APR-1993
+DEFINITION  Wheat major chlorophyll a/b-binding protein gene, complete cds.
+ACCESSION   M10144
+VERSION     M10144.1  GI:170673
+KEYWORDS    chlorophyll a/b-binding protein; chlorophyll-binding protein;
+            light-harvesting complex.
+SOURCE      Wheat leaf nuclear DNA, clone whAB1.6.
+  ORGANISM  Triticum aestivum
+            Eukaryota; Viridiplantae; Streptophyta; Embryophyta; Tracheophyta;
+            euphyllophytes; Spermatophyta; Magnoliophyta; Liliopsida; Poales;
+            Poaceae; Triticum.
+REFERENCE   1  (bases 1 to 1191)
+  AUTHORS   Lamppa,G.K., Morelli,G. and Chua,N.-H.
+  TITLE     Structure and developmental regulation of a wheat gene encoding the
+            major chlorophyll a/b-binding polypeptide
+  JOURNAL   Mol. Cell. Biol. 5, 1370-1378 (1985)
+  MEDLINE   85295969
+COMMENT     A potential polyadenylation signal is located at positions
+            997-1002.
+            A draft entry and printed copy of this sequence were kindly
+            provided by G.K.Lamppa (26-NOV-1985).
+FEATURES             Location/Qualifiers
+     source          1..1191
+                     /organism="Triticum aestivum"
+                     /db_xref="taxon:4565"
+     mRNA            130..>1001
+                     /note="cab mRNA (5' end +/- 2 bp)"
+     sig_peptide     201..302
+                     /note="chlorophyll a/b-binding protein signal peptide"
+     CDS             201..1001
+                     /note="chlorophyll a/b-binding protein precursor"
+                     /codon_start=1
+                     /protein_id="AAA34260.1"
+                     /db_xref="GI:170674"
+                     /translation="MAATTMSLSSSSFAGKAVKNLPSSALIGDARVNMRKTAAKAKQV
+                     SSSSPWYGSDRVLYLGPLSGEPPSYLTGEFPGDYGWDTAGLSADPETFAKNRELEVIH
+                     CRWAMLGALGCVFPELLARNGVKFGEAGWFKAGSQIFSDGGLDYLGNPSLVHAQSLLA
+                     IWACQVVLMGAVEGYRIAGGPLGEIVDPLYPGGSFDPLGLAERPQAFAELKVKEIKNG
+                     RLAMFSMFGFFVQAIVTGKGPLEDLADHIADPVNNNAWLIATNFVPGK"
+     mat_peptide     303..1098
+                     /note="chlorophyll a/b-binding protein"
+BASE COUNT      250 a    355 c    304 g    282 t
+ORIGIN
+        1 tgcagatttc ttttcaccac accgtctctc ttgtcagctg tcaccaagca ccaaccaatt
+       61 aatttctcta tattcttgtt ccctcaaggc tcaagctctt taaatagctt ccatacaatc
+      121 ttcctcttaa accatcttcc acacactcaa gccacactat tggagaacac acagggacaa
+      181 cacaccataa gtgcagcgca atggcggcca ccaccatgtc tctttcctct tcgtccttcg
+      241 ccggcaaggc cgtcaagaac ttgccctcgt cggctctcat tggtgacgca cgtgtgaaca
+      301 tgcgcaagac tgcggcgaag gccaaacaag tttcgtcgag cagcccgtgg tacggctctg
+      361 accgtgtgct ctacctcggc ccgctttccg gcgagccccc cagctacttg actggtgagt
+      421 tccccggtga ctatgggtgg gacaccgccg ggctctcggc tgaccctgag accttcgcca
+      481 agaaccggga gctcgaggtg atccactgcc gatgggccat gctcggtgcg cttggttgtg
+      541 tctttcccga gttgcttgcc cgcaatggtg tgaagttcgg cgaggccggt tggttcaagg
+      601 ctggctctca gatcttcagc gatggtggcc tcgactacct tggcaacccc agcctcgtcc
+      661 acgcccagag cctcctcgcc atatgggctt gtcaagttgt gctcatgggg gccgttgagg
+      721 ggtaccgcat tgctggtggt ccgctcggcg agatcgtcga cccactctac cctggtggca
+      781 gctttgaccc acttggcctg gccgagcgac cccaggcatt tgcggagctc aaggttaagg
+      841 agatcaagaa tggccgcctc gccatgttct ccatgtttgg cttctttgtg caggccattg
+      901 tcaccggcaa gggcccattg gaggaccttg ccgaccacat tgccgaccct gtcaacaaca
+      961 acgcgtggct cattgccacc aacttcgtgc ccgggaaata aagcaggact tgatggatgc
+     1021 aaattgtatg tgagtgtcag ttgaattgta acaccaacat gtaaactatg agaattgtgt
+     1081 gcaaagacat tgtttgatta gtccaatccg gtgacaatgg cctgcacaag aagccaacat
+     1141 ggagaacatg gcgaggcggc cattattgat ctccttaact gagctccgca a
+//

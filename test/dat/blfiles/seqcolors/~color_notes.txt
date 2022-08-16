@@ -1,0 +1,30 @@
+We need to have a menu that lets you select
+the colors. It should work a lot like the 
+.GDEmenus items. 
+
+The user only sees the name of the scheme,
+not the name of the file. There will be a 
+file chooser at the bottom for a user-created
+file. bioLegato should read the other files
+by default. 
+
+- Should default to all sequences, unless we check a box
+that says color only the selected sequences
+
+Need to look at the more complex color formats.
+These all have ways of governing the colors
+based on percentages, similarities etc. It may
+be that at this lever of complexity, these things
+just need to be hard-coded.
+
+1) Hard code the nucleic acid/aminoacid coloring schemes
+into bioLegato
+
+
+
+2) One way is to create a mechanism for a menu item to
+make bioLegato API calls. 
+
+3) .bio
+
+

@@ -1,0 +1,184 @@
+package org.biolegato.sequence.data;
+/*
+ * GDEFlatfile.java
+ *
+ * Created on January 30, 2008, 11:58 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Scanner;
+import java.util.StringTokenizer;
+import org.biolegato.sequence.data.Seq.Type;
+import org.biolegato.main.BLMain;
+
+/**
+ * This class acts as a parser/translator for GDE flat files.
+ *
+ * @author Graham Alvare
+ * @author Brian Fristensky
+ */
+public class GDEFlatfile extends DataFormat {
+
+    private static final String DELIMITER = "(?m:^)(?=[#%@\"])";
+
+    /**
+     * Creates a new instance of GDEFlatfile
+     */
+    public GDEFlatfile() {
+    }
+
+    /**
+     * Translates data from the BioLegato's GDE canvas internal format to the given file format.
+     **
+     * @param out the destination for the converted data
+     * @param seq the sequence object to convert
+     * @param offset the x co-ordinate to start the conversion at
+     * @param length the number of characters to read from position 'x'
+     * @throws IOException if an error occurs while writing to the destination
+     */
+    public void translateTo(Appendable out, Seq seq, int offset, int length) throws IOException {
+        char type = '#';
+
+        // translate the data
+        if (seq != null) {
+            type = typeToFlatFile((Type) seq.getType());
+            if (type != '%' && type != '@' && type != '\"') {
+                type = '#';
+            }
+            // NOTE: append is faster than + or concat operators
+            out.append(type).append(seq.getName()).append("\n").append(seq.getSequence(), offset, offset + length).append("\n");
+        }
+    }
+
+    /**
+     * Translates a single sequence from a scanner into BioLegato
+     **
+     * @param datamodel the destination model to store the translated sequences
+     * @param source the data source to parse
+     * @param x the X-coordinate of the position where to insert the results
+     * @param y the Y-coordinate of the position where to insert the results
+     * @return whether there are any remaining sequences of the current format type in the scanner
+     * @throws IOException any exceptions that occur while reading the stream are passed
+     */
+    public boolean translateSequence(Dataset datamodel, Scanner source, int x, int y, boolean addonly) throws IOException {
+        final int modellength = datamodel.getSize();
+        String parsable = null;
+
+        // ensure usage of the proper delimiter
+        source.useDelimiter(DELIMITER);
+
+        if (source.hasNext()) {
+            parsable = source.next().trim();
+            if (parsable.startsWith("#")
+                    || parsable.startsWith("%") || parsable.startsWith("@")
+                    || parsable.startsWith("\"")) {
+                Seq.Type type = flatFileToType(parsable.charAt(0));
+                String name = null;
+                StringBuffer sequence = new StringBuffer();
+                if (parsable.indexOf('\n') >= 0) {
+                    name = new StringTokenizer(parsable.substring(1, parsable.indexOf('\n'))).nextToken();
+                    sequence.append(parsable.substring(parsable.indexOf('\n') + 1).replaceAll("\\s", ""));
+                } else {
+                    name = parsable.substring(1);
+                }
+                if (y < modellength && !addonly) {
+                    char [] text = new char[sequence.length()];
+                    sequence.getChars(0, text.length, text, 0);
+                    datamodel.insert(x, y, text, 0, text.length, true);
+                } else {
+                    datamodel.add(y, new Seq(type, name, sequence));
+                }
+                y++;
+            } else {
+                BLMain.error("Invalid GDE flat file", "GDE flat file parser");
+            }
+        }
+        return source.hasNext();
+    }
+
+    /**
+     * Determines whether a specified file is of type GDE flat file (based on extension).
+     * Currently the only extension supported is ".flat".
+     *
+     * @param file the file to test
+     * @return true if the file is of type GDE flat file (otherwise false)
+     * @see javax.swing.filechooser.FileFilter#accept
+     */
+    public boolean accept(File file) {
+        return (file.isDirectory() || file.getAbsolutePath().toLowerCase().
+                endsWith(".flat"));
+    }
+
+    /**
+     * Returns a description of the file format that can be displayed to the user.
+     *
+     * @return the string description of the file format
+     * @see javax.swing.filechooser.FileFilter#getDescription
+     */
+    public String getDescription() {
+        return "GDE Flatfile (*.flat)";
+    }
+
+    /**
+     * Converts a GDE flat file type character into a Cell.Type structure.
+     * 
+     * 
+     * 
+     * 
+     * @param test the character to test for type
+     * @return the resulting type
+     */
+    private static Type flatFileToType(char test) {
+        Type result = Type.DNA;
+        switch (test) {
+            case '%':
+                result = Type.PROTEIN;
+                break;
+            case '@':
+                result = Type.MASK;
+                break;
+            case '\"':
+                result = Type.TEXT;
+                break;
+        }
+        return result;
+    }
+
+    /**
+     * Converts a sequence's type enum to the GDE flat file format.
+     *
+     * @param type the type enum to convert
+     * @return the GDE flat file equivilent
+     */
+    private static char typeToFlatFile(Type t) {
+        char result = '#';
+        switch (t) {
+            case PROTEIN:
+                result = '%';
+                break;
+            case MASK:
+                result = '@';
+                break;
+            case TEXT:
+                result = '\"';
+                break;
+        }
+        return result;
+    }
+
+    /**
+     * Used to auto-detect Bio Legato formats
+     *
+     * @param test the reader to parse data from
+     * @return whether the format is correct
+     * @throws IOException returns any possible io exceptions (such as mark not supported)
+     */
+    @Override
+    public boolean isFormat(Scanner test) throws IOException {
+        return test.findInLine(DELIMITER) != null;
+    }
+}

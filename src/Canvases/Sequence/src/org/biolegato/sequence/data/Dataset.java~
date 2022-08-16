@@ -1,0 +1,620 @@
+/*
+ * Dataset.java
+ *
+ * Created on September 30, 2008, 11:08 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+package org.biolegato.sequence.data;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import javax.swing.AbstractListModel;
+import org.biolegato.sequence.canvas.ColourMask;
+import org.biolegato.sequence.canvas.SequenceCanvas;
+
+/**
+ * The internal document format for BioLegato.
+ * <p>
+ * This document is structured as a linked list of sequences.  Each character has an offset based on its
+ * position within the list and it's position within its containing sequence.  Sequences highindex at 0
+ * (first character in the first sequence in the list, and lowindex with the last character in the last sequence
+ * within the list.
+ * </p>
+ **
+ * @author Graham Alvare
+ * @author Brian Fristensky
+ */
+public class Dataset extends AbstractListModel {
+
+    private GDECanvas canvas;
+    /**
+     * This linked list used to store all of the height in the document.
+     * <p>
+     *  Each y is stored as a linked list of sequence wrappers.
+     *  Each sequence wrapper is characterized by a sequence and a highindex offset.
+     *  The highindex offset is used to determine the offset of the sequence within
+     *  the document.
+     * </p>
+     */
+    private final List<Seq> lines = new ArrayList<Seq>();
+    /**
+     * Keeps track of the maximum groupID number in usage.
+     */
+    private static int maxGroup = 0;
+    /**
+     * The maximum number of groups
+     */
+    private final static int DEFAULT_MAX_GROUPS = 30;
+    /**
+     * A hashtable used to map all groups to sequences
+     */
+    private static Set<Seq>[] group2seq = new Set[DEFAULT_MAX_GROUPS];
+    /**
+     * The default buffer size for reading streams
+     */
+    public static final int DEFAULT_BUFFER_SIZE = 1000;
+    /**
+     * Static final empty sequence array
+     */
+    public static final char[] EMPTY_SEQUENCE = new char[0];
+
+    /**
+     * Creates a new instance of Dataset
+     **
+     * @param canvas the parent GDE canvas to associate with the dataset object
+     */
+    public Dataset(GDECanvas canvas) {
+        this.canvas = canvas;
+    }
+
+////////////////////////////////
+//****************************//
+//* DIRECT DATA MODIFICATION *//
+//****************************//
+////////////////////////////////
+    /**
+     * Adds a sequence to the data container.  This function calls all listeners.
+     **
+     * @param y is the y number to insert the sequence.
+     * @param seq is the sequence to insert.
+     * @return true if the insertion was successful, otherwise false.
+     */
+    public boolean add(int y, Seq seq) {
+        boolean result = false;
+
+        // ensure that the parameters are appropriate
+        if (seq != null && y >= 0 && y <= getSize()) {
+            // insert the sequence and notify all listener methods
+            // of the insertion.
+            lines.add(y, seq);
+            fireIntervalAdded(this, y, y);
+            result = true;
+        }
+        return result;
+    }
+
+    /**
+     * Inserts text to the data container.
+     * If protection_test is set, this method obeys the sequence protection rules.
+     **
+     * @param x is the X-coordinate to insert the sequence.
+     * @param y is the Y-coordinate to insert the sequence.
+     * @param text is the text to insert.
+     * @param offset the offset within the array to insert.
+     * @param length the length in characters of data from the array to insert.
+     * @param protection_test whether to test the protections of the sequence.
+     * @return true if the insertion was successful, otherwise false.
+     */
+    public boolean insert(int x, int y, char[] text, int offset, int length, boolean protection_test) {
+        Seq current;
+        boolean result = false;
+
+        // ensure that the text to insert and y-values for the insertion are appropriate.
+        if (text != null && y >= 0 && y <= getSize()) {
+            current = getLine(y);
+
+            // ensure that the protections for the sequence are set appropriately/
+            if (!protection_test || !Dataset.isProtectionsOn(current.type, current.protect_align, current.protect_ambig,
+                    current.protect_unambig, text, 0, text.length)) {
+                // BRANCH
+                // if we are at the end of the sequence, we are appending
+                // characters to the sequence; otherwise, we are inserting
+                // characters.  This branch mainly has to do with performance
+                // and avoiding possible exceptions.
+                if (current.sequence.length() > x) {
+                    current.sequence.insert(x, text, offset, length);
+                } else {
+                    current.sequence.append(text, offset, length);
+                }
+
+                // Deletes GenBank original copies of the sequence
+                // this is because we are modifying the sequence, so we do not
+                // want the original sequence to be exported
+                current.original = null;
+
+                // Call the canvas and notify it that the sequence length has changed
+                GDECanvas.textLengthChanged(x, y, text.length);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Deletes a portion of a sequence.
+     * Obeys sequence protection rules.
+     **
+     * @param x is the X-coordinate to delete the sequence.
+     * @param y is the Y-coordinate to delete the sequence.
+     * @param length is the length of text to delete.
+     * @param protection_test whether to test the protections of the sequence.
+     * @return true if the insertion was successful, otherwise false.
+     */
+    public boolean delete(int x, int y, int length, boolean protection_test) {
+        Seq current;
+        char[] text = null;
+        final int xend = x + length;
+        boolean protect_sequence = false;
+        boolean result = false;
+
+        // ensure that the deletion co-ordinates are appropriate.
+        // this is to prevent exceptions such as retrieving sequences
+        // which are out of bounds, and performing deletions on negative
+        // co-ordinates.
+        //
+        // Please note that this if-clause tests for length > 0.  There is an
+        // else if clause below that handles length == 0, which counts as a
+        // deletion (i.e. abstaining from action means deleting zero characters)
+        if (y >= 0 && y <= getSize() && x >= 0 && length > 0) {
+            current = getLine(y);
+
+            // ensure that the deletion does not exceed the sequence length
+            if (xend <= current.sequence.length()) {
+                // do any character protection tests (if necessary)
+                // to ensure that we are not deleting any protected characters
+                if (protection_test) {
+                    // create an array of the characters to be deleted.
+                    // this array will be used to test characters for protection status
+                    text = new char[length];
+                    current.sequence.getChars(x, xend, text, 0);
+
+                    // test protection status
+                    protect_sequence = isProtectionsOn(current.type, current.protect_align,
+                        current.protect_ambig, current.protect_unambig, text, 0, xend + 1);
+                }
+
+                // if the characters deleted from the sequence are
+                // not protected, then delete them.
+                if (!protect_sequence) {
+                    current.sequence.delete(x, x + length);
+
+                    // Deletes GenBank original copies of the sequence
+                    // this is because we are modifying the sequence, so we do not
+                    // want the original sequence to be exported
+                    current.original = null;
+
+                    // Call the canvas and notify it that the sequence length has changed
+                    // a positive length indicates an insertion
+                    // a negative length indicates a deletion
+                    // hence this is why we are negating the length
+                    GDECanvas.textLengthChanged(x, y, 0 - length);
+                    result = true;
+                }
+            }
+        } else if (length == 0) {
+            // if the length is zero, then technically we have deleted
+            // zero characters by not performing any deletion.  Therefore,
+            // the function will return true if length == 0.
+            result = true;
+        }
+        return result;
+    }
+
+    /**
+     * Adds sequences to the data container.  This function calls all listeners.
+     **
+     * @param y is the y number to insert the sequence.
+     * @param seqs are the sequences to insert.
+     * @return true if the insertion was successful, otherwise false.
+     */
+    public boolean addSequences(int y, Collection<Seq> seqs) {
+        boolean result = false;
+
+        // ensure that the parameters are appropriate
+        if (seqs != null && seqs.size() > 0 && y >= 0 && y <= getSize()) {
+            // insert the sequences and notify all listener methods.
+            result = lines.addAll(y, seqs);
+            if (result) {
+                fireIntervalAdded(this, y, y + seqs.size() - 1);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Removes an array of sequences from the data container.
+     **
+     * @param lineNumbers the y numbers to remove.
+     */
+    public void removeSequences(final int[] lineNumbers) {
+        // 'highindex' corresponds to the largest number index for the interval
+        // we are currently exploring within the lineNumbers array
+        int highindex = lineNumbers.length - 1;
+
+        // 'lowindex' corresponds to the smallest number index for the interval
+        // we are currently exploring within the lineNumbers array
+        int lowindex = highindex;
+
+        // sort the y numbers
+        // explanation of necessity to follow
+        Arrays.sort(lineNumbers);
+
+        // ensure that there are height to delete
+        if (!lines.isEmpty() && lineNumbers != null) {
+            /**
+             * itterate backwards through each sequence y number and delete it
+             * this ensures that when deleting a line number, other line number
+             * indices will not change when deleting
+             *
+             * should other numbers be changed, we would accidentally delete
+             * the wrong sequence
+             ****
+             * For example:
+             ****
+             *  suppose we have the following data
+             *   [0] = 'abcdef'
+             *   [1] = 'ghij'
+             *   [2] = 'klmn'
+             *   [3] = 'opqr'
+             *
+             *  suppose we call removeSequences (new int[] {1,2,0});
+             *
+             *  the result we would expect would be
+             *   [0] = 'abcdef'
+             *
+             *  if we were not to change sort the line numbers and itterate backwards
+             *  we would first delete sequence 1:
+             *   [0] = 'abcdef'
+             *   [1] = 'klmn'
+             *   [2] = 'opqr'
+             *  as you can see the indices changed, therefore when we delete sequence 2, we would get
+             *   [0] = 'abcdef'
+             *   [1] = 'klmn'
+             *  and finally
+             *   [0] = 'klmn'
+             *
+             *  NOTE: this is not our expected result!
+             *
+             * This can only be solved by sorting the sequence numbers, and removing
+             * them from highest to lowest (i.e. sorted array parsed in reversed order)
+             *
+             * The reason we will not reverse the array, is only efficiency
+             * and to not reinvent the wheel (Arrays.sort is built in, and reversal
+             * methods would take more time and memory)
+             **/
+            while (lowindex >= 0) {
+                // make highindex and lowindex the same value
+                highindex = lowindex;
+
+                /**
+                 * try to form an interval
+                 **
+                 * the reason why we do this: because we want to minimize the number of calls
+                 * to the listener methods (i.e. increase the speed of the program)
+                 *
+                 * the reason this optimization is necessary, is because creating objects
+                 * is very expensive, and each time we call ListDataListener.intervalRemoved,
+                 * we must create a new ListDataEvent object.
+                 */
+                while (lowindex > 0 && lineNumbers[lowindex - 1] == lineNumbers[lowindex] - 1) {
+                    ungroup(lines.remove(lineNumbers[lowindex]));
+                    lowindex--;
+                }
+
+                // remove the final line (NOTE: the above method will remove every
+                // sequence in the interval, EXCEPT the last one (i.e. the lowest index
+                ungroup(lines.remove(lineNumbers[lowindex]));
+
+                // send an interval removed event to all of this dataset's ListDataListeners
+                fireIntervalRemoved(this, lineNumbers[lowindex], lineNumbers[highindex]);
+                lowindex--;
+            }
+        }
+    }
+
+//////////////////////
+//******************//
+//* DATA RETRIEVAL *//
+//******************//
+//////////////////////
+
+    /**
+     * Returns the number of lines in the document.
+     **
+     * @return the number of lines in the document.
+     */
+    public int getSize() {
+        return lines.size();
+    }
+    
+    /**
+     * Retrieves a sequence object from the Dataset specified by its y y.
+     * 
+     * @param number the y y to retrieve the sequence.
+     * @return the sequence.
+     */
+    Seq getLine(final int number) {
+        return (number >= 0 && number < getSize() ? lines.get(number) : null);
+    }
+
+    /**
+     * Retrieves the sequence length from the Dataset specified by its y coordinate.
+     *
+     * @param number the y coordinate to retrieve the sequence.
+     * @return the sequence.
+     */
+    public int getSequenceLength(final int number) {
+        Seq current = getLine(number);
+
+        return (current != null ? current.sequence.length() : -1);
+    }
+
+    /**
+     * Retrieves the colour mask for a given sequence
+     **
+     * @param number the line number to retrieve the colour mask for.
+     * @return the colour mask for the given sequence.
+     */
+    public ColourMask getMask(int number) {
+        Seq current = getLine(number);
+
+        return (current != null ? current.mask : canvas.DEFAULT_MASK);
+    }
+
+    /**
+     * Retrieves a sequence object from the Dataset specified by its y y.
+     *
+     * NOTE: if length > the sequence's length, this method returns the minimum of the two.
+     **
+     * @param array the destination for the copied sequence
+     * @param number the sequence number within the dataset to obtain the sequence for
+     * @param offset the offset within the sequence to begin copying
+     * @param length the number of characters to attempt to copy
+     * @return the number of characters copied (the minimum of 'length' and the sequence's length).
+     */
+    public int getSequence(char[] array, final int number, int offset, int length) {
+        int endpos = 0;
+        Seq current = getLine(number);
+
+        if (array != null && current != null && offset >= 0 && length > 0) {
+            endpos = Math.min(current.sequence.length(), offset + length);
+            if (endpos - offset > 0) {
+                current.sequence.getChars(offset, endpos, array, 0);
+            }
+        }
+
+        return endpos - offset;
+    }
+
+    /**
+     * Called when a field in a sequence is modified.
+     **
+     * @param sequence the sequence modified.
+     * @param key the key of the modified field in the sequence.
+     */
+    void sequenceChanged(final int index) {
+        fireContentsChanged(this, index, index);
+    }
+
+///////////////
+//***********//
+//* GENERAL *//
+//***********//
+///////////////
+
+    /**
+     * Creates a new group comprised of the sequences in the parameter
+     * array 'sequences'.  Please note that this method first "ungroups"
+     * all of sequences passed to it before creating a new group.
+     **
+     * @param sequences the array of y-coordinates corresponding to sequence to group.
+     */
+    public void group(int[] sequences) {
+        Seq seq;
+        int maxGroupStart = maxGroup;
+
+        // ensure that there is an entry in group2seq to add the sequence to.
+        while (group2seq[maxGroup] != null) {
+            maxGroup++;
+            maxGroup %= (group2seq.length - 1); // ensures wraparound
+            
+            /*
+             * Should virtually never be run (except if someone is using a lot of groups)
+             */
+            if (maxGroup == maxGroupStart) {
+                Set<Seq>[] temp = new Set[group2seq.length + DEFAULT_MAX_GROUPS];
+                System.arraycopy(group2seq, 0, temp, 0, group2seq.length);
+                group2seq = temp;
+                break;
+            }
+        }
+        group2seq[maxGroup] = new HashSet<Seq>();
+
+        // TODO: Collections.sort();
+        for (int y : sequences) {
+            seq = lines.get(y);
+            ungroup(seq);
+            seq.groupID = maxGroup + 1;
+            sequenceChanged(lines.indexOf(seq));
+            group2seq[maxGroup].add(seq);
+        }
+    }
+
+    /**
+     * Ungroups an array of sequences by iteratively calling ungroup
+     * on each sequence.
+     **
+     * @param sequences the array of y-coordinates corresponding to sequence to ungroup.
+     */
+    public void ungroup(int[] sequences) {
+        Seq seq;
+        for (int y : sequences) {
+            seq = lines.get(y);
+            ungroup(seq);
+            seq.groupID = 0;
+            sequenceChanged(lines.indexOf(seq));
+        }
+    }
+
+    /**
+     * Removes a sequence from a group.
+     **
+     * @param seq the sequence to ungroup.
+     */
+    private void ungroup(Seq seq) {
+        Set<Seq> group = null;
+
+        if (seq != null) {
+            // remove previous groupID reference
+            if (seq.groupID > 0 && seq.groupID <= group2seq.length) {
+                group = group2seq[seq.groupID - 1];
+                if (group != null) {
+                    group.remove(seq);
+                    if (group.size() <= 0) {
+                        group2seq[seq.groupID - 1] = null;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Obtains all of the line numbers for a particular group
+     **
+     * @param lineNumber the line number of the sequence to obtain the group for.
+     * @return an array containing all of the line numbers of the group.
+     */
+    public int[] getgroup(int lineNumber) {
+        int count = 0;
+        int[] result = null;
+        int groupNumber = getLine(lineNumber).groupID;
+        Set<Seq> group;
+
+        // ensure that the group number of the sequence is appropriate
+        if (groupNumber > 0 && groupNumber <= group2seq.length && group2seq[groupNumber - 1] != null) {
+            group = group2seq[groupNumber - 1];
+            result = new int[group.size()];
+            for (Seq c : group) {
+                result[count] = lines.indexOf(c);
+                count++;
+            }
+        }
+        
+        return result;
+    }
+
+////////////////////////////
+//************************//
+//* LIST MODEL FUNCTIONS *//
+//************************//
+////////////////////////////
+    /**
+     * Returns the names of sequences based on their y number.
+     *
+     * @param index the y number to obtain the name of.
+     * @return returns the name of sequence in the sequence document at the y number indicated by index.
+     */
+    public Object getElementAt(int index) {
+        return getLine(index);
+    }
+
+/////////////////////////////////
+//*****************************//
+//* PROTECTION STATUS METHODS *//
+//*****************************//
+/////////////////////////////////
+    /**
+     * Checks a string against all of a sequence's protection settings.
+     *
+     * This is done by obtaining the sequence's protection settings,
+     * the type of the sequence, and whether the text contains a character in any
+     * protected character class.
+     **
+     * @param type the type of the sequence to test against.
+     * @param protect_align the status of alignment character protection
+     * @param protect_ambig the status of ambiguous character protection
+     * @param protect_uambig the status of unambiguous character protection
+     * @param test the text to test.
+     * @param start the start index of text to test
+     * @param end the end index of text to test
+     * @return true if the text violates the protection settings of the sequence.
+     */
+    public static boolean isProtectionsOn(Seq.Type type,
+            boolean protect_align, boolean protect_ambig, boolean protect_uambig,
+            char[] test, int start, int end) {
+        boolean protect = false;
+
+        // ensure that the end point does not exceed the test array's length
+        end = Math.min(end, test.length - 1);
+
+        if (protect_ambig || protect_uambig || protect_align) {
+            if (type == Seq.Type.DNA || type == Seq.Type.RNA) {
+                for (int count = start; !protect && count <= end; count++) {
+                    switch (Character.toLowerCase(test[count])) {
+                        case 'b':
+                        case 'd':
+                        case 'h':
+                        case 'i':
+                        case 'k':
+                        case 'm':
+                        case 'n':
+                        case 'r':
+                        case 's':
+                        case 'v':
+                        case 'w':
+                        case 'y':
+                            protect = protect_ambig;
+                            break;
+                        case 'a':
+                        case 'c':
+                        case 'g':
+                        case 't':
+                        case 'u':
+                            protect = protect_uambig;
+                            break;
+                        default:
+                            protect = protect_align;
+                            break;
+                    }
+                }
+            } else if (type == Seq.Type.PROTEIN) {
+                for (int count = start; !protect && count < end; count++) {
+                    switch (Character.toLowerCase(test[count])) {
+                        case ' ':
+                        case '\n':
+                        case '\t':
+                        case '\r':
+                        case '-':
+                            protect = protect_align;
+                            break;
+                        case 'b':
+                        case 'x':
+                        case 'z':
+                        case '*':
+                            protect = protect_ambig;
+                            break;
+                        default:
+                            protect = protect_uambig;
+                            break;
+                    }
+                }
+            }
+        }
+        return protect;
+    }
+}

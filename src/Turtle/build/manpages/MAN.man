@@ -1,0 +1,15 @@
+MAN - Turtle shell's manual page command
+ 
+The parameters of this command are as follows:
+    man "command"
+        where "command" is any valid turtle shell command
+        This prints the manual page for that commands
+
+    man commands
+        This will print a list of valid turtle shell commands
+
+    man syntax
+        This will print a manual page for turtle shell's syntax
+ 
+@author Graham Alvare
+@author Brian Fristensky

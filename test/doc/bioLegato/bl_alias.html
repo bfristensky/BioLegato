@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;
+      charset=windows-1252">
+    <meta name="GENERATOR" content="Mozilla/4.05 [en] (X11; U; SunOS
+      5.5.1 sun4u) [Netscape]">
+    <title>bl_alias.py - Create symbolic links with short names to files
+      with longer names</title>
+  </head>
+  <body>
+    <div style="text-align: right;">update January 4, 2019<br>
+    </div>
+    NAME<br>
+    <span style="font-weight: bold;"></span><br>
+    <div style="margin-left: 40px;">bl_alias.py - Given a series of
+      paired-end read filenames, replace the leftmost common string with
+      a specified string.<br>
+      <br>
+    </div>
+    SYNOPSIS<br>
+    <div style="margin-left: 40px;"><span style="font-weight: bold;">bl_alias.py</span><i>
+        filename</i> <i>target</i>&nbsp; [<i>newname</i>]<br>
+    </div>
+    <br>
+    DESCRIPTION<br>
+    <blockquote>For each file whose name begins with target, create a
+      symbolic link to target whose name begins with newname. The
+      purpose of this script is to make it easy for users to work with
+      files that have long, complex names using symbolic links with
+      short names. The motivation for this script is working with
+      sequencing read files that have long names with flow cell specific
+      references. In the ideal, the links are made to the initial
+      sequencing read files, and all subsequent files in the pipeline
+      can use the short names.<br>
+    </blockquote>
+    <span style="font-weight: bold;"></span>
+    <blockquote><span style="font-weight: bold;"></span><i>filename</i>
+      - full name of file to which the link should be made <br>
+      <br>
+      <i>target</i> - A substring of the filename to be replaced<br>
+      <br>
+      <i>newname</i> - A substring to replace the target. If empty, the
+      target is simply deleted from the name.<br>
+    </blockquote>
+    EXAMPLE<br>
+    <br>
+    <blockquote>If the target file is
+      HI.4183.005.Index_12.450-cont-2_R1.fastq.gz&nbsp; then<br>
+    </blockquote>
+    <blockquote><font size="+1"><tt>bl_alias.py
+          HI.4183.005.Index_12.450-cont-2_R1.fastq.gz
+          HI.4183.005.Index_12.450 Zm450</tt></font> <br>
+      <br>
+      will create a link named Zm405-cont-2_R1.fastq.gz, pointing to the
+      target file. <br>
+      <br>
+      If newname is not provided, the target string will simply be
+      omitted from the name of the link.<br>
+      <br>
+      <font size="+1"><tt>bl_alias.py
+          HI.4183.005.Index_12.450-cont-2_R1.fastq.gz
+          HI.4183.005.Index_12.450</tt></font><br>
+      <br>
+      would create a link named 450-cont-2_R1.fastq.gz<br>
+      <br>
+    </blockquote>
+    AUTHOR<br>
+    <blockquote>Dr. Brian Fristensky<br>
+      Department of Plant Science <br>
+      University of Manitoba<br>
+      Winnipeg, MB &nbsp;Canada R3T 2N2<br>
+      <a href="mailto:brian.fristensky@umanitoba.ca">brian.fristensky@umanitoba.ca</a><br>
+      <a href="http://home.cc.umanitoba.ca/%7Efrist">http://home.cc.umanitoba.ca/~frist</a><br>
+    </blockquote>
+    <br>
+  </body>
+</html>

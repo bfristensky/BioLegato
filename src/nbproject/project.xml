@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://www.netbeans.org/ns/project/1">
+    <type>org.netbeans.modules.ant.freeform</type>
+    <configuration>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
+            <name>BioLegato-1.1.1</name>
+        </general-data>
+        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/2">
+            <!-- Do not use Project Properties customizer when editing this file manually. -->
+            <name>BioLegato-1.1.1</name>
+            <properties/>
+            <folders>
+                <source-folder>
+                    <label>BioLegato</label>
+                    <location>.</location>
+                    <encoding>ISO-8859-1</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>Core</label>
+                    <type>java</type>
+                    <location>Core/src</location>
+                    <encoding>ISO-8859-1</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>BioPCD Parser</label>
+                    <type>java</type>
+                    <location>BioPCD/parser/src</location>
+                    <encoding>ISO-8859-1</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>BioPCD Menu Editor Canvas</label>
+                    <type>java</type>
+                    <location>Canvases/BioPCDEditor/src</location>
+                    <encoding>ISO-8859-1</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>GDE2BioPCD Converter</label>
+                    <type>java</type>
+                    <location>BioPCD/GDE2PCD/src</location>
+                    <encoding>ISO-8859-1</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>Image canvas</label>
+                    <type>java</type>
+                    <location>Canvases/Images/src</location>
+                    <encoding>ISO-8859-1</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>BioPCD Canvas</label>
+                    <type>java</type>
+                    <location>Canvases/biopcd/src</location>
+                    <encoding>ISO-8859-1</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>Sequence canvas</label>
+                    <type>java</type>
+                    <location>Canvases/Sequence/src</location>
+                    <encoding>ISO-8859-1</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>Table canvas</label>
+                    <type>java</type>
+                    <location>Canvases/Tables/src</location>
+                    <encoding>ISO-8859-1</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>Database entry canvas</label>
+                    <type>java</type>
+                    <location>Canvases/dbpcd/src</location>
+                    <encoding>ISO-8859-1</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>Turtle shell</label>
+                    <type>java</type>
+                    <location>Turtle/src</location>
+                    <encoding>ISO-8859-1</encoding>
+                </source-folder>
+                <source-folder>
+                    <label>Standard plugins</label>
+                    <type>java</type>
+                    <location>Stdplug/src</location>
+                    <encoding>ISO-8859-1</encoding>
+                </source-folder>
+            </folders>
+            <ide-actions>
+                <action name="build">
+                    <script>nbproject/nbjdk.xml</script>
+                    <target>build</target>
+                </action>
+                <action name="clean">
+                    <script>nbproject/nbjdk.xml</script>
+                    <target>clean</target>
+                </action>
+                <action name="javadoc">
+                    <script>nbproject/nbjdk.xml</script>
+                    <target>docs</target>
+                </action>
+                <action name="run">
+                    <script>nbproject/nbjdk.xml</script>
+                    <target>run</target>
+                </action>
+                <action name="rebuild">
+                    <script>nbproject/nbjdk.xml</script>
+                    <target>clean</target>
+                    <target>build</target>
+                </action>
+                <action name="test">
+                    <script>nbproject/nbjdk.xml</script>
+                    <target>test</target>
+                </action>
+            </ide-actions>
+            <view>
+                <items>
+                    <source-folder style="packages">
+                        <label>Core</label>
+                        <location>Core/src</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>BioPCD Parser</label>
+                        <location>BioPCD/parser/src</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>BioPCD Menu Editor Canvas</label>
+                        <location>Canvases/BioPCDEditor/src</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>GDE2BioPCD Converter</label>
+                        <location>BioPCD/GDE2PCD/src</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>Image canvas</label>
+                        <location>Canvases/Images/src</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>BioPCD Canvas</label>
+                        <location>Canvases/biopcd/src</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>Sequence canvas</label>
+                        <location>Canvases/Sequence/src</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>Table canvas</label>
+                        <location>Canvases/Tables/src</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>Database entry canvas</label>
+                        <location>Canvases/dbpcd/src</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>Turtle shell</label>
+                        <location>Turtle/src</location>
+                    </source-folder>
+                    <source-folder style="packages">
+                        <label>Standard plugins</label>
+                        <location>Stdplug/src</location>
+                    </source-folder>
+                    <source-file>
+                        <location>build.xml</location>
+                    </source-file>
+                </items>
+                <context-menu>
+                    <ide-action name="build"/>
+                    <ide-action name="clean"/>
+                    <ide-action name="javadoc"/>
+                    <ide-action name="run"/>
+                    <ide-action name="rebuild"/>
+                    <ide-action name="test"/>
+                    <action>
+                        <label>List all ant options</label>
+                        <target>help</target>
+                    </action>
+                    <action>
+                        <label>dist</label>
+                        <target>dist</target>
+                    </action>
+                </context-menu>
+            </view>
+            <subprojects/>
+        </general-data>
+        <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/4">
+            <compilation-unit>
+                <package-root>Core/src</package-root>
+                <classpath mode="compile">build/bin:bin/turtle.jar:bin/biopcd.jar</classpath>
+                <source-level>1.8</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>Stdplug/src</package-root>
+                <classpath mode="compile">bin/biolegato.jar</classpath>
+                <source-level>1.8</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>Turtle/src</package-root>
+                <source-level>1.8</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>BioPCD/parser/src</package-root>
+                <classpath mode="compile">bin:bin/turtle.jar</classpath>
+                <source-level>1.8</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>BioPCD/GDE2PCD/src</package-root>
+                <source-level>1.8</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>Canvases/Images/src</package-root>
+                <classpath mode="compile">bin/biolegato.jar:bin/biopcd.jar:bin/turtle.jar</classpath>
+                <source-level>1.8</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>Canvases/Sequence/src</package-root>
+                <classpath mode="compile">bin/biolegato.jar:bin/biopcd.jar:bin/turtle.jar</classpath>
+                <source-level>1.8</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>Canvases/Tables/src</package-root>
+                <classpath mode="compile">bin/biolegato.jar:bin/biopcd.jar:bin/turtle.jar</classpath>
+                <source-level>1.8</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>Canvases/biopcd/src</package-root>
+                <classpath mode="compile">bin/biolegato.jar:bin/biopcd.jar:bin/turtle.jar</classpath>
+                <source-level>1.8</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>Canvases/BioPCDEditor/src</package-root>
+                <classpath mode="compile">bin:bin/biolegato.jar:bin/biopcd.jar:bin/turtle.jar</classpath>
+                <source-level>1.8</source-level>
+            </compilation-unit>
+            <compilation-unit>
+                <package-root>Canvases/dbpcd/src</package-root>
+                <classpath mode="compile">bin/biolegato.jar:bin/biopcd.jar:bin/turtle.jar</classpath>
+                <source-level>1.8</source-level>
+            </compilation-unit>
+        </java-data>
+        <preferences xmlns="http://www.netbeans.org/ns/auxiliary-configuration-preferences/1">
+            <module name="org-netbeans-modules-editor-indent">
+                <node name="text">
+                    <node name="x-java">
+                        <node name="CodeStyle">
+                            <node name="project"/>
+                        </node>
+                        <node name="project"/>
+                    </node>
+                    <node name="project"/>
+                    <node name="CodeStyle"/>
+                    <node name="x-ant+xml">
+                        <node name="CodeStyle">
+                            <node name="project"/>
+                        </node>
+                    </node>
+                </node>
+                <node name="CodeStyle">
+                    <node name="project"/>
+                </node>
+                <node name="project"/>
+                <node name="x-java"/>
+            </module>
+            <module name="org-netbeans-modules-projectimport-eclipse-core"/>
+        </preferences>
+    </configuration>
+</project>

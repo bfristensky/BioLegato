@@ -1,0 +1,9 @@
+name        "Paste in"
+icon    "$BIRCH/dat/birch_black_ico.png"
+tip    "paste data from blfiles clipboard into current window"
+
+exec        "cp $HOME/.blfiles_clipboard %out1%"
+var "out1"
+    type        tempfile
+    direction   out
+    format      tsv

@@ -1,0 +1,38 @@
+CUT - This command extracts data from standard input based on character position and field delimited matching.  Please see this command's argument documentation for more information about how this command works.
+
+COMMAND LINE ARGUMENTS
+----------------------
+ 
+This command only accepts the following command line argument formats:
+ 
+cut -d delimiter -f number_range
+cut -f number_range -d delimiter
+cut -c number_range
+ 
+ -d delimiter    # specifies a delimiter for the field parameter
+                 # delimiter is a regular expression!
+                 # see Java's guide on regular expressions (Pattern in the API)
+                 # for more details.
+ 
+ -f              # specifies which fields to extract from input based on
+                 # the delimiter set by the -d parameter
+ 
+ -c              # specifies which characters from each line of input should
+                 # be extracted.  This parameter may be used instead of the
+                 # field-delimiter parameters
+ 
+number_range     # this is any numerical set of numbers - e.g., 1-4,7-9,11-
+                 # if the last number in a set is followed by a only a dash
+                 # (i.e., 4-), this means the set of numbers from the number
+                 # indicated until the last number possible (e.g., -c 3- means
+                 # every character after the second character, exclusive)
+ 
+                 # a number range must be sorted in ascending order without any
+                 # overlap; otherwise, expect unexpected results.
+ 
+EXECUTION STATUS
+----------------
+This command returns one (1) unless an exception is encountered.  In the case of an exception, this command will return zero (0)
+ 
+@author Graham Alvare
+@author Brian Fristensky

@@ -1,0 +1,20 @@
++------------------+------------------------------------------------------+
+| Option           | Description                                          |
++------------------+------------------------------------------------------+
+| debug            | Enables BioLegato's debug mode                       |
++------------------+------------------------------------------------------+
+| exec-properties, | Executes a command and reads the output as a         |
+| ep               | properties file content for BioLegato                |
++------------------+------------------------------------------------------+
+| help,?           | Displays usage information for BioLegato             |
++------------------+------------------------------------------------------+
+| manpage,man      | Displays the manpage entry for BioLegato             |
++------------------+------------------------------------------------------+
+| optionlist       | Displays the list of options for using BioLegato     |
++------------------+------------------------------------------------------+
+| pipe             | Pipes data from the input stream into BioLegato      |
++------------------+------------------------------------------------------+
+| plugins          | Displays a list of loaded plugins                    |
++------------------+------------------------------------------------------+
+| version,v        | Displays the version information for BioLegato       |
++------------------+------------------------------------------------------+

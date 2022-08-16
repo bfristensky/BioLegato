@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="BioLegato Core" default="help">
+    <property file="../ants.properties" />
+
+    <property name="javadoc.home" value="../docs/coreapi" />
+    <property name="build.home" value="${basedir}/build" />
+    <property name="build.test" value="${basedir}/tmp" />
+    <property name="source.home" value="${basedir}/src" />
+    <property name="source.test" value="${basedir}/test" />
+    <property name="javacc.home" value="../lib" />
+
+    <path id="classpath">
+        <pathelement path="${build.home}" />
+    </path>
+
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath>
+            <pathelement location="${basedir}/../lib/ant-contrib.jar" />
+        </classpath>
+    </taskdef>
+
+    <path id="classpath.test">
+	<pathelement location="../lib/junit-3.8.1.jar" />
+	<fileset dir="../lib">
+            <include name="*.java" />
+            <include name="*.class" />
+            <include name="*.jar" />
+	</fileset>
+        <fileset dir="${build.test}">
+            <include name="*.java" />
+            <include name="*.class" />
+            <include name="*.jar" />
+        </fileset>
+        <pathelement path="${build.home}" />
+	<path refid="classpath" />
+    </path>
+    
+    <target name="help">
+        <echo><![CDATA[
+${app.name} core build file:
+build - compiles core
+clean - cleans the current build
+test  - tests program files
+docs  - generates BioLegato Core API documentation
+]]></echo>
+    </target>
+
+    <target name="-init">
+        <available property="lib.ant.present" file="${lib.ant}" />
+    </target>
+
+    <target name="-docsinit">
+    	<mkdir dir="../docs" />
+    </target>
+
+    <target name="build" depends="-init" description="Compiles BioLegato core">
+        <!-- compile BioLegato -->
+        <delete file="${build.home}" quiet="true" />
+        <mkdir dir="${build.home}" />
+        <for param="file">
+            <path>
+                <fileset dir="${source.home}" includes="**/*.jj" />
+            </path>
+            <sequential>
+                <!-- the real work goes here -->
+                <javacc
+                    target="@{file}"
+                    javacchome="${javacc.home}" />
+            </sequential>
+        </for>
+        <javac
+                destdir="${build.home}"
+                srcdir="${source.home}"
+                classpathref="classpath"
+                target="${compile.target-vm}"
+                debug="${compile.debug}"
+                optimize="${compile.optimize}"
+                deprecation="true" />
+        <jar destfile="${build.home}/${app.cmdname}.jar">
+            <manifest>
+                <attribute name="Main-Class" value="org.biolegato.core.main.BLMain" />
+                <attribute name="Class-Path" value="${app.cmdname}.jar" />
+                <attribute name="Specification-Title" value="${app.name}" />
+                <attribute name="Specification-Version" value="${app.version}" />
+                <attribute name="Specification-Vendor" value="http://home.cc.umanitoba.ca/~frist/" />
+                <attribute name="Implementation-Title" value="${app.name}" />
+                <attribute name="Implementation-Version" value="${app.version}" />
+                <attribute name="Implementation-Vendor" value="http://home.cc.umanitoba.ca/~frist/" />
+            </manifest>
+            <fileset dir="${build.home}" excludes="**/*.jar" />
+            <fileset dir="${source.home}" excludes="**/*.java,**/*.jpage,**/.*" />
+        </jar>
+    </target>
+
+    <target name="check" depends="test" description="Runs BioLegato Core test suite" />
+    
+    <target name="test" depends="build" description="Runs BioLegato Core test suite">
+        <mkdir dir="${build.test}" />
+	<javac srcdir="${source.test}" destdir="${build.test}">
+	    <classpath refid="classpath.test" />
+	</javac>
+        <jar destfile="${build.test}/test-core.jar">
+            <manifest>
+                <attribute name="Class-Path" value="test-core.jar" />
+                <attribute name="Specification-Title" value="${app.name}" />
+                <attribute name="Specification-Version" value="${app.version}" />
+                <attribute name="Specification-Vendor" value="http://home.cc.umanitoba.ca/~frist/" />
+                <attribute name="Implementation-Title" value="${app.name}" />
+                <attribute name="Implementation-Version" value="${app.version}" />
+                <attribute name="Implementation-Vendor" value="http://home.cc.umanitoba.ca/~frist/" />
+            </manifest>
+            <fileset dir="${build.test}" excludes="**/*.jar" />
+        </jar>
+	
+	<junit>
+	    <classpath refid="classpath.test" />
+	    <formatter type="brief" usefile="false" />
+	    <test name="RootSuite" />
+	</junit>
+        <delete dir="${build.test}" quiet="true" />
+    </target>
+  
+    <target name="clean">
+        <tstamp>
+                <format property="dt-stamp" pattern="yyyy-MM-dd-HH-mm" />
+                <format property="d-stamp" pattern="yyyy-MM-dd" />
+        </tstamp>
+        <delete dir="${build.home}" quiet="true" />
+        <delete dir="${build.test}" quiet="true" />
+    </target>
+
+    <target name="docs" depends="-docsinit" description="Generates BioLegato API Javadoc">
+    	<delete dir="${javadoc.home}" quiet="true" />
+    	<mkdir dir="${javadoc.home}" />
+        <javadoc
+                destdir="${javadoc.home}"
+                access="${javadoc.access}"
+                use="${javadoc.use}"
+                notree="${javadoc.notree}"
+                nonavbar="${javadoc.nonavbar}"
+                noindex="${javadoc.noindex}"
+                splitindex="${javadoc.splitindex}"
+                author="${javadoc.author}"
+                version="${javadoc.version}"
+                nodeprecatedlist="${javadoc.nodeprecatedlist}"
+                nodeprecated="${javadoc.nodeprecated}"
+                classpathref="classpath"
+                header="BioLegato ${app.version} Core API">
+            <doctitle><![CDATA[BioLegato (ver. ${app.version}) Core API]]></doctitle>
+            <bottom><![CDATA[<i>Copyright &#169; 2008-${app.year} University of Manitoba.</i>]]></bottom>
+            <packageset dir="${source.home}" />
+            <classpath path="${java.class.path}" /><!-- to make ant.jar available for javadoc -->
+            <group title="BioLegato API" />
+    	</javadoc>
+    </target>
+</project>

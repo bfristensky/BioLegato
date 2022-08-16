@@ -1,0 +1,60 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+
+package org.biopcd.parser;
+
+import java.io.IOException;
+import java.io.Reader;
+
+/**
+ * <p>PCD I/O Canvas.</p>
+ *
+ * <p>This interface is used to designate that a canvas may provide I/O for a
+ * PCD menu command.  The two types of I/O provided by the canvas are reading
+ * files (which are specified by the PCD menu command), or writing the contents
+ * of the canvas to a file (also specified by the PCD menu command).  In either
+ * case a reader or writer object is passed instead of a filename.  This allows
+ * future feature additions, such as using the 'readFile' and 'writeFile'
+ * methods to perform I/O operations on streams instead of files.</p>
+ **
+ * @author Graham Alvare
+ * @author Brian Fristensky
+ */
+public interface PCDIO {
+    /**
+     * Reads data into the canvas.
+     **
+     * @param format       the file format to use for parsing the file.  If the
+     *                     string "" is passed, the PCDIO object should auto-
+     *                     detect the format of the data.
+     * @param in           the "file" (or stream) to read in from.
+     * @param overwrite    whether to overwrite the currently selected
+     *                     data in the current canvas with the data
+     *                     being imported by this function/method.
+     * @throws IOException if an error occurs while reading
+     */
+    
+    
+    //public void readFile(String format, Reader in, boolean overwrite)
+    //                                                        throws IOException;
+    
+    
+    public void readFile(String format, Reader in, boolean overwrite, boolean forceall)
+                                                            throws IOException;
+
+
+    /**
+     * Writes data out from the canvas.
+     **
+     * @param  format      the file format to use for writing the file.
+     * @param  out         the "file" (or stream) to write out to.
+     * @param  forceall    write the entire contents of the canvas
+     *                     instead of just the currently selected
+     *                     sequences in the canvas.
+     * @throws IOException if an error occurs while writing
+     */
+    public abstract void writeFile(String format, Appendable out,
+                                        boolean forceall) throws IOException;
+}

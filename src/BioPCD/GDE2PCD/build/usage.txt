@@ -1,0 +1,10 @@
+USAGE:    GDE2PCD [options]
+OPTIONS:
+    --makemenus     Read GDE menus from $GDE_MAKEMENUS_DIR using
+                    the GDE makemenus version of the GDE format
+    --birch         Read GDE menus from a BIRCH installation.
+                    The installation is found using the $BIRCH
+                    environment variable
+    --standard      Read a .GDEmenus file the same way GDE read
+                    .GDEmenus files (i.e. search $GDE_HELP_DIR,
+                    and the current directory for a .GDEmenus file)

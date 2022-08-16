@@ -1,0 +1,429 @@
+/*
+ * CommandThread.java
+ *
+ * Created on January 6, 2010, 4:12 PM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+package org.biopcd.parser;
+
+import org.biopcd.widgets.Widget;
+import org.biopcd.widgets.WidgetInstance;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.OutputStreamWriter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+// ---------------------- UNCOMMENT BELOW FOR TURTLESHELL ----------------------
+//import org.turtleshell.Turtle;
+// ---------------------- UNCOMMENT ABOVE FOR TURTLESHELL ----------------------
+
+/**
+ * <p>Class used for making abstract actions which launch threads.</p>
+ * 
+ * <p>This class currently uses the OS's native shell for command execution.
+ *    To use Turtle SHELL instead, you must uncomment 3 lines in this file.
+ *    Each of these lines is marked in the source code with:</p>
+ * <p align=center>
+ *    <i>UNCOMMENT BELOW FOR TURTLESHELL</i><br />
+ *    <b> - AND - </b><br />
+ *    <i>UNCOMMENT ABOVE FOR TURTLESHELL</i>
+ * </p>
+ **
+ * @author Graham Alvare
+ * @author Brian Fristensky
+ */
+public class CommandThread implements ActionListener, Runnable {
+
+    /**
+     * <p>A hashmap containing mapings for all of the widgets.
+     * The mapings within the hash map are as follows:</p>
+     *
+     * <p>The key is what we will search for when we do a string replace
+     * of the command string.  This is what we perform when we modify
+     * the command string, replacing the values of keys with the values
+     * of their associated widgets.  For example, in the case of:</p>
+     *
+     * <pre>
+     *      numseq $START $END in1 ......</pre>
+     *
+     * <p>'in1', '$START' and '$END' would be valid keys within the hashmap.
+     * These keys will then be mapped to the widgets from which values
+     * would be obtained.  For instance, if the widget for '$START' is
+     * set to 10, and the widget for '$END' is set to 20, then the
+     * command would be as follows:</p>
+     *
+     * <pre>
+     *      numseq 10 20 bio1431242.tmp .....</pre>
+     *
+     * <p>Note that 'in1' also gets replaced; however, it is not visible.
+     * This is because, in this example, 'in1' is a "file widget".
+     * These are objects which create files based on the data within
+     * the canvas, and the data selected by the user.  This data gets
+     * passed to the program through a file (in this case 'bio1431242.tmp').</p>
+     *
+     * <p>It is important to note that some file widgets can also capture
+     * data obtained from running a program, and pass that program into
+     * BioLegato.  To find out more about how such file widgets work,
+     * please look at "TempFile.java" and any additional menu documentation.</p>
+     */
+    private Map<String,Widget> widgets = null;
+    /**
+     * <p>The action to perform.</p>
+     *
+     * <p>Note that this command may contain variables which will be handled by
+     * the 'widgets' hashmap.  Please see the commenting for the variable
+     * 'widgets' for more information.</p>
+     */
+    private String command = null;
+    /**
+     * This constant is used for serialization
+     */
+    private static final long serialVersionUID = 7526472295622777001L;
+    /**
+     * Determines the shell to execute, if we are not using Turtleshell
+     */
+    private static final String SHELL = (System.getenv("BL_SHELL") != null
+            ? System.getenv("BL_SHELL")
+            : (PCD.CURRENT_OS == PCD.OS.WINDOWS_9X ? "command.com"
+            : (PCD.CURRENT_OS == PCD.OS.WINDOWS_NT ? "cmd.exe" : "/bin/sh")));
+    /**
+     * Determines the parameter for directing the shell to execute a command,
+     * if we are not using Turtleshell
+     */
+    private static final String SHELL_EXEC_PARAM
+            = (System.getenv("BL_SHELL_PARAM") != null
+            ? System.getenv("BL_SHELL_PARAM")
+            : (PCD.CURRENT_OS.isWindows() ? "/C" : "-c"));
+    
+    /**
+     * <p>Creates a new instance of CommandThread.</p>
+     *
+     * <p>This version of the constructor should be used if there are no command
+     * variables that need to be handled within the command string.</p>
+     *
+     * <p>See 'widgets' variable for more information about command line
+     *    variables.</p>
+     **
+     * @param command the command for the thread to run
+     */
+    public CommandThread(String command) {
+        this(command, null);
+    }
+
+    /**
+     * <p>Creates a new instance of CommandThread.</p>
+     *
+     * <p>Please note that this version of the command thread constructor takes
+     * a map called 'widgets'.</p>
+     *
+     * <p>Here is a brief overview of how 'widgets' works:
+     * A hashmap containing mapings for all of the widgets.
+     * The mapings within the hash map are as follows:</p>
+     *
+     * <p>The key is what we will search for when we do a string replace of
+     * the command string This is what we perform when we modify the
+     * command string, replacing the values of keys with the values of
+     * their associated widgets.  For example, in the case of:</p>
+     *
+     * <code>numseq $START $END in1 ......</code>
+     *
+     * <p>'in1', '$START' and '$END' would be valid keys within the hashmap.
+     * These keys will then be mapped to the widgets from which values would
+     * be obtained.  For instance, if the widget for '$START' is set to 10,
+     * and the widget for '$END' is set to 20, then the command
+     * would be as follows:</p>
+     *
+     * <code>numseq 10 20 bio1431242.tmp .....</code>
+     *
+     * <p>Note that 'in1' also gets replaced; however, it is not visible.
+     * This is because, in this example, 'in1' is a "file widget".
+     * These are objects which create files based on the data within
+     * the canvas, and the data selected by the user.  This data gets
+     * passed to the program through a file (in this case 'bio1431242.tmp').</p>
+     *
+     * <p>It is important to note that some file widgets can also capture
+     * data obtained from running a program, and pass that program into
+     * BioLegato.  To find out more about how such file widgets work,
+     * please look at "TempFile.java" and any additional menu documentation.</p>
+     **
+     * @param command the command for the thread to run
+     * @param widgets a map used for mapping command line variables (see above).
+     */
+    public CommandThread(String command, Map<String, Widget> widgets) {
+        this.command = command;
+        this.widgets = widgets;
+    }
+    
+    /**
+     * <p>Runs the command.</p>
+     *
+     * <p>A fairly straightforward method; this method runs the 'run' method
+     * as a separate thread.  Please see the 'run' method for more information.
+     * </p>
+     **
+     * @param e ignored by this function
+     */
+    public void actionPerformed(ActionEvent e) {
+        new Thread(this).start();
+    }
+    
+    /**
+     * <p>Used for running the command.</p>
+     *
+     * <p>This function gathers all of the parameter settings from the widgets,
+     * then generates and executes the corresponding command string.</p>
+     * 
+     * <p>Turtle SHELL can be enabled/disabled here through commenting.  See the
+     * README file for more information.</p>
+     */
+    public void run() {
+        if (widgets == null) {
+            // ---------------- UNCOMMENT BELOW FOR TURTLESHELL ----------------
+            //Turtle.shellCommand(replaceArguments(command, null));
+            // ---------------- UNCOMMENT ABOVE FOR TURTLESHELL ----------------
+            
+            // execute the program and collect program output (Note, this is the
+            // NON-Turtle SHELL version, and should be commented out if Turtle
+            // SHELL is enabled.  Turtle SHELL is currently experimental/beta,
+            // and should ONLY be enabled in development versions, and only when
+            // there is significant development time available.
+            shellCommand(replaceArguments(command, null), "");
+        } else {
+            Map<String,WidgetInstance> widgetInstances
+                    = new HashMap<String,WidgetInstance>();
+
+            for (Map.Entry<String,Widget> w : widgets.entrySet()) {
+                widgetInstances.put(w.getKey(), w.getValue().getInstance());
+            }
+
+            // ---------------- UNCOMMENT BELOW FOR TURTLESHELL ----------------
+            //Turtle.shellCommand(replaceArguments(command, widgetInstances));
+            // ---------------- UNCOMMENT ABOVE FOR TURTLESHELL ----------------
+            
+            // execute the program and collect program output (Note, this is the
+            // NON-Turtle SHELL version, and should be commented out if Turtle
+            // SHELL is enabled.  Turtle SHELL is currently experimental/beta,
+            // and should ONLY be enabled in development versions, and only when
+            // there is significant development time available.
+            shellCommand(replaceArguments(command, widgetInstances), "");
+
+            // cleanup execution
+            // releases all of the input files
+            for (WidgetInstance var : widgetInstances.values()) {
+                if (var != null) {
+                    var.close();
+                }
+            }
+        }
+    }
+    
+    /**
+     * Replaces the variables in the command string with
+     * their corresponding values.
+     **
+     * @param run the command to do the replacements on.
+     * @param widgetInstances the widget instance variables
+     *                        to use for string replacement.
+     * @return the altered command string.
+     */
+    protected String replaceArguments(String run,
+            Map<String,WidgetInstance> widgetInstances) {
+        // handle some degree of recursion
+        // (i.e. a variable as a value of a variable)
+        for (int count = 0; count < 3; count++) {
+            run = traverseTree(run, widgetInstances);
+        }
+        return CommandThread.unquote(run);
+    }
+
+    /**
+     * <p>Parses the command string, find all of the variable markings
+     * (%VAR_NAME%), and replace them with their corresponding variable values.
+     * </p>
+     *
+     * <p>This method is called just before executing a command (via. a run
+     *    button)</p>
+     **
+     * @param map the hash map containing all of the variables to parse
+     * @return the processed command string
+     */
+    private String traverseTree(String run, Map<String,WidgetInstance> map) {
+        // Print what we are doing (if DEBUG MODE is set to true).
+        if (PCD.debug) {
+            System.out.println("Replacing command line arguments");
+        }
+
+        // Iterate through every variable in the map.
+        for (Map.Entry<String,WidgetInstance> entry : map.entrySet()) {
+            if (entry != null && entry.getValue() != null) {
+                // Print the key-value pair if DEBUG MODE is set to true.
+                if (PCD.debug) {
+                    System.out.println("    %" + entry.getKey() + "% = "
+                            + entry.getValue().getValue());
+                }
+
+                // Splits based on whether a variable is a map (i.e. recursion),
+                // any other variable type (toString replacement), or null
+                // (replacement with an empty string).
+                if (entry.getValue().getValue() instanceof Map) {
+                    run = traverseTree(run, (Map<String,WidgetInstance>)
+                            entry.getValue().getValue());
+                } else if (entry.getValue().getValue() != null) {
+                    // The replacement string.
+                    final String rpl = entry.getValue().getValue().toString();
+
+                    // Perform the replacement regex operation.
+                    run = run.replaceAll("(?i:" + Pattern.quote("%"
+                            + entry.getKey() + "%") + ")",
+                            Matcher.quoteReplacement(rpl));
+                } else {
+                    // Perform the replacement regex operation.
+                    run = run.replaceAll("(?i:" + Pattern.quote("%"
+                            + entry.getKey() + "%") + ")",
+                            Matcher.quoteReplacement(""));
+                }
+            }
+        }
+        return run;
+    }
+
+    /**
+     * Quotes a string, so it will not be modified by replaceArguments
+     **
+     * @param  str the string to add quotation to
+     * @return the quoted string
+     */
+    public static String quote(String str) {
+        return str.replaceAll(Pattern.quote("%"),
+                Matcher.quoteReplacement("%%"));
+    }
+
+    /**
+     * Removes quotations added to a string by the 'quote' method
+     **
+     * @param  str the string to remove quotation from
+     * @return the "unquoted" string
+     */
+    public static String unquote(String str) {
+        return str.replaceAll(Pattern.quote("%%"),
+                Matcher.quoteReplacement("%"));
+    }
+
+    
+     /**
+     * @param cmd
+     * @param data 
+     */
+    //public static nullStreamWriter() extends StreamWriter;
+    //        {
+    //            ;
+    //        }
+    //
+    
+    /**
+     * Runs simple shell commands.
+     * Reroutes all output to the console.
+     **
+     * @param cmd the command string to run
+     * @param data the data to use as standard input (System.in)
+     */
+    
+
+    public static void shellCommand(String cmd, String data) {
+        // The process object obtained on execution.
+        Process process = null;
+        // The command to execute, as a string array.
+        // DEFAULT CASE - run the command by itself.
+        cmd = cmd.trim();
+        boolean runfg = true; // run job in foreground
+        if ( cmd.endsWith("&") ) {
+            runfg = false;
+            cmd = cmd.substring(0,cmd.length()-1);
+        }
+                
+        String[] execute = new String[]{ cmd };
+
+        /* Ensures that the command will be executed properly as a shell command
+         * <p>This function generates a command list for execution.  The command
+         *      list will contain the appropriate shell for the current
+         *      operating system, followed by the "execution-argument",
+         *	(whatever flag is required to tell the shell that the rest of
+         *      the commandline should be executed by the shell), followed by
+         *      the command to execute (the variable cmd)</p>
+         * <p>Operating system values obtained fromL
+         *      http://lopica.sourceforge.net/os.html</p>
+         */
+        // Build the execution command array.
+        if (SHELL != null) {
+            // If there is a shell for the current operating system,
+            // execute the command through the shell.
+            if (SHELL_EXEC_PARAM != null) {
+                execute =
+                        new String[]{SHELL,
+                            SHELL_EXEC_PARAM, cmd};
+            } else {
+                execute = new String[]{SHELL,
+                            cmd};
+            }
+        }
+
+        // relay the command string the message system
+        System.err.println("BioPCD: executing - " + cmd);
+
+        if (runfg) {  // FOREGROUND
+            // obtain the process object for the command
+            try {
+                process = Runtime.getRuntime().exec(execute);
+
+                // Send output to streams, unless runfg is false
+                // When running jobs in the background, we DON'T want
+                // output to go to output streams, because the job wouldn't run
+                // independently, and we wouldn't be able to terminate BioLegato
+                // without killing the process.
+                // ensure the process object is not null
+                if (process != null) {
+                    // passes any data to the program via standard in
+                    if (data != null) {
+                        OutputStreamWriter dstream = new OutputStreamWriter(process.getOutputStream());
+                        dstream.write(data);
+                        //dstream.close();
+                    }
+                        // output the program's stdin and stderr to the command prompt
+                        new Thread(new StreamCopier(StreamCopier.DEFAULT_BUFF_SIZE,
+                                process.getInputStream(), System.out)).start();
+                        new Thread(new StreamCopier(StreamCopier.DEFAULT_BUFF_SIZE,
+                                process.getErrorStream(), System.out)).start();
+                        // display the command's result if debug is enabled                  
+                        System.err.println("BioPCD: Command executed successfully,"
+                                + " return status: " + process.waitFor());
+                }
+
+            } catch (Throwable e) {
+                // if there are any errors, print them to the error prompt
+                System.err.println("BioLegato: error executing command!");
+                e.printStackTrace(System.err);
+            }            
+            
+        }
+        else { // BACKGROUND
+            try {
+                Runtime.getRuntime().exec(execute);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            System.out.println("BioPCD: Command launched in background.");
+
+           // display the command's result if debug is enabled                         
+            // System.err.println("BioPCD: Command executed successfully,"
+            //+ " return status: " + process.waitFor());
+            //System.err.println("BioPCD: Command launched in background.");
+                    //process.wait(5000);            
+        }      
+    }
+}

@@ -1,0 +1,670 @@
+
+/*
+ * Copyright © 2002 Sun Microsystems, Inc., 4150 Network Circle, Santa Clara,
+ * California 95054, U.S.A. All rights reserved.  Sun Microsystems, Inc. has
+ * intellectual property rights relating to technology embodied in the product
+ * that is described in this document. In particular, and without limitation,
+ * these intellectual property rights may include one or more of the U.S.
+ * patents listed at http://www.sun.com/patents and one or more additional
+ * patents or pending patent applications in the U.S. and in other countries.
+ * U.S. Government Rights - Commercial software. Government users are subject
+ * to the Sun Microsystems, Inc. standard license agreement and applicable
+ * provisions of the FAR and its supplements.  Use is subject to license terms.
+ * Sun,  Sun Microsystems,  the Sun logo and  Java are trademarks or registered
+ * trademarks of Sun Microsystems, Inc. in the U.S. and other countries.  This
+ * product is covered and controlled by U.S. Export Control laws and may be
+ * subject to the export or import laws in other countries.  Nuclear, missile,
+ * chemical biological weapons or nuclear maritime end uses or end users,
+ * whether direct or indirect, are strictly prohibited.  Export or reexport
+ * to countries subject to U.S. embargo or to entities identified on U.S.
+ * export exclusion lists, including, but not limited to, the denied persons
+ * and specially designated nationals lists is strictly prohibited.
+ */
+
+options {
+  LOOKAHEAD = 2;
+  CHOICE_AMBIGUITY_CHECK = 2;
+  OTHER_AMBIGUITY_CHECK = 1;
+  STATIC = false;
+  DEBUG_PARSER = false;
+  DEBUG_LOOKAHEAD = false;
+  DEBUG_TOKEN_MANAGER = false;
+  ERROR_REPORTING = true;
+  JAVA_UNICODE_ESCAPE = false;
+  UNICODE_INPUT = false;
+  IGNORE_CASE = false;
+  USER_TOKEN_MANAGER = false;
+  USER_CHAR_STREAM = false;
+  BUILD_PARSER = true;
+  BUILD_TOKEN_MANAGER = true;
+  SANITY_CHECK = true;
+  FORCE_LA_CHECK = false;
+}
+
+PARSER_BEGIN(Turtle)
+
+package org.turtleshell;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.turtleshell.tasks.*;
+import org.turtleshell.strings.*;
+
+/**
+ * Turtle shell syntax parser
+ **
+ * This class handles all of the main syntax parsing for turtle shell.
+ * The main components to the grammar are defined in GenCommand() and
+ * ControlBlock(). Each method contains detailed documentation about
+ * what is supported by the language.
+ *
+ * The turtle shell language is meant to be a simplified cross-platform Java
+ * implementation of a command line shell.  Turtle shell follows closely the
+ * general syntaxes of Bash and SH; however, this does not mean that Turtle
+ * shell is a one-to-one clone of Bash or SH.  There are significant
+ * differences because Turtle shell is much simpler.  Some of the differences
+ * are within the grammar; however, the most surprising of differences are
+ * likely found in the implementations of Turtle shell's internal commands.
+ * Please see each of the internal command javadoc and other documentation
+ * for more details on how any of the interal commands differ from Bash and SH
+ *
+ * The basic grammar of Turtle shell supports the following basic constructions
+ * (and combinations):
+ *
+ * 1. internal commands -- specified as strings
+ *      see CommandBuilder() and the class org.turtleshell.Command
+ *
+ * 2. external commands -- ALSO specified as strings
+ *      see CommandBuilder() and the class org.turtleshell.Command
+ *
+ * 3. escaped external commands -- strings preceeded by an asterisk (*)
+ *      see CommandBuilder() and the class org.turtleshell.Command
+ *
+ * 4. commands in parenthesis (executed as one entity)
+ *      This allows backgrounding a block of code.  While each command within
+ *      the block would be ran sequentially, the entire block would be run
+ *      asynchronously with the rest of the commands.
+ *
+ * 5. backgrounding processes (& at the end of a command) -- nedit hello.py &
+ *      Backgrounded processes will be ran asynchronously from the main body
+ *      of the code.  Please note that after the ampersand, a semicolon may
+ *      optionally be used to specify more commands on the same line.
+ *
+ * 6. semicolon separated command lists -- echo "hello!"; echo "This is Turtle"
+ *      All commands separated by semicolons will be ran sequentially.
+ *      The behaviour of the semicolon is the same as a newline, except
+ *      the semicolon allows for writing multiple commands on a single line.
+ *
+ * 7. piping program output to other commands
+ *      Commands may be separated by pipe characters (|).  The pipe character
+ *      indicates that the standard input from the command follwing the pipe
+ *      character is the same as the standard output from the command
+ *      preceding the pipe character.  In other words, the standard output of
+ *      the preceding command will be piped into the standard input of the
+ *      command following the pipe character.  Please note that after the
+ *      filename, a semicolon may optionally be used to specify more commands
+ *      on the same line.
+ *
+ * 8. piping program output to a file
+ *      Additionally, commands may send their standard output to a file.
+ *      Any command followed by a greater than symbol and a file name will
+ *      send its standard output to that file.
+ *
+ * 9. conjugated execution (AND)
+ *      Commands may be executed in conjunction with one another.
+ *      This means that a command following a conjunction symbol (&&)
+ *      will only be executed if the return status from the command
+ *      preceding the conjunction symbol (&&) is NOT equal to zero (0).
+ *
+ * 10. exclusive disjunct execution (XOR)
+ *      Commands may be executed in disjunctions with one another.
+ *      This means that a command following a disjunction symbol (||)
+ *      will only be executed if the return status from the command
+ *      preceding the disjunction symbol (||) IS equal to zero (0).
+ *
+ * 11. If statements (without else)
+ *
+ *      if [ condition ]; then
+ *          .... statements
+ *      fi
+ *
+ * 12. If statement (with else)
+ *
+ *      if [ condition ]; then
+ *          .... statements
+ *      else
+ *          .... more statements
+ *      fi
+ *
+ *      where condition is a conditional statement with the format
+ *
+ *          <tutleshell string> <comparison operator> <tutleshell string>
+ *
+ *      <tutleshell string> can be any valid turtle shell string.
+ *      Some examples are:
+ *
+ *          "hello world"
+ *          hello
+ *          103
+ *          `expr 1 + 1`
+ *          $Y
+ *
+ *      <comparison operator> can be any of the following
+ *
+ *          =   equal
+ *          <=  less than, OR equal to
+ *          <   less than, but NOT equal to
+ *          >   greater than, OR equal to
+ *          >=  greater than, but NOT equal to
+ *
+ *      Therefore an example of an if statement would be:
+ *
+ *          A=`cat value.txt`
+ *          if [ $A < 100 ]; then
+ *              echo "A is less than 100"
+ *          else
+ *              echo "A is greater than or equal to 100"
+ *          fi
+ *
+ * 13. While loops
+ *      While loops are blocks of code which are executed repeatedly
+ *      until a condition yields false.  The format of a while loop
+ *      is as follows:
+ *
+ *      while [ condition ]; do
+ *          .... block of code
+ *      done
+ *
+ *      where condition is a conditional statement with the format
+ *
+ *          <tutleshell string> <comparison operator> <tutleshell string>
+ *
+ *      <tutleshell string> can be any valid turtle shell string.
+ *      Some examples are:
+ *
+ *          "hello world"
+ *          hello
+ *          103
+ *          `expr 1 + 1`
+ *          $Y
+ *
+ *      <comparison operator> can be any of the following
+ *
+ *          =   equal
+ *          <=  less than, OR equal to
+ *          <   less than, but NOT equal to
+ *          >   greater than, OR equal to
+ *          >=  greater than, but NOT equal to
+ *
+ *      Therefore an example of a while loop would be:
+ *
+ *          A=0
+ *          while [ $A < 100 ]; do
+ *              A=`expr $A + 1`
+ *              echo $A
+ *          done
+ *
+ * 14. Executable strings
+ *      Executable strings are turtle shell string objects that have their
+ *      content dynamically generated from executing a command.  An example
+ *      is `expr 1 + 1`, this would set the string to the output from the
+ *      command expr 1 + 1.  In other words, the string would be 2.
+ *      Executable strings are not executed until their content is needed.
+ *      In a loop, they are executed each iteration of the loop.
+ *
+ *          There are two formats for executable strings:
+ *              1. the backwards quote format
+ *
+ *                  e.g., echo `expr 1 + 1`
+ *
+ *              2. the exec variable format
+ *
+ *                  e.g., echo $(expr 1 + 1)
+ *
+ *          The latter (exec variable format) can be nested as such:
+ *
+ *                  echo $(expr 1 + $(cat value))
+ *
+ * 15. Comments
+ *      Notes for humans, which the computer (parser) ignores.
+ *      All comments are preceeded by a pound symbol (#).
+ **
+ * @author Graham Alvare
+ * @author Brian Fristensky
+ */
+public class Turtle {
+    /**
+     * The initial local environment hash map.
+     * This is used for storing the initial values for environment variables.
+     * These values are copied to the object-specific programenv object.
+     */
+    public static TEnv localenv = new TEnv();
+
+    /**
+     * An empty shellstring object, for general use
+     */
+    public static final TString   NULL_SHELL_STRING = new ShellString("");
+    /**
+     * An empty array of TStrings, for general use
+     */
+    public static final TString[] EMPTY_STR_ARRAY   = new TString[0];
+
+    /**
+     * Starts turtle shell
+     **
+     * @param args currently no command line arguments
+     *             are supported by Turtle shell
+     */
+    public static void main(String args[]) {
+        try {
+            System.out.println("TurtleShell: bringing back the shell!\n"
+                + "Enter a command:");
+            Turtle parser = new Turtle(System.in);
+            parser.Input(true);
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+        }
+    }
+
+    /**
+     * Runs simple shell commands.
+     * Reroutes all output to the console.
+     **
+     * @param cmd the command string to run
+     */
+    public static void shellCommand(String cmd) {
+        TTask command;
+        // obtain the process object for the command
+        try {
+            System.out.println("Command: " + cmd);
+            command = new Turtle(new BufferedReader(new StringReader(cmd))).CommandList();
+            /*System.err.println("Command execution disabled");
+            System.err.println();
+            System.err.println("Parsed command");
+            System.err.println("--------------");*/
+            System.err.println(command);
+            command.exec(new TEnv(localenv));
+        } catch (Throwable e) {
+            // if there are any errors, print them to the error prompt
+            System.out.println("Error executing command: " + cmd);
+            e.printStackTrace(System.err);
+        }
+    }
+
+}
+
+PARSER_END(Turtle)
+
+/**
+ * The first step of the turtle shell parse tree.
+ * This function will parse individual commands at the top level of scope
+ * for a given turtle shell instance (or script).  Commands at this level
+ * are executed immediately after parsing.
+ */
+void Input(boolean prompt) :
+{
+    TTask command = null;
+}
+{
+    { if (prompt) { System.out.print(">"); } }
+    (
+        command = CommandList() {
+            // TODO: disabled for parse testing
+            command.exec(localenv);
+            if (prompt) {
+                System.out.print(">");
+            }
+        }
+    )+
+    <EOF>
+}
+
+/**
+ * This method generates a command list
+ **
+ * The purpose of this method is to generate the body of control blocks,
+ * which must contain multiple commands.  Although the commands in a command
+ * list are separated by new lines, each command can (because we are using
+ * the term command here to loosely mean any object generated by GenCommand)
+ * also be separated by semicolons (;).  It will just be interpreted as a
+ * single TTask object (generated by GenCommand().
+ **
+ * @return a list of commands.
+ */
+TTask CommandList() :
+{
+    TTask  next    = null;
+    TTask  current = null;
+}
+{
+    [ <EOC> ] current=GenCommand()
+    (
+      <EOC>  next=GenCommand() { current = new SequentialTask (current, next); }
+    )*
+
+    [ <EOF> ]
+
+    { return current;}
+}
+
+/**
+ * This method generates a single full command.
+ **
+ * This is the MEAT of the program!!!
+ * This method will generate any possible command structure available within
+ * Turtle shell.  All methods (except Input) are called directly or indirectly
+ * from this method
+ *
+ * This method handles the bulk of the command syntax directly.  This method
+ * creates the following command relations directly:
+ *
+ * 1. parenthesis commands (executed as one entity)
+ *      This allows backgrounding a block of code.  While each command within
+ *      the block would be ran sequentially, the entire block would be run
+ *      asynchronously with the rest of the commands.
+ *
+ * 2. backgrounding processes (& at the end of a command) -- nedit hello.py &
+ *      Backgrounded processes will be ran asynchronously from the main body
+ *      of the code.  Please note that after the ampersand, a semicolon may
+ *      optionally be used to specify more commands on the same line.
+ *
+ * 3. semicolon separated command lists -- echo "hello!"; echo "Turtle shell!"
+ *      All commands separated by semicolons will be ran sequentially.  The
+ *      behaviour of the semicolon is the same as a newline, except the
+ *      semicolon allows for writing multiple commands on a single line.
+ *
+ * 4. piping program output to other commands
+ *      Commands may be separated by pipe characters (|).  The pipe character
+ *      indicates that the standard input from the command follwing the pipe
+ *      character is the same as the standard output from the command
+ *      preceding the pipe character.  In other words, the standard output of
+ *      the preceding command will be piped into the standard input of the
+ *      command following the pipe character.  Please note that after the file
+ *      name, a semicolon may optionally be used to specify more commands
+ *      on the same line.
+ *
+ * 5. piping program output to a file
+ *      Additionally, commands may send their standard output to a file.  Any
+ *      command followed by a greater than symbol and a file name will send
+ *      its standard output to that file.
+ *
+ * 6. conjugated execution (AND)
+ *      Commands may be executed in conjunction with one another.  This means
+ *      that a command following a conjunction symbol (&&) will only be
+ *      executed if the return status from the command preceding the
+ *      conjunction symbol (&&) is NOT equal to zero (0).
+ *
+ * 7. exclusive disjunct execution (XOR)
+ *      Commands may be executed in disjunctions with one another.  This means
+ *      that a command following a disjunction symbol (||) will only be
+ *      executed if the return status from the command preceding the
+ *      disjunction symbol (||) IS equal to zero (0).
+ *
+ * Additionally, this method calls other syntax structues via the method
+ * CommandBuilder() and ControlBlock().  CommandBuilder() handles piping a
+ * file from standard input, as well as general command string parsing.
+ * ControlBlock() handles all of the control structures available such as
+ * loops and if-statements.  For more information on these syntax structures,
+ * please see CommandBuilder() and ControlBlock() in the javadoc documentation.
+ */
+TTask GenCommand() :
+{
+    Token    t         = null;
+    TTask    next      = null;
+    TTask    current   = null;
+    TTask    feed      = null;
+    TString  value     = NULL_SHELL_STRING;
+    boolean background = false;
+}
+{
+    (
+          current=ControlBlock()
+        | (
+            (          current = CommandBuilder ()
+            | <OPENP>  current = CommandList    () <CLOSEP>
+            ) { feed = current; }
+
+            [ <WSP> ]
+            (
+                (
+                  <LT>
+                    {
+                        TTask tout = new Command(new TString[]{new ShellString("cat"), Strn()});
+                        tout.setoutput(feed);
+                        feed = tout;
+                    }
+                | <GT>     { current.setoutput(new TurtleFileWriter(Strn(), false)); }
+                | <APPEND> { current.setoutput(new TurtleFileWriter(Strn(), true));  }
+                | <BKG>    { background = true; }
+                    [ next=GenCommand() { feed = new SequentialTask (feed, next); } ]
+                ) [ <WSP> ]
+            )*
+            (
+              <AND>  next=GenCommand() { feed = new AndTask   (feed, next); }
+            | <OR>   next=GenCommand() { feed = new OrTask    (feed, next); }
+            | <PIPE> next=GenCommand() { current.setoutput(next); current = next; }
+            )?
+        ) {
+            if (background) {
+                feed.bkg();
+            }
+            current = feed;
+        }
+    )
+
+    {
+        return current;
+    }
+}
+
+/**
+ * Generates a control block
+ **
+ * This method generates objects necessary to represent and execute any
+ * loops or if-statements.  Currently the only control blocks suppored are:
+ *
+ *      while-loops
+ *      if-statements
+ *
+ * The basic format of each is as follows
+ *
+ * 1. If statement format (without else)
+ *
+ *      if [ condition ]; then
+ *          .... statements
+ *      fi
+ *
+ * 2. If statement format (with else)
+ *
+ *      if [ condition ]; then
+ *          .... statements
+ *      else
+ *          .... more statements
+ *      fi
+ *
+ * 3. While loop
+ *
+ *      while [ condition ]; do
+ *          .... statements
+ *      done
+ *
+ * The above control blocks can create almost any control-flow desired,
+ * especially with the internal (and external) commands available in
+ * Turtle shell.
+ **
+ * @return the turtle shell executable task representing the control block
+ */
+TTask ControlBlock() :
+{
+    TTask  test    = null;
+    TTask  result  = null;
+    TTask  command = null;
+    TTask  elsecmd = null;
+    TString var    = NULL_SHELL_STRING;
+    TString list   = NULL_SHELL_STRING;
+}
+{
+    (
+        (
+            <WHILE> test=GenCommand()      <EOC>
+            <DO>    command=CommandList()  <EOC> <DONE>
+        )
+        {
+            result = new WhileTask(test, command);
+        }
+    |
+        (
+            <IF>    test=GenCommand()      <EOC>
+                <THEN> command=CommandList()
+              [ <EOC> <ELSE> elsecmd=CommandList() ]
+            <EOC> <FI>
+        )
+        {
+            result = new IfTask(test, command, elsecmd);
+        }
+    |
+        (
+            <FOR>   var=Strn()      <IN>
+                    list=Strn()       <EOC> <DO>
+                    command=CommandList()  <EOC> <DONE>
+        )
+        {
+            result = new IfTask(test, command, elsecmd);
+        }
+    )
+    { return result; }
+}
+
+/**
+ * Builds a command task object.
+ **
+ * This method takes a command string and generates a command object from it.
+ * The method also parses any occurances of "> filename", and configures the
+ * command to pipe the file to the command's standard input.
+ *
+ * NOTE: only piping a file to standard input is parsed here.  Piping output
+ *       to files and other commands is performed in GenCommand()
+ **
+ * @return the executable command task
+ */
+TTask CommandBuilder() :
+{
+    /* The token to parse into a String value */
+    TTask     cmd    = null;
+    TString[] cmdstr = null;
+}
+{
+    (
+         cmdstr = CommandString    () { cmd = new Command(cmdstr); }
+    )
+
+    { return cmd; }
+}
+
+/**
+ * Parses command strings -- command + parameters
+ **
+ * This produces an array of internal turtle shell strings.
+ * The first index is the command to execute (e.g., echo), and every other
+ * index within the array is a parameter for the command (e.g., hello world).
+ **
+ * @return the array of command + parameters parsed
+ */
+TString[] CommandString() :
+{
+    TString       vadd    = NULL_SHELL_STRING;
+    List<TString> command = new ArrayList<TString>();
+}
+{
+            vadd=Strn() { command.add(vadd); }
+    ( <WSP> vadd=Strn() { command.add(vadd); } )*
+    [ <WSP> ]
+
+    { //System.err.println("Command: " + command.toString());
+      return command.toArray(EMPTY_STR_ARRAY); }
+}
+
+/**
+ * Parses turtle shell internal string objects.
+ **
+ * Currently 4 types of internal strings are supported:
+ *
+ * 1. unquoted id strings -- e.g., echo
+ * 2. quoted text strings -- e.g., "hello world!"
+ * 3. variable strings    -- e.g., $ABC
+ * 4. executable strings  -- e.g., `echo abc`
+ **
+ * Executable strings are turtle shell string objects that have their content
+ * dynamically generated from executing a command.  An example is `expr 1 + 1`,
+ * this would set the string to the output from the command expr 1 + 1.  In
+ * other words, the string would be 2.  Executable strings are not executed
+ * until their content is needed.  In a loop, they are executed each iteration
+ * of the loop.
+ **
+ * @return the corresponding turtle shell internal string object
+ */
+TString Strn() :
+{
+    Token t = null;
+    TString value = NULL_SHELL_STRING;
+    TTask exec;
+}
+{
+    ( t=<TEXT>  { value = new ShellString(t.image); }
+    | <EXP>     { value = new DoubleExecString(CommandList()); } <CLOSEP>
+    )+
+    { return value; }
+}
+
+/* Control block tokens */
+<DEFAULT,SUFFIX> TOKEN: {
+             < DO:      "do"    > : DEFAULT
+           | < DONE:    "done"  > : DEFAULT
+           | < ELSE:    "else"  > : DEFAULT
+           | < FI:      "fi"    > : DEFAULT
+           | < FOR:     "for"   > : DEFAULT
+           | < IF:      "if"    > : DEFAULT
+           | < IN:      "in"    > : DEFAULT
+           | < THEN:    "then"  > : DEFAULT
+           | < WHILE:   "while" > : DEFAULT
+           }
+
+/* String tokens */
+<*> TOKEN: {
+             < TEXT:         ( ( "\"" ( ~["\""] | "\\\"" )* "\"" )
+                             | ( "\'" ( ~["\'"] | "\\\'" )* "\'" )
+                             | ( "`"  ( ~["`"]  | "\\`"  )* "`"  )
+                             | ( ["\\"]~[] )
+                             | ( ["0"-"9"] )
+                             | ( ~[" ","`","&","<",">","|","'",
+                               "\"","\t","\n","\r",";","(",")"] ) )+ > : CMD
+           }
+
+/* Linker tokens */
+<*> TOKEN: {
+             < AND:        "&&" > : DEFAULT
+           | < BKG:        "&"  > : DEFAULT
+           | < OR:         "||" > : DEFAULT
+           | < PIPE:       "|"  > : DEFAULT
+           | < LT:         "<"  > : DEFAULT
+           | < APPEND:     ">>" > : DEFAULT
+           | < GT:         ">"  > : DEFAULT
+           | < OPENP:      "("  > : DEFAULT
+           | < CLOSEP:     ")"  > : DEFAULT
+           | < EXP:        "$(" > : DEFAULT
+           }
+
+/* End of command */
+<DEFAULT,CMD> TOKEN: {
+             < EOC: ( [";","\n","\r"] ) > : SUFFIX // to skip multiple EOC's
+}
+
+<CMD> TOKEN: {
+             < WSP: ( [" ","\t"]      )+ > : DEFAULT
+}
+
+<*> SKIP: { < ~[] > }

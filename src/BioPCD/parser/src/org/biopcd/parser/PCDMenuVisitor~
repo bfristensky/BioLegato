@@ -1,0 +1,1042 @@
+/* PRODUCTIONS */
+
+
+/**
+ * <p>Parses a PCD menu.</p>
+ * <p>The format for a PCD menu is:</p>
+ * <pre>
+ *      menu Name
+ *      MenuItem data</pre>
+ **
+ * @param menuMap  the menu hashtable to add the menus and menu items to.
+ * @param scope    the indentation scope to parse the objects in.
+ * @param home     the relative path of the PCD file(s) to load
+ *                 - used for making the command paths relative.
+ * @param canvas   the parent canvas of the PCD menu items.
+ * @param parent   the parent window for displaying the PCD menu items in.
+ */
+void parseFullMenu(Map<String,Map<String, PCDObject>> menuMap, int scope,
+                   File home, PCDIO canvas, JFrame parent) :
+{
+    /* The name of the menu */
+    String menuName;
+}
+{
+    ( LOOKAHEAD({testIndent(scope)})
+        ( <T_MENU> <WSP> menuName=Text() nl()
+            ( LOOKAHEAD({testIndent(scope + 1)})
+                (
+                    <T_ITEM> nl()
+                    {
+                        try {
+                            menuAdd(menuMap, menuName,
+                                    parseMenuItem(scope + 2, home, canvas));
+                        } catch (ParseException ex) {
+                            System.out.println("FAILED PARSE OF MENU ITEM" +
+                                               " --- SKIPPING AHEAD!");
+                            ex.printStackTrace(System.err);
+                            Token skipto;
+                            do {
+                                skipto = getNextToken();
+                            } while (skipto.kind != T_ITEM
+                                && skipto.kind != T_MENU
+                                && skipto.kind != EOF);
+                        }
+                    }
+                )
+            )+
+        )
+    )+
+}
+
+/**
+ * <p>Parses a PCD menu item.</p>
+ * <p>The format for a PCD menu item is:</p>
+ * <pre>
+ *     Header
+ *     Content</pre>
+ * <p>The format for a PCD menu item header is:</p>
+ * <pre>
+ *     [ Optional Blank Space ]
+ *     [ PCD Options ]
+ *     Tabs and Parameters</pre>
+ * <p>Currently supported PCD options:</p>
+ * <table>
+ * <tr><th>Option name</th><th>Description</th></tr>
+ * <tr><td>name</td>       <td>the name of the PCD command</td></tr>
+ * <tr><td>tip</td>        <td>the tool-tip text for the PCD command</td></tr>
+ * <tr><td>icon</td>       <td>the path of the PCD command's icon file</td></tr>
+ * <tr><td>system</td>     <td>a list of supported system configurations
+ *                             for the PCD command</td></tr>
+ * </table>
+ **
+ * @param  scope the indentation scope to parse the objects in
+ * @param  path the parent directory of the menu being read.
+ * @param  pcdio the PCD I/O object for all temporary files to interact with
+ * @return the PCD object represented by the menu item
+ */
+PCDObject parseMenuItem(int scope, File path, PCDIO pcdio) :
+{
+    /**
+     * The menu item name for the current PCD file program
+     */
+    String  name              = null  ;
+    /**
+     * If the exec parameter in a PCD file is set, this variable will
+     * also be set.  This variable is used to run commands which do not
+     * have any associated display widgets.  If this is variable is not
+     * null, the command will run once the menu button is pressed.  The
+     * command used for running will be stored in this variable.
+     */
+    String  exec              = null  ;
+    /**
+     * The menu item icon for the current PCD file program
+     */
+    String  icon              = null  ;
+    /**
+     * The menu item tooltip text for the current PCD file program
+     */
+    String  tooltip           = null  ;
+    /**
+     * Stores which systems the current PCD file is supported on
+     */
+    Set<SystemToken> systems  = new HashSet<SystemToken>();
+    /* the token to store all of the information received about the option */
+    Token t;
+    /* A list of widgets parsed for the menu item's creation */
+    Map<String,Widget> widgetList;
+}
+{
+    /* Match any preceding whitespace (note that nl() tokens skip blank lines */
+    [ nl() ]
+    
+    /* Match any PCD options - this should come before the actual program
+     * definition this rule makes things more organized and easier to read */
+    LOOKAHEAD({testIndent(scope)})
+        <T_CMDNAME> <WSP> { name    = Text(); } nl()
+
+    [ LOOKAHEAD({testIndent(scope) && getToken(1).kind == T_ICON})
+        <T_ICON>    <WSP> { icon    = Text(); } nl() ]
+    [ LOOKAHEAD({testIndent(scope) && getToken(1).kind == T_TIP})
+        <T_TIP>     <WSP> { tooltip = Text(); } nl() ]
+    [ LOOKAHEAD({testIndent(scope) && getToken(1).kind == T_SYS})
+        <T_SYS>
+            ( <WSP>                               SystemName() nl()
+            | nl() ( { assertIndent(scope + 1); } SystemName() nl() )+
+            ) ]
+    [ LOOKAHEAD({testIndent(scope) && getToken(1).kind == T_EXEC})
+        <T_EXEC>    <WSP> { exec    = Text(); } nl() ]
+    [ LOOKAHEAD({testIndent(scope) && getToken(1).kind == T_DATABASE})
+        mainConnection=ParseDBConnect()  nl()
+    ]
+
+    widgetList=Body(scope, pcdio)
+    { return new PCDObject(path, name, exec, icon,
+                           tooltip, systems, widgetList); }
+}
+
+
+/**
+ * <p>Parses PCD menu item content</p>
+ * <p>The format for a PCD menu item is:</p>
+ * <pre>
+ *     [ Optional Blank Space ]
+ *     [ PCD Options ]<br />
+ *     Tabs and Parameters</pre>
+ **
+ * @param scope the scope to parse the objects in
+ * @param pcdio the PCD I/O object for all temporary files to interact with
+ */
+Map<String, Widget> Body(int scope, PCDIO pcdio) :
+{
+}
+{
+    /* Initialize the widget list to store all of the widgets for the program */
+    { masterWidgetList = new LinkedHashMap<String, Widget>(); }
+
+    /* Match any parameters or tabs in the program
+     * (i.e. the functional components of a PCD file) */
+    ( Content(scope, masterWidgetList, pcdio) )*
+
+    /* Match the end of file token */
+    [ <EOF> ]
+
+    /* return the master widget list */
+    { return masterWidgetList; }
+}
+
+
+/**
+ * <p>Parses PCD file content</p>
+ * <p>PCD file content can be any of the following:</p>
+ * <pre>
+ *     Tabs, panels, action (buttons) and Parameters</pre>
+ **
+ * @param scope      the scope to parse the objects in
+ * @param widgetList the list of all widgets within
+ *                   the current BioPCD menu item body
+ * @param pcdio      the PCD I/O object for all temporary
+ *                   files to interact with
+ */
+void Content(int scope, Map<String, Widget> widgetList, PCDIO pcdio) :
+{
+}
+{
+    /* Match any parameters or tabs in the prorgam
+     * (i.e. the functional components of a PCD file) */
+    (
+      Param(scope, widgetList, pcdio)
+    | Act  (scope, widgetList)
+    | Tab  (scope, widgetList, pcdio)
+    | Panel(scope, widgetList, pcdio)
+    )
+}
+
+
+/**
+ * <p>
+ *    Generates a tabbed pane based on reading the tab tag from the PCD file.
+ * </p>
+ * <p>
+ *    This function reads the &lt;T_TAB&gt; tag, parses the name, and creates a
+ *    new panel object that all sub-components can be added to.  The tab
+ *    is then added to a tabbed pane in the main window.
+ * </p>
+ * <p>
+ *    Each tab can only contain paramter objects,
+ *    and each tab MUST contain at least one parameter object.
+ * </p>
+ **
+ * @param scope the scope to parse the tabset object into
+ * @param widgetList the list of widgets to add the tab to
+ * @param pcdio the PCD I/O object for all temporary files to interact with
+ */
+void Tab(int scope, Map<String, Widget> widgetList, PCDIO pcdio) : {
+    /* Temporarily stores parameters before they are added to the main panel */
+    Map<String, Widget> tabParameterList = new LinkedHashMap<String, Widget>();
+    /* The current tabset to add to biolegato's menu system*/
+    TabbedWidget tabset = null  ;
+}
+{
+    { assertIndent(scope); } <T_TABSET> nl()
+    /* Ensure that the main tab is not null */
+    {
+        tabset = new TabbedWidget();
+        widgetList.put("____tab" + widgetList.size(), tabset);
+    }
+    
+    (
+        /* Match the tab name and create the tab */
+        LOOKAHEAD({testIndent(scope + 1)})
+        ( <T_TAB> <WSP> { tabset.addTab(Text(), tabParameterList); } nl()
+    
+            /* Match one or more contentwidgets for the tab */
+            ( LOOKAHEAD({testIndent(scope + 2)}) Content(scope + 2,
+                                                    tabParameterList, pcdio) )+
+        ) {
+            tabParameterList = new LinkedHashMap<String, Widget>();
+        }
+    )+
+}
+
+
+/**
+ * <p>
+ *    Generates a non-tabbed panel based on reading the panel tag from the PCD
+ *    file.
+ * </p>
+ * <p>
+ *    This function reads the &lt;T_PANEL&gt; tag, parses it,
+ *    and creates a panel.
+ * </p>
+ * <p>
+ *    Panels are used so related parameters can be positioned together
+ *    for example, related buttons can be positioned side by side.
+ * </p>
+ **
+ * @param scope the scope to parse the panel object into
+ * @param widgetList the list of widgets to add the panel to
+ * @param pcdio the PCD I/O object for all temporary files to interact with
+ */
+void Panel(int scope, Map<String, Widget> widgetList, PCDIO pcdio) : {
+    /* The panel widget list to add parameters to */
+    Map<String, Widget> panelWidgetList = new LinkedHashMap<String, Widget>();
+}
+{
+    { assertIndent(scope); } <T_PANEL> nl()
+    /* Match one or more contentwidgets for the panel */
+    ( LOOKAHEAD({testIndent(scope + 1)}) ( Content(scope + 1,
+                                                 panelWidgetList, pcdio) ) )+
+    { widgetList.put("___panel" + widgetList.size(),
+                     new PanelWidget(panelWidgetList)); }
+}
+
+
+/**
+ * <p>
+ *    Generates a parameter component according to the PCD file's
+ *    &lt;T_ACT&gt; production(s).
+ * </p>
+ * <p>
+ *    This function reads the &lt;T_ACT&gt; tag, and creates a new button
+ *    for running commands in BioLegato.
+ * </p>
+ **
+ * @param scope the scope to parse the action object in
+ * @param widgetList the list of widgets to add the action to
+ */
+void Act(int scope, Map<String, Widget> widgetList) :
+{
+    /* the label for the field */
+    String label = "";
+    /* the shell command to run */
+    String shell = "";
+    /* whether the button should close the command window */
+    boolean close = false;
+}
+{
+      assertIndent(scope)
+      <T_ACT>     <WSP> label=Text() nl() assertIndent(scope + 1)
+      <T_SHELL>   <WSP> shell=Text() nl()
+    [ LOOKAHEAD( { testIndent(scope + 1) } )
+      <T_CLOSE>   <WSP> close=Bool() nl() ]
+
+//    [ <T_CHECK>     ConditionList(scope + 1) ]
+    { widgetList.put("___act" + label, new CommandButton("___act" + label,
+                            masterWidgetList, label, shell, close)); }
+}
+
+
+/**
+ * <p>
+ *      Generates a parameter component according to the PCD file's
+ *      &lt;T_PARAM&gt; production(s).
+ * </p>
+ * <p>
+ *      This function reads the &lt;T_PARAM&gt; tag, parses the name, and
+ *      creates a new parameter component corresponding to the type of parameter
+ *      read.
+ * </p>
+ * <p>
+ *      Each parameter MUST contain a type as its first field!
+ * </p>
+ * <p>
+ *      Currently the following types are supported:
+ * </p>
+ * <table>
+ *  <tr><th>Type field</th><th>Description</th> </tr>
+ *  <tr><td>button</td>    <td>Buttons which can run commands or perform
+                               functions</td> </tr>
+ *  <tr><td>list</td>      <td>A JList containing options</td> </tr>
+ *  <tr><td>chooser</td>   <td>A radio button field</td> </tr>
+ *  <tr><td>text</td>      <td>A text-field</td> </tr>
+ *  <tr><td>number</td>    <td>A slider/spinner combination to set numbers</td>
+ *                                                                        </tr>
+ *  <tr><td>decimal</td>   <td>A decimal number widget</td> </tr>
+ *  <tr><td>file</td>      <td>A file used for I/O</td> </tr>
+ *  <tr><td>dir</td>       <td>A directory used for file I/O</td> </tr>
+ * </table>
+ **
+ * @param scope the scope to parse the parameter object in
+ * @param widgetList the list of widgets to add the parameter to
+ * @param pcdio the PCD I/O object for all temporary files to interact with
+ */
+void Param(int scope, Map<String, Widget> widgetList, PCDIO pcdio) :
+{
+    /* The name of the parameter (for variable reference) */
+    String name;
+    
+    /* Temporarily stores parameters before they are returned */
+    Widget parameter = null;
+}
+{
+    /* Match the tab name and header */
+    assertIndent(scope)     <T_PARAM> <WSP> name=Text() nl()
+
+    /* Match one or more option fields for the parameter
+     * (NOTE: the type field is mandatory!)              */
+    assertIndent(scope + 1) <T_TYPE>  <WSP>
+          (
+            <T_BUTTON>   nl() parameter = buttonFields   (scope + 1, name)
+          | <T_CHOOSER>  nl() parameter = listFields     (scope + 1, name, ListType.CHOOSER)
+          | <T_COMBOBOX> nl() parameter = listFields     (scope + 1, name, ListType.COMBOBOX)
+          | <T_LIST>     nl() parameter = listFields     (scope + 1, name, ListType.LIST)
+          | <T_TEXT>     nl() parameter = textFields     (scope + 1, name)
+          | <T_TEXTAREA> nl() parameter = textAreaFields (scope + 1, name)
+          | <T_NUMBER>   nl() parameter = numberFields   (scope + 1, name)
+          | <T_DECIMAL>  nl() parameter = decimalFields  (scope + 1, name)
+          | <T_FILE>     nl() parameter = fileFields     (scope + 1, name)
+          | <T_DIR>      nl() parameter = dirFields      (scope + 1, name)
+          | <T_TEMPFILE> nl() parameter = tempfileFields (scope + 1, name, pcdio)
+          )
+//    [ <T_CHECK>     ConditionList(scope + 1) ]
+    { widgetList.put(name, parameter); }
+}
+
+
+/**
+ * Parses all of the fields that should be part of any button field
+ **
+ * @param scope the scope level to read the objects at
+ * @param name the name of the widget
+ * @return the button widget object
+ */
+Widget buttonFields(int scope, String name) :
+{
+    /* the label for the field */
+    String label = "";
+    /* the shell command to run */
+    String shell = "";
+    /* whether the button should close the command window */
+    boolean close = false;
+}
+{
+      assertIndent(scope)
+    [ <T_LABEL>     <WSP> label=Text() nl() assertIndent(scope)]
+      <T_SHELL>     <WSP> shell=Text() nl()
+    [ LOOKAHEAD( { testIndent(scope) } )
+      <T_CLOSE>     <WSP> close=Bool() nl() ]
+      
+    { return new CommandButton(name, masterWidgetList, label, shell, close); }
+}
+
+
+/**
+ * Parses all of the fields that should be part of any list object
+ **
+ * @param  scope the scope level to read the objects at
+ * @param  name the name of the widget
+ * @param  lType the type of list object to create
+ * @return the list widget object
+ */
+Widget listFields(int scope, String name, ListType lType) :
+{
+    /* the label for the field */
+    String label = "";
+    /* The default for the text field */
+    int value = 0;
+    /* The name  of the current choice to add to the choices hashtable */
+    String choiceName;
+    /* The value of the current choice to add to the choices hashtable */
+    String choiceValue;
+    /**
+     * Used for storing variable choice names
+     */
+    List<String> choicenames = new LinkedList<String>();
+    /**
+     * Used for storing variable choice values
+     */
+    List<String> choicevalues = new LinkedList<String>();
+    /**
+     * The list widget parsed by the function call
+     */
+    ListWidget result = null;
+    /**
+     * Used to store an optional SQL query to obtain the list choices from
+     */
+    PCDSQL query = null;
+}
+{
+    { assertIndent(scope); }
+    [ <T_LABEL>     <WSP> { label = Text();   } nl() { assertIndent(scope); } ]
+    [ <T_DEFAULT>   <WSP> { value = Number(); } nl() { assertIndent(scope); } ]
+      <T_CHOICES>
+        ( <WSP>
+          (
+            <T_QUERY> <WSP> { query = new PCDSQL(mainConnection,
+                                                 Text(), false); }
+          | query=FullSQLQuery()
+          )
+            {
+                if (lType == ListType.CHOOSER) {
+                    result = new Chooser(name, label, query, value);
+                } else if (lType == ListType.LIST) {
+                    result = new ChoiceList(name, label, query, value);
+                } else {
+                    result = new ComboBoxWidget(name, label, query, value);
+                }
+            }
+            nl()
+        | nl()
+            ( LOOKAHEAD( { testIndent(scope + 1) } )
+                ( (
+                    choiceName=Text() <WSP>
+                    choiceValue=Text() nl() )
+                    { choicenames.add(choiceName);
+                      choicevalues.add(choiceValue);
+                })
+            )+
+            {
+                String[] choicevaluearray = choicevalues.toArray(ListWidget.BLANK_STRING_ARRAY);
+                String[] choicenamearray  = choicenames.toArray(ListWidget.BLANK_STRING_ARRAY);
+
+                if (lType == ListType.CHOOSER) {
+                    result = new Chooser(name, label, choicenamearray,
+                                         choicevaluearray, value);
+                } else if (lType == ListType.LIST) {
+                    result = new ChoiceList(name, label, choicenamearray,
+                                            choicevaluearray, value);
+                } else {
+                    result = new ComboBoxWidget(name, label, choicenamearray,
+                                                choicevaluearray, value);
+                }
+            }
+        )
+    {
+        return result;
+    }
+}
+
+
+/**
+ * Parses all of the fields that should be part of any text field
+ **
+ * @param scope the scope level to read the objects at
+ * @param name the name of the widget
+ * @return the text widget object
+ */
+Widget textFields(int scope, String name) :
+{
+    /* the label for the field */
+    String label = "";
+    /* The default for the text field */
+    String value = "";
+}
+{
+    [ LOOKAHEAD(<T_LABEL>)   { assertIndent(scope); } <T_LABEL>   <WSP> label=Text() nl() ]
+    [ LOOKAHEAD(<T_DEFAULT>) { assertIndent(scope); } <T_DEFAULT> <WSP> value=Text() nl() ]
+    
+    /* Return the corresponding JTextField */
+    { return new TextWidget(name, label, value); }
+}
+
+
+/**
+ * Parses all of the fields that should be part of any textarea
+ **
+ * @param scope the scope level to read the objects at
+ * @param name the name of the widget
+ * @return the text widget object
+ */
+Widget textAreaFields(int scope, String name) :
+{
+    /* the label for the field */
+    String label = "";
+    /* The default for the textarea */
+    String value = "";
+    /* Determines whether or not to delete the file after execution. */
+    boolean save = false;
+}
+{
+    [ LOOKAHEAD(<T_LABEL>)   { assertIndent(scope); } <T_LABEL>   <WSP> label=Text() nl() ]
+    [ LOOKAHEAD(<T_DEFAULT>) { assertIndent(scope); } <T_DEFAULT> <WSP> value=Text() nl() ]
+    [ LOOKAHEAD(<T_SAVE>)    { assertIndent(scope); } <T_SAVE>    <WSP> { save=Bool();         }  nl() ]
+
+    /* Return the corresponding JTextArea */
+    { return new TextAreaWidget(name, label, value, save); }
+}
+
+
+/**
+ * <p>Parses all of the fields that should be part of any number field.</p>
+ * <p><i>
+ *      NOTE: the default maximum value is 500,000 and the default minimum
+ *            value is zero (0).
+ * </i></p>
+ **
+ * @param scope the scope level to read the objects at
+ * @param name the name of the widget
+ * @return the number widget object
+ */
+Widget numberFields(int scope, String name) :
+{
+    /* the label for the field */
+    String label = "";
+    /* The minimum number allowed */
+    int min      = 0;
+    /* The maximum number allowed */
+    int max      = 500000;
+    /* The default for the number field */
+    int value    = 0;
+}
+{
+      assertIndent(scope)
+      <T_LABEL>     <WSP> label=Text()    nl() assertIndent(scope)
+      <T_MIN>       <WSP> min=Number()    nl() assertIndent(scope)
+      <T_MAX>       <WSP> max=Number()    nl()
+    [ LOOKAHEAD(<T_DEFAULT>) { assertIndent(scope); }
+      <T_DEFAULT>   <WSP> value=Number()  nl() ]
+    { if (value < min) { value = min; } }
+    { if (value > max) { value = max; } }
+    /* Return the corresponding JSlider */
+    { return new NumberWidget(name, label, min, max, value); }
+}
+
+
+/**
+ * Parses all of the fields that should be part of any decimal field
+ **
+ * @param scope the scope level to read the objects at
+ * @param name the name of the widget
+ * @return the decimal widget object
+ */
+Widget decimalFields(int scope, String name) :
+{
+    /* the label for the field */
+    String label = "";
+    /* The minimum number allowed */
+    double min;
+    /* The maximum number allowed */
+    double max;
+    /* The default for the number field */
+    double value;
+}
+{
+      assertIndent(scope)
+    [ <T_LABEL>     <WSP> label=Text()    nl() assertIndent(scope) ]
+      <T_MIN>       <WSP> min=Decimal()   nl() assertIndent(scope)
+      <T_MAX>       <WSP> max=Decimal()   nl()
+    [ LOOKAHEAD(<T_DEFAULT>) { assertIndent(scope); }
+      <T_DEFAULT>   <WSP> value=Decimal() nl() ]
+    
+    /* Return the corresponding JTextField */
+    { return new TextWidget(name, label, ""); }
+}
+
+
+
+/**
+ * Parses all of the fields that should be part of any file chooser
+ **
+ * @param scope the scope level to read the objects at
+ * @param name the name of the widget
+ * @return the file widget object
+ */
+Widget fileFields(int scope, String name) :
+{
+    /* the label for the field */
+    String label = "";
+    /* The default for the text field */
+    String value = "";
+}
+{
+                             { assertIndent(scope); } <T_LABEL>   <WSP> label=Text() nl()
+    [ LOOKAHEAD(<T_DEFAULT>) { assertIndent(scope); } <T_DEFAULT> <WSP> value=Text() nl() ]
+
+    /* Return the corresponding JTextField */
+    { return new FileChooser(name, label, value); }
+}
+
+
+/**
+ * Parses all of the fields that should be part of any directory chooser
+ **
+ * @param scope the scope level to read the objects at
+ * @param name the name of the widget
+ */
+Widget dirFields(int scope, String name) :
+{
+    /* the label for the field */
+    String label = "";
+    /* The default for the text field */
+    String value = "";
+}
+{
+                             { assertIndent(scope); } <T_LABEL>   <WSP> label=Text() nl()
+    [ LOOKAHEAD(<T_DEFAULT>) { assertIndent(scope); } <T_DEFAULT> <WSP> value=Text() nl() ]
+
+    /* Return the corresponding JTextField */
+    { return new DirectoryChooser(name, label, value); }
+}
+
+
+/**
+ * Parses all of the fields that should be part of any temporary file field
+ **
+ * @param scope the scope level to read the objects at
+ * @param name the name of the widget
+ * @param pcdio the PCD I/O object for the temporary file to interact with
+ * @return the temp file widget object
+ */
+Widget tempfileFields(int scope, String name, PCDIO pcdio) :
+{
+    /* Whether or not to add the contents of the window to the file before
+     * execution.  (whether the temporary file is input for a program).    */
+    boolean input = false;
+    /* Whether or not to add the contents of the file to the window after
+     *  execution.  (whether the temporary file is output for a program).  */
+    boolean output = false;
+    /* Determines whether or not to delete the file after execution. */
+    boolean save = false;
+    /* Determines whether or not to overwrite the file if it already exists. */
+    boolean overwrite = false;
+    /* Stores the file format of the file (used for translation). */
+    String format = null;
+    /* Stores whether the temporary file uses just the current selection
+     * within the cavnas, or the entire data set stored in biolegato
+     * (the equivalent of Select-all)                                       */
+    boolean selectall = false;
+}
+{
+      { assertIndent(scope); } <T_DIRECTION> <WSP>
+            ( <T_IN> { input = true; } |     <T_OUT> { output = true; } )  nl()
+      { assertIndent(scope); } <T_FORMAT>    <WSP>    { format=FileFormat(); }  nl()
+
+    [ LOOKAHEAD(<T_SAVE>)      { assertIndent(scope); } <T_SAVE>      <WSP> { save=Bool();         }  nl() ]
+    [ LOOKAHEAD(<T_OVERWRITE>) { assertIndent(scope); } <T_OVERWRITE> <WSP> { overwrite=Bool();    }  nl() ]
+    [ LOOKAHEAD(<T_CONTENT>)   { assertIndent(scope); } <T_CONTENT>   <WSP> ( <T_CANVAS> { selectall = true; } | <T_SELECTION> ) nl() ]
+
+    /* Return the corresponding JTextField */
+    { return new TempFile(name, pcdio, input, output, save, overwrite, format, selectall); }
+}
+
+
+/**
+ * Parses file formats supported by BioPCD
+ **
+ * @return the text representation of the file format
+ */
+String FileFormat() :
+{
+    String result = "raw";
+}
+{
+    (
+      <T_CSV>      { result = "csv"     ; }
+    | <T_TSV>      { result = "tsv"     ; }
+    | <T_FASTA>    { result = "fasta"   ; }
+    | <T_FLAT>     { result = "flat"    ; }
+    | <T_GDE>      { result = "gde"     ; }
+    | <T_GENBANK>  { result = "genbank" ; }
+    | <T_RAW>      { result = "raw"     ; }
+    | <T_MASK>     { result = "mask"    ; }
+    | result=Text()
+    )
+    { return result; }
+}
+
+
+/**
+ * <p>Parses a list of supported operating systems in a PCD file</p>
+ * <p>
+ *      The list is then compared with the current operating system
+ *      to see if it is supported by the PCD command.  The comparison
+ *      is done in another function (isSystemSupported).
+ * </p>
+ * <p>Currently supported operating systems:</p>
+ * <pre>
+ *      ALL     (the command supports any operating system)
+ *      Linux
+ *      OSX
+ *      Solaris
+ *      Unix    (the command will only work in UNIX-compatible systems)
+ *      Windows (the command will only work in Windows-compatible systems)</pre>
+ */
+SystemToken SystemName() :
+{
+    /* Stores the status of whether the current operating system is
+     * supported by the software represented in the PCD file */     
+    SystemToken.OS osSupported = SystemToken.OS.ALL;
+    
+    /* Stores the status of whether the current machine architecture is
+     * supported by the software represented in the PCD file */
+    Set<SystemToken.ARCH> archSupported = Collections.singleton(SystemToken.ARCH.ALL);
+}
+{
+    /* match each operating system token and determine whether or not
+     * the operating system matches the current OS */
+    ( <T_ALL>     { osSupported = SystemToken.OS.ALL;     }
+    | <T_LINUX>   { osSupported = SystemToken.OS.LINUX;   }
+    | <T_OSX>     { osSupported = SystemToken.OS.OSX;     }
+    | <T_SOLARIS> { osSupported = SystemToken.OS.SOLARIS; }
+    | <T_UNIX>    { osSupported = SystemToken.OS.UNIX;    }
+    | <T_WINDOWS> { osSupported = SystemToken.OS.WINDOWS; }
+    )
+    
+    /* handle the optional architecture list */
+    [ <WSP> archSupported = ArchList () ]
+    
+    /* add the results of the current operating system support test to the
+     * final result of whether the current machine can run the PCD file */
+    { return new SystemToken(osSupported, archSupported); }
+}
+
+
+/**
+ * <p>Parses a list of supported system architectures in a PCD file</p>
+ * <p>
+ *      The list is then compared with the current system architecture
+ *      to see if it is supported by the PCD command.  This comparsion
+ *      is performed by the function <code>isSystemSupported()</code>
+ * </p>
+ **
+ * @return whether the current system architecture
+ *         is supported by the PCD command
+ */
+Set<SystemToken.ARCH> ArchList() :
+{
+    /* Stores the most-recently parsed architecture token*/
+    SystemToken.ARCH a;
+    /* Stores the architectures supported by the current command */
+    Set<SystemToken.ARCH> archs = new HashSet<SystemToken.ARCH>();
+}
+{
+    /* match each system architecture token and add it to
+     * the list of supported system architectures */
+    a=ArchName() { archs.add(a); }
+    
+    /* handle additional system architecture names*/
+    (
+        /* handle list spacer */
+        [ <WSP> ] <COMMA> [ <WSP> ]
+    
+    	/* get the system architecture token */
+        a=ArchName() { archs.add(a); }
+    )*
+    
+    /* returns the status of the list test */
+    { return archs; }
+}
+
+
+/**
+ * <p>
+ *      Matches an architecture name and returns the
+ *      appropriate <code>SystemToken.ARCH</code> value.
+ * </p>
+ * <p>Currently supported machine architectures:</p>
+ * <pre>
+ *     ALL     (the command supports any machine architecture
+ *              - may be useful for shell-scripts)
+ *     X86     (any x86 compatible machine)
+ *     AMD64   (any amd64 compatible machine)
+ *     Sparc   (any amd64 compatible machine)</pre>
+ **
+ * @return whether the architecture is supported
+ */
+SystemToken.ARCH ArchName () : {}
+{
+    ( <T_ALL>    { return SystemToken.ARCH.ALL;   }
+    | <T_X86>    { return SystemToken.ARCH.X86;   }
+    | <T_AMD64>  { return SystemToken.ARCH.AMD64; }
+    | <T_SPARC>  { return SystemToken.ARCH.SPARC; }
+    )
+}
+
+
+/**
+ * Parses an SQL database production
+ **
+ * @return the coresponding Java database connection object
+ */
+JDBCDBConnection ParseDBConnect () :
+{
+    /**
+     * The database driver to connect to for the SQL query
+     */
+    String  driver     = null  ;
+    /**
+     * The database URL to connect to for the the SQL query
+     */
+    String  url        = null  ;
+    /**
+     * The database password to connect to for the SQL query
+     */
+    String  user       = null  ;
+    /**
+     * The database username to connect to for the SQL query
+     */
+    String  password   = null  ;
+}
+{
+    <T_DATABASE> <WSP> ( 
+        driver=Text() <WSP>
+        url=Text()
+        [ <WSP> <T_LOGIN> <WSP> user=Text() <WSP> password=Text() ]
+    | <T_MYSQL>  { driver="com.mysql.jdbc.Driver"; } <WSP>
+        { url="jdbc:mysql://" + Text(); }
+        <WSP> { url += "/" + Text(); }
+        [ <WSP> <T_LOGIN> <WSP> user=Text() <WSP> password=Text() ]
+    | <T_HSQLDB> { driver="org.hsqldb.jdbcDriver"; } <WSP>
+        {
+            url="jdbc:hsqldb:" + Text();
+            user="sa";
+            password="";
+        }
+        [ <WSP> <T_LOGIN> <WSP> user=Text() <WSP> password=Text() ]
+    )
+    { return new JDBCDBConnection(driver, url, user, password); }
+}
+
+/**
+ * Parses an SQL database production
+ **
+ * @return the coresponding Java database connection object
+ */
+PCDSQL FullSQLQuery () :
+{
+    /**
+     * The database to connect to for the SQL query
+     */
+    JDBCDBConnection connection = null  ;
+}
+{
+    connection=ParseDBConnect() <WSP> <T_QUERY> <WSP>
+    { return new PCDSQL(connection, Text(), true); }
+}
+
+/**
+ * Parses an identifier token from a PCD file into a Java String
+ **
+ * @return the coresponding Java String object
+ */
+String Ident () :
+{
+    /* The token to parse into a String value */
+    Token t = null;
+}
+{
+    /* Match a text token */
+    t=<ID>
+    
+    /* Return the token's "image" field */
+    { return t.image; }
+}
+
+
+/**
+ * Parses a text token from a PCD file into a Java String.
+ * Supports environment variable substitution into the string,
+ * where the environment variable is of the form:
+ * "\"\\$([a-zA-Z])([a-zA-Z_\\-0-9@\\.])*\""
+ * Example: "$BL_EMAIL"
+ **
+ * @return the corresponding Java String object
+ */
+String Text () :
+{
+    /* The token to parse into a String value */
+    Token t = null;
+    String retstr = "";
+}
+{
+    /* Match a text token */
+    t=<TEXT>
+    
+    /* Return the token's "image" field */
+    {
+        /* Find the Start and Finish indices of a substring matching the pattern
+           for an environment variable. */
+        retstr = PCD.textString(t.image);
+    }
+    { return retstr; }
+}
+
+
+/**
+ * Parses a decimal number from a PCD file into a Java double
+ **
+ * @return the corresponding Java double value
+ */
+double Decimal () :
+{
+    /* The double value parsed by the function */
+    double value = 0d;
+    
+    /* The token to parse into a double value */
+    Token t = null;
+}
+{
+    /* Match a decimal token to parse, then parse
+     * the token into a Java integer value
+     * - OR - 
+     * Call the Number() function to parse an integer
+     * (Integers are considered decimal numbers, too) */
+    ( t=<DECIMAL>
+        {
+           String tokenstr;
+            if (t.image.charAt(0) == '$') { //get decimal from environment variable
+                tokenstr = System.getenv(t.image.substring(1));
+            }
+            else {
+                tokenstr = t.image;
+            }
+            //System.out.println(tokenstr);
+            try {
+                value = Double.parseDouble(tokenstr);
+            } catch (NumberFormatException nfe) {
+                /* NOTE: this statement should never be reached because the
+	         *       token manager will only pass proper decimal numbers
+		 *       to this code; however, Java requires a try-catch
+		 *       clause in order to parse Strings into doubles */
+	        throw new ParseException("Invalid decimal number on line: " +
+	            t.endLine);
+	    }
+        }
+    | value = Number() )
+    
+    /* Return the parser result */
+    { return value; }
+}
+
+
+/**
+ * Parses a non-decimal number from a PCD file into a Java integer
+ **
+ * @return the corresponding Java int value
+ */
+int Number() :
+{
+    /* The integer value parsed by the function */
+    int value = 0;
+    
+    /* The token to parse into an integer value */
+    Token t = null;
+}
+{
+    (
+        /* Match the number token to parse */
+        t=<NUMBER>
+
+        /* Parse the token into a Java integer value */
+        {
+        String tokenstr;
+        if (t.image.charAt(0) == '$') { //get number from environment variable
+            tokenstr = System.getenv(t.image.substring(1));
+        }
+        else {
+            tokenstr = t.image;
+        }
+        //System.out.println(tokenstr);
+            try {
+                value = Integer.parseInt(tokenstr);
+            } catch (NumberFormatException nfe) {
+                /* NOTE: this statement should never be reached because the
+                 *       token manager will only pass proper numbers to this
+                 *       code; however, Java requires a try-catch clause in
+                 *       order to parse Strings into integers */
+                throw new ParseException("Invalid number on line: " +
+                    t.endLine);
+            }
+        }
+    )
+    
+    /* Return the parser result */
+    { return value; }
+}
+
+
+/**
+ * Parses a boolean token into a java boolean
+ **
+ * @return the value of the boolean
+ */
+boolean Bool () : {}
+{
+    /* Return true if match the T_TRUE token */
+    ( <T_TRUE>  { return true;  }
+    
+    /* Return false if match the T_FALSE token */
+    | <T_FALSE> { return false; } )
+}
+

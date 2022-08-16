@@ -1,0 +1,12 @@
+DATE - Prints the current date and time to the command line.
+ 
+COMMAND LINE ARGUMENTS
+----------------------
+This command accepts either no command line arguments, or a date format string as defined by Java's SimpleDateFormat class.  Please note that the default is not necessarily the same as the general UNIX 'date' command's default!
+ 
+EXECUTION STATUS
+----------------
+This command returns one (1) unless an exception is encountered.  In the case of an exception, this command will return zero (0)
+ 
+@author Graham Alvare
+@author Brian Fristensky

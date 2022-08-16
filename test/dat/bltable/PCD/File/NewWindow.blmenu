@@ -1,0 +1,5 @@
+name        "New Window"
+icon    "$BIRCH/public_html/images/birch_black_ico.png"
+tip    "open a new bltable window"
+exec        "(bltable)&"
+

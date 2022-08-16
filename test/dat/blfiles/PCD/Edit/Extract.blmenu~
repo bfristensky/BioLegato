@@ -1,0 +1,11 @@
+name        "extract"
+icon    "$BIRCH/public_html/images/birch_black_ico.png"
+tip    "open a new blmarker window with only the selected sequences"
+# BioLegato table canvas encloses fields in double quotes upon export. This
+# is considered a bug and should be fixed.
+exec        "tr -d '\042' < %in1% > %in1%.tmp; blpfetch %in1%.tmp; $RM_CMD -f %in1%"
+var "in1"
+    type        tempfile
+    direction   in
+    format      tsv
+    save        false

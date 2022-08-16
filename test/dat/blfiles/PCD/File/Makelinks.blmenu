@@ -1,0 +1,33 @@
+name        "Create symbolic links to files in another directory"
+icon    "$BIRCH/dat/birch_black_ico.png"
+tip    "Runs makelinks.sh to create symbolic links to files in another directory. Optionally, a pattern can be specified for files to match."
+
+var "sourcedir"
+    type        dir
+    label       "Source Directory"
+    default     ".."
+
+var "pattern"
+    type        text
+    label       "pattern to match (optional)"
+
+var "out1"
+    type        tempfile
+    direction   out
+    format      tsv
+    save        false
+    overwrite   true
+    content     canvas
+
+panel
+    var "Run"
+        type        button
+        label       "Run"
+        shell       "makelinks.sh %SOURCEDIR% '%PATTERN%'; bldirtab.py %out1%"
+        close       true
+
+    var "Manual"
+        type        button
+        label       "Manual"
+        shell       "$BIRCH/script/chooseviewer.py $BIRCH/doc/bioLegato/bl_makelinks.html"
+        close       false

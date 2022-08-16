@@ -1,0 +1,6 @@
+name        "Paste in"
+exec        "cp $HOME/.bltable_clipboard %out1%"
+var "out1"
+    type        tempfile
+    direction   out
+    format      csv

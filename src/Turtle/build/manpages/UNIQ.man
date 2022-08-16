@@ -1,0 +1,14 @@
+UNIQ - Removes duplicate entries from a stream.
+ 
+This command accepts input via standard input, and removes all duplicates, and prints the resulting output to standard output.
+ 
+COMMAND LINE ARGUMENTS
+----------------------
+This command does NOT accept any command line arguments as parameters
+ 
+EXECUTION STATUS
+----------------
+This command returns one (1) unless an exception is encountered.  In the case of an exception, this command will return zero (0)
+ 
+@author Graham Alvare
+@author Brian Fristensky

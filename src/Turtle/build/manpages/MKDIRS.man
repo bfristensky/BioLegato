@@ -1,0 +1,12 @@
+MKDIRS - This command recursively makes any parent directories necessary to create the path specified by its line arguments.  This behaviour is the same as calling Java's File.mkdirs() method.
+ 
+COMMAND LINE ARGUMENTS
+----------------------
+This command accepts any number of command line arguments.  The command line arguments are all directory paths to create recursively.
+ 
+EXECUTION STATUS
+----------------
+This command returns one (1) unless an exception is encountered.  In the case of an exception, this command will return zero (0)
+ 
+@author Graham Alvare
+@author Brian Fristensky

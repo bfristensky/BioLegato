@@ -1,0 +1,20 @@
+name        "New row"
+icon    "$BIRCH/dat/birch_black_ico.png"
+tip    "Add a new row to the table"
+
+var "out1"
+    type        tempfile
+    direction   out
+    format      flat
+
+panel
+    var "Run"
+        type        button
+        label       "Run"
+        shell       "echo '' > %out1%"
+        close       true
+    var "Help"
+        type        button
+        label       "Help"
+        shell       "$BIRCH/script/chooseviewer.py $BIRCH/doc/blmarker/new_sequence.help"
+        close       false

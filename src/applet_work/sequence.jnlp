@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- JNLP File for BioLegato Sequence Canvas -->
+<jnlp spec="1.0+" codebase=”file:///Users/alvare/NetBeansProjects/biolegato/” href=”sequence.jnlp”>
+	<information>
+		<title>SwingSet2 Demo Application</title>
+		<vendor>Oracle and/or its affiliates.</vendor>
+		<homepage href="docs/help.html"/>
+		<description>SwingSet2 Demo Application</description>
+		<description kind="short">A demo of the capabilities of the Swing Graphical User Interface.</description>
+		<icon href="images/swingset2.jpg"/>
+		<icon kind="splash" href="images/splash.gif"/>
+		<offline-allowed/>
+	</information>
+	<security>
+		<all-permissions/>
+	</security>
+	<resources>
+		<j2se version="1.4.2" />
+		<jar href="bin/turtle.jar" />
+		<jar href="bin/biopcd.jar" />
+		<jar href="bin/biolegato.jar" />
+		<jar href="bin/sequence.jar" main="true" />
+	</resources>
+	<application-desc main-class="org.biolegato.sequences.canvas.SequenceCanvas"/>
+</jnlp> 

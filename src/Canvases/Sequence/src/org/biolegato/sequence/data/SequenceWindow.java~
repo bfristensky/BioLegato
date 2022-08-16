@@ -1,0 +1,429 @@
+/*
+ * To change this template, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.biolegato.sequence.data;
+
+import org.biolegato.sequence.canvas.ColourMask;
+import java.awt.event.ItemEvent;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemListener;
+import java.io.File;
+import java.io.IOException;
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import org.biolegato.sequence.canvas.GDECanvas;
+import org.biolegato.main.BLMain;
+
+/**
+ * A window for editing sequence properties.
+ *
+ * @author Graham Alvare
+ * @author Brian Fristensky
+ */
+public class GDESequenceWindow extends JDialog implements ActionListener,
+        ItemListener {
+
+    /**
+     * The sequence associated with the window
+     */
+    private int[] sequences;
+    /**
+     * The combobox containing all colour masks
+     */
+    private JComboBox maskbox;
+    /**
+     * The text area used to obtain the sequence namebox from
+     */
+    private JTextField namebox = new JTextField();
+    /**
+     * The checkbox used to modify the protection of the sequence's alignment gaps
+     */
+    private JCheckBox protectAlignmentCB = new JCheckBox("Alignment gaps");
+    /**
+     * The checkbox used to modify the protection of the sequence's ambiguous characters
+     */
+    private JCheckBox protectAmbiguousCB = new JCheckBox("Ambiguous characters");
+    /**
+     * The checkbox used to modify the protection of the sequence's unambiguous characters
+     */
+    private JCheckBox protectUnambiguousCB = new JCheckBox("Unambiguous characters");
+    /**
+     * The combobox used for modifying the sequence's typebox
+     */
+    private JComboBox typebox = new JComboBox(new Object[]{Seq.Type.DNA,
+                Seq.Type.RNA,
+                Seq.Type.PROTEIN,
+                Seq.Type.TEXT});
+    /**
+     * The combobox used for modifying the sequence's directionbox
+     */
+    private JComboBox directionbox = new JComboBox(new Object[]{
+                Seq.Direction.FROM5TO3, Seq.Direction.FROM3TO5});
+    /**
+     * The combobox used for modifying the sequence's topologybox
+     */
+    private JComboBox topologybox = new JComboBox(new Object[]{
+                Seq.Topology.LINEAR, Seq.Topology.CIRCULAR});
+    /**
+     * The combobox used for modifying the sequence's strandednessbox
+     */
+    private JComboBox strandednessbox = new JComboBox(
+            new Object[]{Seq.Strandedness.SINGLE,
+                Seq.Strandedness.MIXED,
+                Seq.Strandedness.DOUBLE});
+    /**
+     * The data model to associate with the sequences
+     */
+    private Dataset datamodel;
+    /**
+     * The text to display in a combobox when more than one item is selected among the list of sequences
+     */
+    public static final String MULTIPLE_SELECTED = "<multiple selected...>";
+    /**
+     * Used for serialization purposes
+     */
+    public static final long serialVersionUID = 7526472295622777013L;
+
+    /**
+     * Creates a window for editing the properties of a given array of sequences.
+     **
+     * @param datamodel the location the sequences are stored
+     * @param window the parent window.
+     * @param sequences the sequences to edit.
+     */
+    public GDESequenceWindow(final GDECanvas canvas,
+            final Dataset datamodel,
+            final JFrame window,
+            final int[] sequences) {
+        super(window, "Sequence properties");
+
+        Seq current = null;
+
+        maskbox = new JComboBox(canvas.colourMasks.toArray());
+
+        // transfer parameters to local class variables
+        this.datamodel = datamodel;
+        this.sequences = sequences;
+
+        if (sequences.length >= 1) {
+            current = datamodel.getLine(sequences[0]);
+
+            if (sequences.length == 1) {
+                namebox.setText(current.name);
+            }
+
+            typebox.setSelectedItem(current.type);
+            directionbox.setSelectedItem(current.direction);
+            topologybox.setSelectedItem(current.topology);
+            strandednessbox.setSelectedItem(current.strandedness);
+
+            protectAlignmentCB.setSelected(current.protect_align);
+            protectAmbiguousCB.setSelected(current.protect_ambig);
+            protectUnambiguousCB.setSelected(current.protect_unambig);
+
+
+            if (current.mask != null) {
+                maskbox.setSelectedItem(canvas.DEFAULT_MASK);
+            } else {
+                maskbox.setSelectedItem(current.mask);
+            }
+        }
+        for (int count = 1; (!protectAlignmentCB.isSelected()
+                || !protectAmbiguousCB.isSelected()
+                || !protectUnambiguousCB.isSelected()
+                || typebox.getSelectedItem() != MULTIPLE_SELECTED
+                || directionbox.getSelectedItem() != MULTIPLE_SELECTED
+                || topologybox.getSelectedItem() != MULTIPLE_SELECTED
+                || strandednessbox.getSelectedItem() != MULTIPLE_SELECTED
+                ) && count < sequences.length; count++) {
+            current = datamodel.getLine(sequences[count]);
+
+            if (current != null) {
+                if (typebox.getSelectedItem() != MULTIPLE_SELECTED
+                        && typebox.getSelectedItem() != current.type) {
+                    typebox.insertItemAt(MULTIPLE_SELECTED, 0);
+                    typebox.setSelectedItem(MULTIPLE_SELECTED);
+                }
+
+                if (directionbox.getSelectedItem() != MULTIPLE_SELECTED
+                        && directionbox.getSelectedItem() != current.direction) {
+                    directionbox.insertItemAt(MULTIPLE_SELECTED, 0);
+                    directionbox.setSelectedItem(MULTIPLE_SELECTED);
+                }
+
+                if (topologybox.getSelectedItem() != MULTIPLE_SELECTED
+                        && topologybox.getSelectedItem() != current.topology) {
+                    topologybox.insertItemAt(MULTIPLE_SELECTED, 0);
+                    topologybox.setSelectedItem(MULTIPLE_SELECTED);
+                }
+
+                if (strandednessbox.getSelectedItem() != MULTIPLE_SELECTED
+                        && strandednessbox.getSelectedItem() != current.strandedness) {
+                    strandednessbox.insertItemAt(MULTIPLE_SELECTED, 0);
+                    strandednessbox.setSelectedItem(MULTIPLE_SELECTED);
+                }
+
+                if (!protectAlignmentCB.isSelected() && current.protect_align) {
+                    protectAlignmentCB.setSelected(true);
+                }
+
+                if (!protectAmbiguousCB.isSelected() && current.protect_ambig) {
+                    protectAmbiguousCB.setSelected(true);
+                }
+
+                if (!protectUnambiguousCB.isSelected() && current.protect_unambig) {
+                    protectUnambiguousCB.setSelected(true);
+                }
+
+                if (!MULTIPLE_SELECTED.equals(maskbox.getSelectedItem())
+                        && maskbox.getSelectedItem() != current.mask
+                        || (current.mask == null && maskbox.getSelectedItem() == canvas.DEFAULT_MASK)) {
+                    maskbox.insertItemAt(GDESequenceWindow.MULTIPLE_SELECTED, 0);
+                    maskbox.setSelectedItem(GDESequenceWindow.MULTIPLE_SELECTED);
+                }
+            }
+        }
+
+        // configure the windows's main box
+        Box mainBox = new Box(BoxLayout.PAGE_AXIS);
+
+        // configure the sequqnece's namebox box
+        Box nameBox = new Box(BoxLayout.LINE_AXIS);
+        nameBox.add(new JLabel("Name:"));
+        nameBox.add(namebox);
+        mainBox.add(nameBox);
+
+        // configure the sequqnece's typebox box
+        Box typeBox = new Box(BoxLayout.LINE_AXIS);
+        typeBox.add(new JLabel("Type:"));
+        typeBox.add(typebox);
+        typebox.addItemListener(this);
+        mainBox.add(typeBox);
+
+        // configure the sequqnece's directionbox box
+        Box directionBox = new Box(BoxLayout.LINE_AXIS);
+        directionBox.add(new JLabel("Direction:"));
+        directionBox.add(directionbox);
+        mainBox.add(directionBox);
+
+        // configure the sequqnece's topologybox box
+        Box topologyBox = new Box(BoxLayout.LINE_AXIS);
+        topologyBox.add(new JLabel("Topology:"));
+        topologyBox.add(topologybox);
+        mainBox.add(topologyBox);
+
+        // configure the sequqnece's strandednessbox box
+        Box strandednessBox = new Box(BoxLayout.LINE_AXIS);
+        strandednessBox.add(new JLabel("Strandedness:"));
+        strandednessBox.add(strandednessbox);
+        mainBox.add(strandednessBox);
+
+        // configure the sequence protection box
+        Box protectionBox = new Box(BoxLayout.PAGE_AXIS);
+        protectionBox.add(protectAlignmentCB);
+        protectionBox.add(protectAmbiguousCB);
+        protectionBox.add(protectUnambiguousCB);
+        protectionBox.setBorder(BorderFactory.createTitledBorder(
+                "Set character protections"));
+        mainBox.add(protectionBox);
+
+        
+        // handle the colour maskbox selection widgets
+        Box maskPane = new Box(BoxLayout.LINE_AXIS);
+
+        // set class parameters
+        maskPane.add(new JLabel("Colour mask:"));
+        maskPane.add(maskbox);
+        // add the import file button
+        maskPane.add(new JButton(new AbstractAction("Import file...") {
+            /**
+             * Performs all of the import file functionality.
+             *
+             * @param e is ignored by this function.
+             */
+            public void actionPerformed(ActionEvent e) {
+                File file = null;
+                ColourMask maskadd = null;
+                JFileChooser openDialog = new JFileChooser();   // the JFileChooser for selecting the file to import.
+
+                // set the parameters for the open file dialog box
+                openDialog.setCurrentDirectory(BLMain.getCurrentPWD());
+                openDialog.setAcceptAllFileFilterUsed(false);
+
+                // add the default file filters
+                openDialog.addChoosableFileFilter(ColourMask.CHAR_MASK_FILE_FILTER);
+                openDialog.addChoosableFileFilter(ColourMask.GDE_MASK_FILE_FILTER);
+
+                // set the default file filter
+                openDialog.setFileFilter(ColourMask.CHAR_MASK_FILE_FILTER);
+
+                // if a file is selected, open it
+                if (openDialog.showOpenDialog(window) == JFileChooser.APPROVE_OPTION) {
+                    file = openDialog.getSelectedFile();
+                    if (file != null && file.exists() && file.isFile() && file.canRead()) {
+                        try {
+                            if (openDialog.getFileFilter() == ColourMask.CHAR_MASK_FILE_FILTER) {
+                                maskadd = ColourMask.readCharColourMaskFile(file);
+                            } else if (openDialog.getFileFilter() == ColourMask.GDE_MASK_FILE_FILTER) {
+                                maskadd = ColourMask.readPositionColourMaskFile(file);
+                            }
+                        } catch (IOException ioe) {
+                            ioe.printStackTrace(System.err);
+                        }
+
+                        if (maskadd != null) {
+                            maskbox.addItem(maskadd);
+                            canvas.colourMasks.add(maskadd);
+                        }
+                    }
+                    if (openDialog.getCurrentDirectory() != null) {
+                        BLMain.setCurrentPWD(openDialog.getCurrentDirectory());
+                    }
+                }
+            }
+        }));
+        mainBox.add(maskPane);
+
+        // add the update button
+        JButton update = new JButton("Update");
+        update.setActionCommand("update");
+        update.addActionListener(this);
+        mainBox.add(update);
+
+        // display the window
+        itemStateChanged(new ItemEvent(typebox, typebox.getSelectedIndex(),
+                typebox.getSelectedItem(),
+                ItemEvent.SELECTED));
+
+        // create the window
+        add(mainBox);
+        pack();
+        setLocationRelativeTo(window);
+        setVisible(true);
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+    }
+
+    /**
+     * Adds an action handler to update the sequence data based on the window's values.
+     *
+     * @param e this is used to confirm that the update button was pressed.
+     */
+    public void actionPerformed(ActionEvent e) {
+        if ("update".equals(e.getActionCommand())) {
+            boolean protect_align = protectAlignmentCB.isSelected();
+            boolean protect_ambig = protectAmbiguousCB.isSelected();
+            boolean protect_uambig = protectUnambiguousCB.isSelected();
+
+            Seq.Type type = null;
+            Seq.Direction direction = null;
+            Seq.Topology topology = null;
+            Seq.Strandedness strandedness = null;
+            ColourMask mask = null;
+
+            if (!MULTIPLE_SELECTED.equals(typebox.getSelectedItem())) {
+                type = (Seq.Type) typebox.getSelectedItem();
+            }
+            if (!MULTIPLE_SELECTED.equals(directionbox.getSelectedItem())) {
+                direction = (Seq.Direction) directionbox.getSelectedItem();
+            }
+            if (!MULTIPLE_SELECTED.equals(topologybox.getSelectedItem())) {
+                topology = (Seq.Topology) topologybox.getSelectedItem();
+            }
+            if (!MULTIPLE_SELECTED.equals(strandednessbox.getSelectedItem())) {
+                strandedness = (Seq.Strandedness) strandednessbox.getSelectedItem();
+            }
+            if (!MULTIPLE_SELECTED.equals(maskbox.getSelectedItem())) {
+                mask = (ColourMask) maskbox.getSelectedItem();
+            }
+
+            for (int y : sequences) {
+                boolean modified = false;
+
+                Seq seq = datamodel.getLine(y);
+
+                if (!"".equals(namebox.getText()) && !seq.name.equals(namebox.getText())) {
+                    seq.name = namebox.getText();
+                    modified = true;
+                }
+                if (type != null && type != seq.type) {
+                    seq.type = type;
+                    modified = true;
+                }
+                if (direction != null && direction != seq.direction) {
+                    seq.direction = direction;
+                    modified = true;
+                }
+                if (topology != null && topology != seq.topology) {
+                    seq.topology = topology;
+                    modified = true;
+                }
+                if (strandedness != null && strandedness != seq.strandedness) {
+                    seq.strandedness = strandedness;
+                    modified = true;
+                }
+
+                if (mask != null) {
+                    seq.mask = mask;
+                }
+
+                seq.protect_align = protect_align;
+                seq.protect_ambig = protect_ambig;
+                seq.protect_unambig = protect_uambig;
+
+                if (seq.groupID > 0) {
+                    int[] group = datamodel.getgroup(y);
+
+                    if (group != null) {
+                        for (int gln : group) {
+                            Seq groupseq = datamodel.getLine(gln);
+                            groupseq.protect_align = protect_align;
+                            groupseq.protect_ambig = protect_ambig;
+                            groupseq.protect_unambig = protect_uambig;
+                        }
+                    }
+                }
+                dispose();
+
+                if (modified) {
+                    seq.original = null;
+                    datamodel.sequenceChanged(y);
+                }
+            }
+        }
+    }
+
+    /**
+     * Handles typebox changes made (this includes greying out those parameters which are
+     * not applicable to the current sequence typebox.
+     *
+     * @param e is currently ignored by the function.
+     */
+    public void itemStateChanged(ItemEvent e) {
+        if (Seq.Type.DNA.equals(typebox.getSelectedItem())
+                || Seq.Type.RNA.equals(typebox.getSelectedItem())) {
+            directionbox.setEnabled(true);
+            topologybox.setEnabled(true);
+            strandednessbox.setEnabled(true);
+        } else if (Seq.Type.PROTEIN.equals(typebox.getSelectedItem())) {
+            directionbox.setEnabled(false);
+            topologybox.setEnabled(false);
+            strandednessbox.setEnabled(false);
+        } else if (Seq.Type.TEXT.equals(typebox.getSelectedItem())) {
+            directionbox.setEnabled(false);
+            topologybox.setEnabled(false);
+            strandednessbox.setEnabled(false);
+        }
+    }
+}

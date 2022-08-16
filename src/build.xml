@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="BioLegato" default="help" basedir=".">
+    <property file="${basedir}/ants.properties"/>
+    <property name="build.list" value="BioPCD,Core,Canvases" />
+    <property name="javadoc.home" value="${basedir}/docs" />
+    <property name="build.home" value="${basedir}/bin" />
+    <property name="dist.home" value="${basedir}/dist" />
+    <property name="lib.home" value="${basedir}/lib" />
+
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+        <classpath>
+            <pathelement location="${lib.home}/ant-contrib.jar" />
+        </classpath>
+    </taskdef>
+
+    <path id="classpath">
+        <pathelement path="${build.home}" />
+    </path>
+
+    <target name="-makebindir" description="Compiles entire project">
+        <mkdir dir="${build.home}" />
+    </target>
+
+    <target name="-makedocsdir" description="Compiles entire project">
+        <mkdir dir="${javadoc.home}" />
+    </target>
+
+    <!-- RECURSIVE TARGETS -->
+    <target depends="-makebindir" name="build" description="Compiles entire project">
+        <for list="${build.list}" param="subdir">
+            <sequential>
+                <ant dir="@{subdir}" target="build" inheritAll="false" />
+                <copy todir="${build.home}">
+                    <fileset dir="@{subdir}/bin" />
+                </copy>
+            </sequential>
+        </for>
+    </target>
+    
+    <target name="clean">
+        <tstamp>
+                <format property="dt-stamp" pattern="yyyy-MM-dd-HH-mm" />
+                <format property="d-stamp" pattern="yyyy-MM-dd" />
+        </tstamp>
+        <delete dir="${build.home}" quiet="true" />
+        <delete dir="${javadoc.home}" quiet="true" />
+        <for list="${build.list}" param="subdir">
+            <sequential>
+                <ant dir="@{subdir}" target="clean" inheritAll="false" />
+            </sequential>
+        </for>
+    </target>
+
+    <target depends="-makedocsdir" name="docs" description="Compiles project documenation">
+        <for list="${build.list}" param="subdir">
+            <sequential>
+                <ant dir="@{subdir}" target="docs" inheritAll="false" />
+                <mkdir dir="${javadoc.home}/@{subdir}" />
+                <copy todir="${javadoc.home}/@{subdir}">
+                    <fileset dir="@{subdir}/docs" />
+                </copy>
+            </sequential>
+        </for>
+    </target>
+
+    <target name="test" depends="build" description="Tests BioPCD">
+        <for list="${build.list}" param="subdir">
+            <sequential>
+                <ant dir="@{subdir}" target="test" inheritAll="false" />
+            </sequential>
+        </for>
+    </target>
+
+    <!-- STATIC TARGETS -->
+    <target name="all" depends="clean,build,docs,test" description="Creates distribution packages" />
+
+    <target name="-distinit">
+        <mkdir dir="${dist.home}" />
+    </target>
+
+    <target name="dist" depends="all,-distinit" description="Creates distribution packages">
+    	<zip destfile="${dist.home}/${app.cmdname}-${app.version}.zip" duplicate="fail" update="false">
+            <fileset dir="${build.home}" includes="*.jar" />
+    	</zip>
+    </target>
+
+    <target name="help">
+        <echo><![CDATA[
+${app.name} build file:
+all   - builds and tests the project
+build - compiles entire project
+clean - cleans the current build
+dist  - creates a binary distribution
+docs  - generates documentation
+test  - runs BioPCD testsdel
+]]></echo>
+    </target>
+</project>

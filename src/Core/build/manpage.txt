@@ -1,0 +1,134 @@
+NAME
+    Bio Legato - A customizable GUI for running programs
+
+VERSION
+    Version 1.1.0
+
+SYNOPSIS
+    biolegato [options] [files]
+
+DESCRIPTION
+    BioLegato is a customizable GUI for running programs.  Its initial intent is
+    to be a replacement for GDE; however with its large plugin API, it may be
+    customized to run more than just CLI programs.
+
+    With the versatility of BioLegato's plugin interface, it supports a wide
+    range of file formats which may be added to at any time through addition of
+    plugins.
+
+OPTIONS
+  NOTE: All command line parameters are case insensitive and may optionally
+        begin with -, --, or / to prevent confusion with filenames.  Options
+        which are synonymous (e.g. --help and --h mean the same thing), are
+        listed below, separated by commas.
+
+    help,h,?
+        Displays usage information for using BioLegato.
+    manpage,man
+        Displays the manpage entry for BioLegato (this screen).
+    optionlist
+        Displays the list of options for using BioLegato.
+    version,v
+        Displays the version information for BioLegato.
+    debug
+        Enables BioLegato's debug mode.
+    plugins
+        Displays a list of loaded plugins.
+    pipe
+        Pipes data from the input stream into BioLegato.
+    exec-properties,ep
+        Executes a command and reads the output as a
+        properties file content for BioLegato.
+
+USAGE EXAMPLES
+    biolegato
+
+    biolegato insequence.gb
+
+    biolegato --debug
+    biolegato /debug
+    biolegato -debug
+
+    biolegato --plugins --properties --debug
+
+    biolegato --plugins /properties -debug insequence.gb
+
+ENVIRONMENT VARIABLES
+    BioLegato searches for the following environment variables.
+    If they don't exist BioLegato sets them to defaults.
+
+      BL_HOME
+        Default: the path where BioLegato resides
+        Description: the path to reference BioLegato from
+
+      BL_PROPERTIES
+        Default: $BL_HOME/properties
+        Description: the locations to load the BioLegato properties file from
+
+      BL_DEBUG
+        Default: uses .blproperties value OR command switch --debug
+        Description: set to "true" to enable debug mode
+
+      NOTE: in properties files, BL_DIR points to the directory where
+            BioLegato is stored
+
+PROPERTIES
+    BioLegato general properties:
+      Property             Description
+        debug                Determines whether to display debug information.
+        plugins              Sets the plugin search path.
+        temp                 Sets the temporary files directory.
+        pcd.menus.path       Sets the path(s) to read BioPCD menus from.
+        font.size            Determines the default font size for objects in
+                             BioLegato.
+
+    Sequence canvas-specific properties:
+      Property             Description
+        seqcolourdirs        The location to load the default sequence colour
+                             masks from.  Please note that a default colour mask
+                             may be specified by naming a colour mask file
+                             "default" (with any extension).
+
+    This properties class will read properties files from the directory
+    containing BioLegato, the user directory and finally the directory BioLegato
+    was launched from.  Please note that this behaviour can be changed using the
+    BL_PROPERTIES environment variable.
+
+    NOTE: for path properties BioLegato will replace all $'s with the
+          appropriate environment variables if set.
+
+SUPPORTED PLUGINS
+    For information about plugins, please consult the BioLegato API
+
+FILE FORMATS
+    All file formats in BioLegato are supported through plugins.  File format
+    support is different for each canvas.  The following is a list of standard
+    file types supported by the GDE canvas:
+
+        BioLegato flatfiles
+        FastA files
+        GDE flatfiles
+        GDE format files
+        GenBank files (2008 standard compliant)
+
+    The following is a list of files supported by the Table canvas:
+        CSV (Comma Separated Values) spreadsheet files
+        TSV (Tab Separated Values) spreadsheet files
+
+AUTHORS
+    Dr. Brian Fristensky
+    Department of Plant Science
+    University of Manitoba
+    Winnipeg, MB  Canada R3T 2N2
+
+    Email: frist@cc.umanitoba.ca
+    Web: http://home.cc.umanitoba.ca/~frist
+
+    Graham Alvare
+    Department of Plant Science
+    University of Manitoba
+    Winnipeg, MB  Canada R3T 2N2
+
+    Email: alvare@cc.umanitoba.ca
+    Web: http://home.cc.umanitoba.ca/~alvare
+

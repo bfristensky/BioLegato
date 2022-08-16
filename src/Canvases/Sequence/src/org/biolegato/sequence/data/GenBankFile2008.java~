@@ -1,0 +1,269 @@
+package org.biolegato.gdesupport.data;
+/*
+ * GenBankFile.java
+ *
+ * Created on January 30, 2008, 11:58 AM
+ *
+ * To change this template, choose Tools | Template Manager
+ * and open the template in the editor.
+ */
+
+import org.biolegato.gdesupport.data.Seq.Type;
+import org.biolegato.gdesupport.data.Seq.Topology;
+import org.biolegato.gdesupport.data.Seq.Strandedness;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Scanner;
+import java.util.regex.*;
+import org.biolegato.gdesupport.data.Seq.Direction;
+import org.biolegato.main.BLMain;
+
+/**
+ * This class acts as a parser/translator for GenBank files (using the file
+ * specification current to 2008).
+ **
+ * @author Graham Alvare
+ * @author Brian Fristensky
+ */
+public class GenBankFile2008 extends DataFormat {
+
+    private static final String DELIMITER      = "(?im:(?=^LOCUS))";
+    private final static String SPACE_FILL     = "                                 ";
+    private static final Pattern LOCUS_PATTERN = Pattern.compile("^LOCUS\\s+([^\\s]+)\\s+(?:\\d+\\s+)?(aa|bp\\s+[\\w-]+)\\s+(circular\\s+|linear\\s+)?", Pattern.CASE_INSENSITIVE);
+
+    /**
+     * Creates a new instance of GenBankFile2008
+     */
+    public GenBankFile2008() {
+    }
+
+    /**
+     * Translates a sequence into the GenBank file format.
+     **
+     * @param seq the sequence to translate
+     */
+    public void translateTo(Appendable result, Seq seq, int offset, int length) throws IOException {
+        int namelength;
+        StringBuffer sequence;
+        final int sequencemax = offset + length;
+        int sequenceLength;
+
+        // translate the data
+        // NOTE: append is faster than + or concat operators
+        if (seq != null && offset >= 0 && length >= 0) {
+            sequence = seq.getSequence();
+            sequenceLength = Math.min(sequencemax, sequence.length());
+
+            if (seq.getOriginal() == null || offset != 0 || length != sequence.length()) {
+                result.append("LOCUS       ");
+
+                // append the name to the stream.  Note that we ensure this field is
+                // 16 characters long with right-side padding of spaces if necessary
+                namelength = seq.getName().length();
+                if (namelength < 16) {
+                    result.append(seq.getName()).append(SPACE_FILL, 0, 16 - namelength);
+                } else {
+                    result.append(seq.getName().substring(0, 16));
+                }
+
+                result.append(" ").append(String.format("%11d", length));
+
+                if (!Type.PROTEIN.equals(seq.getType())) {
+                    result.append(" bp ");
+                    if (seq.getStrandedness() != null) {
+                        // Converts a sequence's strandedness enum to GenBank's format
+                        switch (seq.getStrandedness()) {
+                            case DOUBLE:
+                                result.append("ds");
+                                break;
+                            case MIXED:
+                                result.append("ms");
+                                break;
+                            default:
+                                result.append("ss");
+                                break;
+                        }
+                        
+                        // append a dash and the type of sequence (i.e. DNA or RNA)
+                        result.append("-");
+                        result.append((!Type.RNA.equals(seq.getType()) ? "DNA     " : "RNA     "));
+                    } else {
+                        result.append((!Type.RNA.equals(seq.getType()) ? "DNA        " : "RNA        "));
+                    }
+                } else {
+                    result.append(" aa            ");
+                }
+                result.append((!Topology.CIRCULAR.equals(seq.getTopology()) ? "linear   "
+                        : "circular "));
+// TODO: reimplement classification reading abilities for BioLegato
+/*                if (seq.containsKey("classification")) {
+                result.append(seq.get("classification")).append(" ");
+                } else {*/
+                result.append("CON "); // division code + space
+//                }
+                result.append((new SimpleDateFormat("dd-MMM-yyyy")).format(
+                        new Date()).toUpperCase());
+                result.append("\n");
+                if (!"".equals(seq.getDescription())) {
+                    result.append("DESCRIPTION ").append(
+                            seq.getDescription()).append("\n");
+                }
+            } else {
+                result.append(seq.getOriginal());
+            }
+            result.append("ORIGIN");
+
+            for (int count = offset; count < sequenceLength; count += 60) {
+
+                result.append("\n").append(String.format("%9d", (count + 1)));
+
+                for (int spaceCount = count, next = count + 10; spaceCount < count + 60
+                        && spaceCount < sequenceLength;
+                        spaceCount = next, next += 10) {
+                    result.append(" ").append(sequence, spaceCount,
+                            // math.min
+                            (sequenceLength < next ? sequenceLength : next));
+                }
+            }
+            result.append("\n//\n");
+        }
+    }
+
+    /**
+     * Translates a single sequence from a scanner into BioLegato
+     **
+     * @param datamodel the destination model to store the translated sequences
+     * @param source the data source to parse
+     * @param x the X-coordinate of the position where to insert the results
+     * @param y the Y-coordinate of the position where to insert the results
+     * @return whether there are any remaining sequences of the current format type in the scanner
+     * @throws IOException any exceptions that occur while reading the stream are passed
+     */
+    public boolean translateSequence(Dataset datamodel, Scanner source, int x, int y, boolean addonly) throws IOException {
+        final int modellength = datamodel.getSize();
+        String[] parsable = null;
+        Matcher locusMatcher = null;
+
+        // ensure usage of the proper delimiter
+        source.useDelimiter(DELIMITER);
+
+        if (source.hasNext()) {
+            parsable = source.next().split("ORIGIN[^\n\r]*");
+            if (parsable.length >= 2) {
+
+                if (locusMatcher == null) {
+                    locusMatcher = LOCUS_PATTERN.matcher(parsable[0]);
+                } else {
+                    locusMatcher.reset(parsable[0]);
+                }
+
+                if (locusMatcher.find()) {
+                    StringBuffer sequencebuffer = new StringBuffer(parsable[1].replaceAll("[^a-zA-Z]", ""));
+
+                    if (y < modellength && !addonly) {
+                        char [] text = new char[sequencebuffer.length()];
+                        sequencebuffer.getChars(0, text.length, text, 0);
+                        datamodel.insert(x, y, text, 0, text.length, true);
+                    } else {
+                        Type type = Type.DNA;
+                        Direction direction = Direction.FROM5TO3;
+                        Strandedness strandedness = Strandedness.SINGLE;
+                        Topology topology = (locusMatcher.group(3) != null && "circular".equals(locusMatcher.group(3).toLowerCase().trim()) ? Seq.Topology.CIRCULAR : Seq.Topology.LINEAR);
+                        String name = locusMatcher.group(1);
+                        String type_text = locusMatcher.group(2).toLowerCase();
+                        StringBuilder original = new StringBuilder(parsable[0]).append("\n");
+
+                        if ("aa".equals(type_text)) {    // this should be bp or aa
+                            type = Type.PROTEIN;
+                        } else if (type_text.startsWith("bp")) {
+                            int dashindex = type_text.indexOf('-');
+                            if (dashindex >= 0) {
+                                strandedness = toStrandedness(type_text.substring(3, dashindex).trim());
+                                type = toType(type_text.substring(dashindex + 1));
+                            } else {
+                                type = toType(type_text.substring(3));
+                            }
+                        }
+
+                        datamodel.add(y, new Seq(type, name, sequencebuffer,
+                                direction, topology, strandedness, original));
+                    }
+                    y++;
+                } else {
+                    BLMain.error("Invalid Genbank sequence!", "GenBank parser");
+                    System.out.println(parsable[0]);
+                }
+            }
+        }
+        return source.hasNext();
+    }
+
+    /**
+     * Determines whether a specified file is of type GenBank file (based on extension).
+     * Currently the only extensions supported are ".gen", ".gp", and ".gb".
+     **
+     * @param file the file to test
+     * @return true if the file is of type GenBank file (otherwise false)
+     * @see javax.swing.filechooser.FileFilter#accept
+     */
+    public boolean accept(File file) {
+        return (file.isDirectory()
+                || file.getAbsolutePath().toLowerCase().endsWith(".gen")
+                || file.getAbsolutePath().toLowerCase().endsWith(".gp")
+                || file.getAbsolutePath().toLowerCase().endsWith(".gb"));
+    }
+
+    /**
+     * Returns a description of the file format that can be displayed to the user.
+     **
+     * @return the string description of the file format
+     * @see javax.swing.filechooser.FileFilter#getDescription
+     */
+    public String getDescription() {
+        return "GenBank file (*.gb,*.gp,*.gen)";
+    }
+
+    /**
+     * Used to convert GB's strandedness to BioLegato's strandedness structure
+     **
+     * @param string the string to convert.
+     * @return the strandedness corresponding to the string parameter
+     */
+    private static Strandedness toStrandedness(String test) {
+        Strandedness result = Strandedness.MIXED;
+        if ("ss".equalsIgnoreCase(test)) {
+            result = Strandedness.SINGLE;
+        } else if ("ds".equalsIgnoreCase(test)) {
+            result = Strandedness.DOUBLE;
+        }
+        return result;
+    }
+
+    /**
+     * Used to convert GB's sequence type to BioLegato's type structure
+     **
+     * @param string the string to convert.
+     * @return the type corresponding to the string parameter
+     */
+    private static Type toType(String string) {
+        Type result = Type.DNA;
+        if (string.toLowerCase().contains("rna")) {
+            result = Type.RNA;
+        }
+        return result;
+    }
+
+    /**
+     * Used to auto-detect Bio Legato formats
+     **
+     * @param test the reader to parse data from
+     * @return whether the format is correct
+     * @throws IOException returns any possible io exceptions (such as mark not supported)
+     */
+    @Override
+    protected boolean isFormat(Scanner test) throws IOException {
+        return test.findInLine(DELIMITER) != null;
+    }
+}

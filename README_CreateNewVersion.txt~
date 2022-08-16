@@ -1,0 +1,43 @@
+NetBeans doesn't seem to have a mechanism for creating a 
+new version of a project. In particular, the bioLegato
+project has custom ant scripts for doing the builds, 
+so you really have to copy the directory tree intact.
+
+ The best way to do this by hand:
+
+1. Make a copy of the existing directory tree under a new name.
+
+cp -RPp bioLegato.1.0.0 bioLegato.1.0.2
+
+This command preserves symbolic links. The main project directory
+has links to the jarfiles that are created each time the project
+is built.
+
+2. Edit src/ants.properties to change the version number
+
+app.version=1.0.2 
+
+During a build, the ant script tells and to replace variables in the source
+code such as @VERSION@ with the values from this file. New .java files are
+created in a number of build directories, and these are the java files
+that actually get compiled.
+
+3. In Netbeans:
+
+    File --> Open Project
+    choose the src directory 
+    Click on Open Project
+
+    If you wish, you may also select Run --> Set Main Project
+
+4. Build the project
+
+    The first time you build, choose Run --> Clean and Build
+
+5. In the java directory, change the symbolic link bioLegato to point to the
+   new bioLegato directory.
+
+6. To test, launch any bioLegato eg. birch. In the Help --> About menu, 
+   you should see the new version number.
+
+

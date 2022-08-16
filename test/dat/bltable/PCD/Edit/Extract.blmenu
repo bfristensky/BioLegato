@@ -1,0 +1,7 @@
+name        "extract"
+exec        "(bltable %in1%;$RM_CMD -f %in1%)&"
+var "in1"
+    type        tempfile
+    direction   in
+    format      tsv
+    save        true

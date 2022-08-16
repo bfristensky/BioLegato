@@ -1,0 +1,293 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;
+      charset=windows-1252">
+    <meta name="GENERATOR" content="Mozilla/4.05 [en] (X11; U; SunOS
+      5.5.1 sun4u) [Netscape]">
+    <title>chooseviewer.py - launch the appropriate viewer for a file</title>
+  </head>
+  <body>
+    <div style="text-align: right;">update May&nbsp; 31, 2018<br>
+    </div>
+    NAME<br>
+    <span style="font-weight: bold;"></span><br>
+    <div style="margin-left: 40px;">chooseviewer.py - choose a program
+      for viewing a file, based either on the filename.extension, or<br>
+      by an extension supplied on the command line<br>
+    </div>
+    <br>
+    SYNOPSIS<br>
+    <div style="margin-left: 40px;"><span style="font-weight: bold;">chooseviewer.py</span>
+      <i>filename</i><b> [--ext </b><i>extension</i><b>]&nbsp;</b> <b>[--delete]
+
+
+
+        [--wait]</b> <br>
+      <br>
+    </div>
+    <br>
+    DESCRIPTION<br>
+    <span style="font-weight: bold;"></span>
+    <blockquote><span style="font-weight: bold;"></span>chooseviewer.py
+      is a convenience tool for opening files in a viewer. Its main
+      purpose is to make it easier to open output files from BioLegato,
+      but could be used for any case in which you need to automate
+      opening a file for viewing.<br>
+    </blockquote>
+    <br>
+    OPTIONS<br>
+    <br>
+    <div style="margin-left: 40px;"> <i>filename</i> - The first
+      argument <u>must</u> be the name of the file to view. If the file
+      name has a file extension, the file extension is used to identify
+      the type of file, and then open the appropriate viewer. If no file
+      extension is found or the extension is uninformative (eg. .out,
+      .tmp), the default is to open the file in a text editor. If the
+      document is not a plain text, use the --ext option to specify the
+      type of file. (See EXAMPLES below)<br>
+      <br>
+      <table cellspacing="2" cellpadding="2" width="100%" border="1">
+        <tbody>
+          <tr>
+            <td valign="top" bgcolor="#ccffff">Type of file<br>
+            </td>
+            <td valign="top" bgcolor="#ccffff">valid file extensions<br>
+            </td>
+            <td valign="top" bgcolor="#ccffff">example of viewer<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">Web document<br>
+            </td>
+            <td valign="top">html, shtml, htm<br>
+            </td>
+            <td valign="top">Firefox<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">Portable Document Format<br>
+            </td>
+            <td valign="top">pdf<br>
+            </td>
+            <td valign="top">Adobe Reader<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">PostScript<br>
+            </td>
+            <td valign="top">ps, eps<br>
+            </td>
+            <td valign="top">evince<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">Spreadsheet<br>
+            </td>
+            <td valign="top">xls, xlsx, ods, sxc, csv, tsv, dif, dbf<br>
+            </td>
+            <td valign="top">LibreOffice Calc<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">Document<br>
+            </td>
+            <td valign="top">odt, sxw, doc, docx, rtf<br>
+            </td>
+            <td valign="top">LibreOffice Writer<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">Bitmap graphic image<br>
+            </td>
+            <td valign="top">gif, jpg, jpeg, png, bmp, tif, tiff<br>
+            </td>
+            <td valign="top">Eyes of Gnome<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">Text<br>
+            </td>
+            <td valign="top">no extension, or none in the list of valid
+              extensions<br>
+            </td>
+            <td valign="top">Nedit<br>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+      <br>
+      <b>--ext</b> <i>extension</i> - Any valid file extension. File
+      extensions may be in upper, lower or mixed case. This parameter
+      overrides any file extension included as part of the <i>filename</i>.<br>
+      <b>--delete</b> - After the viewer has opened, delete the file.
+      The main purpose of this option is to give BioLegato more
+      flexibility in when to delete temporary&nbsp; output files. For
+      obvious reasons, --delete only works on files on the local
+      filesystem. If the filename begins with http:, https:, ftp:, or
+      ftps:, it is assumed to be a URL, and no attempt is made to delete
+      the file.<br>
+      <b>--wait</b> - Wait for the viewer to terminate before
+      terminating chooseviewer.py. By default, chooseviewer.py runs the
+      process in the background in a separate fork. If we didn't do
+      this,programs like BioLegato or ACEDB couldn't get on with what
+      they're doing, or terminate, until the child process terminates.
+      However, --wait can be used if for some reason you don't want to
+      run the viewer in the background.<br>
+    </div>
+    <br>
+    EXAMPLES<br>
+    <blockquote>
+      <table cellspacing="2" cellpadding="2" width="100%" border="1">
+        <tbody>
+          <tr>
+            <td valign="top" bgcolor="#ccffff">command<br>
+            </td>
+            <td valign="top" bgcolor="#ccffff">result<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">chooseviewer.py output.pdf</td>
+            <td valign="top">&nbsp;opens in PDF viewer<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">chooseviewer.py output.jpg</td>
+            <td valign="top">&nbsp;opens in image viewer<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">chooseviewer.py output.tmp --ext jpg<br>
+            </td>
+            <td valign="top">&nbsp;opens in image viewer<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">chooseviewer.py output.txt</td>
+            <td valign="top">&nbsp;opens in text editor<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">chooseviewer.py output<br>
+            </td>
+            <td valign="top">&nbsp;opens in text editor<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">chooseviewer.py output.html</td>
+            <td valign="top">&nbsp;opens in web browser<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">chooseviewer.py
+              http://home.cc.umanitoba.ca/~psgendb</td>
+            <td valign="top">&nbsp;opens in web browser</td>
+          </tr>
+        </tbody>
+      </table>
+    </blockquote>
+    <br>
+    ENVIRONMENT<br>
+    <blockquote>chooseviewer.py determines the program to use for
+      opening a file based on the values of BioLegato "BL_" variables.<br>
+      <br>
+      <table cellspacing="2" cellpadding="2" width="100%" border="1">
+        <tbody>
+          <tr>
+            <td valign="top" bgcolor="#ccffff">variable_name<br>
+            </td>
+            <td valign="top" bgcolor="#ccffff">purpose<br>
+            </td>
+            <td valign="top" bgcolor="#ccffff">value<br>
+              example<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">BL_TextEditor<br>
+            </td>
+            <td valign="top">view text files<br>
+            </td>
+            <td valign="top">nedit<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">BL_Browser<br>
+            </td>
+            <td valign="top">view web pages<br>
+            </td>
+            <td valign="top">firefox<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">BL_ImageViewer<br>
+            </td>
+            <td valign="top">view bitmap images eg. .gif, .jpg, .png<br>
+            </td>
+            <td valign="top">eog<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">BL_PDFViewer<br>
+            </td>
+            <td valign="top">view PDF files<br>
+            </td>
+            <td valign="top">evince<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">BL_PSViewer<br>
+            </td>
+            <td valign="top">view PostScript files<br>
+            </td>
+            <td valign="top">evince<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">BL_Document<br>
+            </td>
+            <td valign="top">view OpenOffice/MS-Word documents<br>
+            </td>
+            <td valign="top">oowriter<br>
+            </td>
+          </tr>
+          <tr>
+            <td valign="top">BL_Spreadsheet<br>
+            </td>
+            <td valign="top">view OpenOffice/MS-Excell spreadsheets<br>
+            </td>
+            <td valign="top">oocalc<br>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+    </blockquote>
+    BUGS<br>
+    <br>
+    <ol>
+      <li>HTML files on the local filesystem will display, but all
+        inline content such as images will not display on these pages.
+        That is because chooseviewer.py makes a copy of the file and
+        views the copy. <br>
+      </li>
+      <li>Should really handle presentations eg. ppt, LibreOffice
+        Impress. <br>
+      </li>
+    </ol>
+    <blockquote> </blockquote>
+    SEE ALSO<br>
+    <blockquote>On BIRCH systems, these variables are set in birchadmin
+      using Preferences --&gt; Helper Apps. See<a
+href="http://home.cc.umanitoba.ca/%7Epsgendb/birchhomedir/BIRCHDEV/doc/bioLegato/BLHelper.html">http://home.cc.umanitoba.ca/~psgendb/birchhomedir/BIRCHDEV/doc/bioLegato/BLHelper.html</a><br>
+    </blockquote>
+    <br>
+    AUTHOR<br>
+    <blockquote>Dr. Brian Fristensky<br>
+      Department of Plant Science <br>
+      University of Manitoba<br>
+      Winnipeg, MB &nbsp;Canada R3T 2N2<br>
+      <a href="mailto:frist@cc.umanitoba.ca">frist@cc.umanitoba.ca</a><br>
+      <a href="http://home.cc.umanitoba.ca/%7Efrist">http://home.cc.umanitoba.ca/~frist</a>5</blockquote>
+  </body>
+</html>

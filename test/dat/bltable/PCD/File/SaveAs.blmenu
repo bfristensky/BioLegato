@@ -1,0 +1,19 @@
+name        "Save As..."
+var "filename"
+    type        file
+    label       "Filename"
+var "in1"
+    type        tempfile
+    direction   in
+    format      tsv
+var "delimiter"
+    type        chooser
+    label       "field delimiter"
+    choices
+        "Comma"     "| sed -e 's&\([^\""]\""\)	&\1,&g'"
+panel
+    var "Run"
+        type        button
+        label       "Run"
+        shell       "cat %in1% %DELIMITER% > %FILENAME%"
+        close       true

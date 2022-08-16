@@ -1,0 +1,127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;
+      charset=windows-1252">
+    <meta name="GENERATOR" content="Mozilla/4.05 [en] (X11; U; SunOS
+      5.5.1 sun4u) [Netscape]">
+    <title>bl_rename.py - rename files, changing names containing a
+      target string to a new string</title>
+  </head>
+  <body>
+    <div style="text-align: right;">update March 8, 2021<br>
+    </div>
+    NAME<br>
+    <span style="font-weight: bold;"></span><br>
+    <div style="margin-left: 40px;">bl_rename.py - Rename files by
+      replacing one pattern with a new pattern. The list of files to be
+      renamed is supplied in an input file.<br>
+      <br>
+    </div>
+    SYNOPSIS<br>
+    <div style="margin-left: 40px;"><span style="font-weight: bold;">bl_rename.py</span><i>
+      </i><b>--replace</b><i>&nbsp;</i> <i>oldpattern</i>&nbsp; <i>newpattern</i>
+      <i>namefile</i><br>
+      <span style="font-weight: bold;">bl_rename.py</span><i> </i><b>--chblanks</b>&nbsp;
+
+
+      <i>newpattern</i> <i>namefile</i><br>
+      <span style="font-weight: bold;">bl_rename.py</span> <b>--noblanks</b><i>&nbsp;
+
+
+        <i>namefile</i></i><i><span style="font-weight: bold;"><br>
+        </span></i><span style="font-weight: bold;">bl_rename.py</span>
+      <b>--camel</b><i>&nbsp; <i>namefile</i></i><br>
+    </div>
+    <br>
+    DESCRIPTION<br>
+    <blockquote>For each file listed in <i>namefile</i> whose name
+      contains oldpattern, rename the file, replacing oldpattern with
+      newpattern. <br>
+      <br>
+      <b>--replace</b> - replace <i>oldpattern</i> with <i>newpattern</i><br>
+      <br>
+      <b>--chblanks</b> - replace blanks with <i>newpattern</i><br>
+      <br>
+      <b>--noblanks</b> - remove all blanks <br>
+      <br>
+      <b>--camel</b> - Change each nonblank substring to camel case ie.
+      first letter capitalized, all other letters in lowercase, and
+      remove all blanks.<br>
+      <br>
+      <i>oldpattern</i> - A substring of the filename to be replaced<br>
+      <br>
+      <i>newpattern</i> - A substring to replace the oldpattern. If
+      empty, the target is simply deleted from the name. The empty
+      string must be enclosed in single quotes ie. ''<br>
+    </blockquote>
+    <span style="font-weight: bold;"></span>
+    <blockquote><span style="font-weight: bold;"></span><i>namefile</i>
+      - a file listing filenames in the current working directory to be
+      changed . At least 1 file must be specified. Each name must be on
+      a separate line.<br>
+      <br>
+      This command is intended to be a workalike for the Linux rename
+      command. bl_rename.py uses the Python os.replace command to rename
+      files.<br>
+    </blockquote>
+    EXAMPLE<br>
+    <blockquote>Given the following files in the current working
+      directory, as listed in namefile:<br>
+      <br>
+      <u>namefile:</u><br>
+      testfile1.text<br>
+      testfile2.text<br>
+      testfile3.text<br>
+      testfile4.text<br>
+      <br>
+      <font size="+1"><tt>bl_rename.py --replace text txt namefile</tt></font><br>
+      <br>
+      changes the names to<br>
+      <br>
+      testfile1.txt<br>
+      testfile2.txt<br>
+      testfile3.txt<br>
+      testfile4.txt<br>
+      <br>
+      <font size="+1"><tt>bl_rename.py --replace ile '' namefile</tt></font><br>
+      <br>
+      changes the names to <br>
+      <br>
+      testf1.txt<br>
+      testf2.txt<br>
+      testf3.txt<br>
+      testf4.txt<br>
+    </blockquote>
+    <blockquote>Given <br>
+      <br>
+      <u>namefile</u>:<br>
+      blanks in file names is a bad practice<br>
+      Because you have to escape file names using quotes<br>
+    </blockquote>
+    <blockquote><font size="+1"><tt>bl_rename.py --noblanks namefile</tt></font><br>
+      <br>
+      results in <br>
+      <br>
+      blanksinfilenamesisabadpractice<br>
+      Becauseyouhavetoescapefilenamesusingquotes</blockquote>
+    <blockquote>while <br>
+      <br>
+      <font size="+1"><tt>bl_rename.py --camel namefile</tt></font></blockquote>
+    <blockquote>results in <br>
+      <br>
+      BlanksInFileNamesIsABadPractice<br>
+      BecauseYouHaveToEscapeFileNamesUsingQuotes<br>
+      <br>
+    </blockquote>
+    AUTHOR<br>
+    <blockquote>Dr. Brian Fristensky<br>
+      Department of Plant Science <br>
+      University of Manitoba<br>
+      Winnipeg, MB &nbsp;Canada R3T 2N2<br>
+      <a href="mailto:brian.fristensky@umanitoba.ca">brian.fristensky@umanitoba.ca</a><br>
+      <a href="http://home.cc.umanitoba.ca/%7Efrist">http://home.cc.umanitoba.ca/~frist</a><br>
+    </blockquote>
+    <br>
+  </body>
+</html>

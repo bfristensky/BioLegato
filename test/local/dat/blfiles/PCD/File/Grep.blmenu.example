@@ -1,0 +1,42 @@
+name        "grep - Search for files containing a pattern"
+icon    "$BIRCH/dat/birch_black_ico.png"
+tip    "runs the Unix grep command "
+
+var "pattern"
+    type        text
+    label       "pattern to match"
+
+var "invert"
+    type        chooser
+    label       "invert the sense of the match"
+    default     1
+    choices
+        "Yes" "-v"
+        "No" ""
+
+var "ignore"
+    type        chooser
+    label       "ignore case"
+    default     1
+    choices
+        "Yes" "-i"
+        "No" ""
+
+var "in1"
+    type        tempfile
+    direction   in
+    format      tsv
+    save        false
+
+panel
+    var "Run"
+        type        button
+        label       "Run"
+        shell       "grep %INVERT% %IGNORE% '%PATTERN%' * > %in1%.tmp; chooseviewer.py %in1%.tmp; rm %in1%.tmp"
+        close       true
+
+    var "Manual"
+        type        button
+        label       "Manual"
+        shell       "$BIRCH/script/chooseviewer.py https://man7.org/linux/man-pages/man1/grep.1.html"
+        close       false
