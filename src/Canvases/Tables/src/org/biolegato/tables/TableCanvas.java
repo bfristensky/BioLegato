@@ -24,6 +24,13 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
+import javax.swing.JPanel;
+import java.awt.GridLayout;
+import javax.swing.JCheckBox;
+import java.awt.FlowLayout;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 import org.biolegato.main.BLMain;
@@ -149,6 +156,73 @@ public class TableCanvas extends DataCanvas {
     };
     SelectionMode mode = SelectionMode.CELL;
 
+    public final AbstractAction find = new AbstractAction("Find") {
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            
+            JTextField primaryStr = new JTextField(10);
+            JTextField secondaryStr = new JTextField(10);
+            ButtonGroup group = new ButtonGroup();
+            JRadioButton radio1 = new JRadioButton("Selected Only");
+            JRadioButton radio2 = new JRadioButton("Regular Expression");
+            JRadioButton radio3 = new JRadioButton("Row Selection");
+            radio3.setSelected(true);
+            group.add(radio3);
+            JRadioButton radio4 = new JRadioButton("Column Selection");
+            group.add(radio4);
+            
+            
+            JPanel myPanel = new JPanel(new GridLayout(4, 2));
+            myPanel.add(new JLabel("Primary String:"));
+            myPanel.add(primaryStr);
+            myPanel.add(new JLabel("Secondary String:"));
+            myPanel.add(secondaryStr);
+            myPanel.add(radio1);
+            myPanel.add(radio2);
+            myPanel.add(radio3);
+            myPanel.add(radio4);
+            
+            
+           
+            int result = JOptionPane.showConfirmDialog(null, myPanel, "Find", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            if (result == JOptionPane.OK_OPTION){
+                String priStr = primaryStr.getText();
+                String secStr = secondaryStr.getText();
+                
+                if (!radio1.isSelected()){
+                    tablePane.clearSelection();
+                }
+                
+                String[][] data = getData();
+                
+                if (radio3.isSelected()){
+                    tablePane.setRowSelectionAllowed(true);
+                    tablePane.setColumnSelectionAllowed(false);
+                    mode = SelectionMode.ROW;
+                }
+                else {
+                    tablePane.setRowSelectionAllowed(false);
+                    tablePane.setColumnSelectionAllowed(true);
+                    mode = SelectionMode.COLUMN;
+                }
+                
+                for (int row = 0; row < data.length; row++){
+                    for (int col = 0; col < data[row].length; col++){
+                        if (data[row][col].contains(priStr)){
+                            System.out.println("Row: " + row + ", Col: " + col + "\nData: " + data[row][col]);
+                            if (radio3.isSelected()){
+                                tablePane.addRowSelectionInterval(row-1, row-1);
+                            }
+                            else {
+                                tablePane.addColumnSelectionInterval(col, col);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+    
     /**
      * Creates a new instance of a TableCanvas.  This is the most basic
      * constructor available.
@@ -158,6 +232,8 @@ public class TableCanvas extends DataCanvas {
         
         // Add the "Select All..." menu item.
         addMenuHeading("Edit").add(new JMenuItem(selectAllA));
+        
+        addMenuHeading("Edit").add(new JMenuItem(find));
     }
 
     /**
@@ -172,6 +248,7 @@ public class TableCanvas extends DataCanvas {
 
         // Add the "Select All..." menu item.
         addMenuHeading("Edit").add(new JMenuItem(selectAllA));
+        addMenuHeading("Edit").add(new JMenuItem(find));
     }
 
     /**
