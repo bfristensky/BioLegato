@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.GridLayout;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -13,6 +14,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -24,13 +27,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JPanel;
-import java.awt.GridLayout;
-import javax.swing.JCheckBox;
-import java.awt.FlowLayout;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 import org.biolegato.main.BLMain;
@@ -859,43 +858,40 @@ public class TableCanvas extends DataCanvas {
         rowHeader.setCellRenderer(new RowHeaderRenderer(tablePane));
         scrollPane.setRowHeaderView(rowHeader);
         
-        AbstractAction find = new AbstractAction("Find") {
+        final AbstractAction find = new AbstractAction("Find") {
             @Override
             public void actionPerformed(ActionEvent ae) {
+                tablePane.clearSelection();
 
                 JTextField primaryStr = new JTextField(10);
                 JTextField secondaryStr = new JTextField(10);
-                ButtonGroup group = new ButtonGroup();
-                JRadioButton radio1 = new JRadioButton("Selected Only");
-                JRadioButton radio2 = new JRadioButton("Regular Expression");
-                JRadioButton radio3 = new JRadioButton("Row Selection");
-                radio3.setSelected(true);
-                group.add(radio3);
-                JRadioButton radio4 = new JRadioButton("Column Selection");
-                group.add(radio4);
+                ButtonGroup modeGroup = new ButtonGroup();
+                JRadioButton regexRadio = new JRadioButton("Regular Expression");
+                JRadioButton caseRadio = new JRadioButton("Match Case");
+                JRadioButton rowRadio = new JRadioButton("Row Selection");
+                rowRadio.setSelected(true);
+                modeGroup.add(rowRadio);
+                JRadioButton colRadio = new JRadioButton("Column Selection");
+                modeGroup.add(colRadio);
 
                 JPanel myPanel = new JPanel(new GridLayout(4, 2));
                 myPanel.add(new JLabel("Primary String:"));
                 myPanel.add(primaryStr);
                 myPanel.add(new JLabel("Secondary String:"));
                 myPanel.add(secondaryStr);
-                myPanel.add(radio1);
-                myPanel.add(radio2);
-                myPanel.add(radio3);
-                myPanel.add(radio4);
+                myPanel.add(regexRadio);
+                myPanel.add(caseRadio);
+                myPanel.add(rowRadio);
+                myPanel.add(colRadio);
 
                 int result = JOptionPane.showConfirmDialog(null, myPanel, "Find", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
                 if (result == JOptionPane.OK_OPTION) {
                     String priStr = primaryStr.getText();
                     String secStr = secondaryStr.getText();
 
-                    if (!radio1.isSelected()) {
-                        tablePane.clearSelection();
-                    }
-
                     String[][] data = getData();
 
-                    if (radio3.isSelected()) {
+                    if (rowRadio.isSelected()) {
                         tablePane.setRowSelectionAllowed(true);
                         tablePane.setColumnSelectionAllowed(false);
                         mode = SelectionMode.ROW;
@@ -906,17 +902,51 @@ public class TableCanvas extends DataCanvas {
                         mode = SelectionMode.COLUMN;
                         radioCol.setSelected(true);
                     }
-
+                    
+                    Pattern pattern;
+                    Matcher matcher;
+                    if (regexRadio.isSelected()) {
+                        if (caseRadio.isSelected()) {
+                            pattern = Pattern.compile(priStr);
+                        }
+                        else {
+                            pattern = Pattern.compile(priStr, Pattern.CASE_INSENSITIVE);
+                        }
+                    }
+                    else {
+                        pattern = Pattern.compile(priStr, Pattern.LITERAL);
+                    }
+                    
+                    String priStrLower = priStr.toLowerCase();
+                    boolean found = false;
                     for (int row = 0; row < data.length; row++) {
                         for (int col = 0; col < data[row].length; col++) {
-                            if (data[row][col].contains(priStr)) {
+                            if (regexRadio.isSelected()) {
+                                matcher = pattern.matcher(data[row][col]);
+                                if (matcher.find()){
+                                    found = true;
+                                }
+                            }
+                            else if (caseRadio.isSelected()){
+                                if (data[row][col].contains(priStr)){
+                                    found = true;
+                                }
+                            }
+                            else {
+                                if (data[row][col].toLowerCase().contains(priStrLower)){
+                                    found = true;
+                                }
+                            }
+                            
+                            if (found) {
                                 System.out.println("Row: " + row + ", Col: " + col + "\nData: " + data[row][col]);
-                                if (radio3.isSelected()) {
+                                if (rowRadio.isSelected()) {
                                     tablePane.addRowSelectionInterval(row - 1, row - 1);
                                 } else {
                                     tablePane.addColumnSelectionInterval(col, col);
                                 }
                             }
+                            found = false;
                         }
                     }
                 }
