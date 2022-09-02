@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.GridLayout;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -13,6 +14,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -24,13 +27,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JPanel;
-import java.awt.GridLayout;
-import javax.swing.JCheckBox;
-import java.awt.FlowLayout;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 import org.biolegato.main.BLMain;
@@ -156,72 +155,7 @@ public class TableCanvas extends DataCanvas {
     };
     SelectionMode mode = SelectionMode.CELL;
 
-    public final AbstractAction find = new AbstractAction("Find") {
-        @Override
-        public void actionPerformed(ActionEvent ae) {
-            
-            JTextField primaryStr = new JTextField(10);
-            JTextField secondaryStr = new JTextField(10);
-            ButtonGroup group = new ButtonGroup();
-            JRadioButton radio1 = new JRadioButton("Selected Only");
-            JRadioButton radio2 = new JRadioButton("Regular Expression");
-            JRadioButton radio3 = new JRadioButton("Row Selection");
-            radio3.setSelected(true);
-            group.add(radio3);
-            JRadioButton radio4 = new JRadioButton("Column Selection");
-            group.add(radio4);
-            
-            
-            JPanel myPanel = new JPanel(new GridLayout(4, 2));
-            myPanel.add(new JLabel("Primary String:"));
-            myPanel.add(primaryStr);
-            myPanel.add(new JLabel("Secondary String:"));
-            myPanel.add(secondaryStr);
-            myPanel.add(radio1);
-            myPanel.add(radio2);
-            myPanel.add(radio3);
-            myPanel.add(radio4);
-            
-            
-           
-            int result = JOptionPane.showConfirmDialog(null, myPanel, "Find", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-            if (result == JOptionPane.OK_OPTION){
-                String priStr = primaryStr.getText();
-                String secStr = secondaryStr.getText();
-                
-                if (!radio1.isSelected()){
-                    tablePane.clearSelection();
-                }
-                
-                String[][] data = getData();
-                
-                if (radio3.isSelected()){
-                    tablePane.setRowSelectionAllowed(true);
-                    tablePane.setColumnSelectionAllowed(false);
-                    mode = SelectionMode.ROW;
-                }
-                else {
-                    tablePane.setRowSelectionAllowed(false);
-                    tablePane.setColumnSelectionAllowed(true);
-                    mode = SelectionMode.COLUMN;
-                }
-                
-                for (int row = 0; row < data.length; row++){
-                    for (int col = 0; col < data[row].length; col++){
-                        if (data[row][col].contains(priStr)){
-                            System.out.println("Row: " + row + ", Col: " + col + "\nData: " + data[row][col]);
-                            if (radio3.isSelected()){
-                                tablePane.addRowSelectionInterval(row-1, row-1);
-                            }
-                            else {
-                                tablePane.addColumnSelectionInterval(col, col);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    };
+    
     
     /**
      * Creates a new instance of a TableCanvas.  This is the most basic
@@ -232,8 +166,6 @@ public class TableCanvas extends DataCanvas {
         
         // Add the "Select All..." menu item.
         addMenuHeading("Edit").add(new JMenuItem(selectAllA));
-        
-        addMenuHeading("Edit").add(new JMenuItem(find));
     }
 
     /**
@@ -248,7 +180,6 @@ public class TableCanvas extends DataCanvas {
 
         // Add the "Select All..." menu item.
         addMenuHeading("Edit").add(new JMenuItem(selectAllA));
-        addMenuHeading("Edit").add(new JMenuItem(find));
     }
 
     /**
@@ -807,6 +738,51 @@ public class TableCanvas extends DataCanvas {
 
         // Add the table's scroll pane to the main panel.
         mainPane.add(scrollPane);
+        JRadioButton radioCell;
+        radioCell = new JRadioButton(new AbstractAction("by cell") {
+                /**
+                 * When the user clicks on this radio button, change the table
+                 * canvas's selection mode to "by cell".
+                 **
+                 * @param evt this parameter is not used by this method.
+                 */
+                public void actionPerformed(ActionEvent evt) {
+                    tablePane.setCellSelectionEnabled(true);
+                    tablePane.setColumnSelectionAllowed(true);
+                    tablePane.setRowSelectionAllowed(true);
+                    mode = SelectionMode.CELL;
+                }
+            });
+        JRadioButton radioCol;
+        radioCol = new JRadioButton(new AbstractAction("by column") {
+                /**
+                 * When the user clicks on this radio button, change the table
+                 * canvas's selection mode to "by column".
+                 **
+                 * @param evt this parameter is not used by this method.
+                 */
+                public void actionPerformed(ActionEvent evt) {
+                    tablePane.setCellSelectionEnabled(false);
+                    tablePane.setColumnSelectionAllowed(true);
+                    tablePane.setRowSelectionAllowed(false);
+                    mode = SelectionMode.COLUMN;
+                }
+            });
+        JRadioButton radioRow;
+        radioRow = new JRadioButton(new AbstractAction("by row") {
+                /**
+                 * When the user clicks on this radio button, change the table
+                 * canvas's selection mode to "by row".
+                 **
+                 * @param evt this parameter is not used by this method.
+                 */
+                public void actionPerformed(ActionEvent e) {
+                    tablePane.setCellSelectionEnabled(false);
+                    tablePane.setColumnSelectionAllowed(false);
+                    tablePane.setRowSelectionAllowed(true);
+                    mode = SelectionMode.ROW;
+                }
+            });
 
         // Set the table selection model.  If the BioLegato property
         // "table.selection" is set to "row" or or "column", then limit the user
@@ -838,7 +814,7 @@ public class TableCanvas extends DataCanvas {
             // buttons, for the user to control.
             Box selectionPane = new Box(BoxLayout.LINE_AXIS);
             // A variable to cache data for the new radio buttons to add.
-            JRadioButton radio;
+            
             // Create a button group to ensure that each selection mode is
             // mutually exclusive (i.e. the user can only pick one at a time).
             ButtonGroup group = new ButtonGroup();
@@ -854,59 +830,20 @@ public class TableCanvas extends DataCanvas {
 
             // Create and add the "by cell" selection mode radio button.  (This
             // mode will be selected by default.)
-            radio = new JRadioButton(new AbstractAction("by cell") {
-                /**
-                 * When the user clicks on this radio button, change the table
-                 * canvas's selection mode to "by cell".
-                 **
-                 * @param evt this parameter is not used by this method.
-                 */
-                public void actionPerformed(ActionEvent evt) {
-                    tablePane.setCellSelectionEnabled(true);
-                    tablePane.setColumnSelectionAllowed(true);
-                    tablePane.setRowSelectionAllowed(true);
-                    mode = SelectionMode.CELL;
-                }
-            });
-            radio.setSelected(true);
-            group.add(radio);
-            selectionPane.add(radio);
+            
+            radioCell.setSelected(true);
+            group.add(radioCell);
+            selectionPane.add(radioCell);
 
             // Create and add the "by column" selection mode radio button.
-            radio = new JRadioButton(new AbstractAction("by column") {
-                /**
-                 * When the user clicks on this radio button, change the table
-                 * canvas's selection mode to "by column".
-                 **
-                 * @param evt this parameter is not used by this method.
-                 */
-                public void actionPerformed(ActionEvent evt) {
-                    tablePane.setCellSelectionEnabled(false);
-                    tablePane.setColumnSelectionAllowed(true);
-                    tablePane.setRowSelectionAllowed(false);
-                    mode = SelectionMode.COLUMN;
-                }
-            });
-            group.add(radio);
-            selectionPane.add(radio);
+            
+            group.add(radioCol);
+            selectionPane.add(radioCol);
 
             // Create and add the "by row" selection mode radio button.
-            radio = new JRadioButton(new AbstractAction("by row") {
-                /**
-                 * When the user clicks on this radio button, change the table
-                 * canvas's selection mode to "by row".
-                 **
-                 * @param evt this parameter is not used by this method.
-                 */
-                public void actionPerformed(ActionEvent e) {
-                    tablePane.setCellSelectionEnabled(false);
-                    tablePane.setColumnSelectionAllowed(false);
-                    tablePane.setRowSelectionAllowed(true);
-                    mode = SelectionMode.ROW;
-                }
-            });
-            group.add(radio);
-            selectionPane.add(radio);
+            
+            group.add(radioRow);
+            selectionPane.add(radioRow);
 
             // Add the selection mode panel to the main panel.
             mainPane.add(selectionPane);
@@ -920,6 +857,103 @@ public class TableCanvas extends DataCanvas {
                                     // + tablePane.getRowMargin());
         rowHeader.setCellRenderer(new RowHeaderRenderer(tablePane));
         scrollPane.setRowHeaderView(rowHeader);
+        
+        final AbstractAction find = new AbstractAction("Find") {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                tablePane.clearSelection();
+
+                JTextField primaryStr = new JTextField(10);
+                JTextField secondaryStr = new JTextField(10);
+                ButtonGroup modeGroup = new ButtonGroup();
+                JRadioButton regexRadio = new JRadioButton("Regular Expression");
+                JRadioButton caseRadio = new JRadioButton("Match Case");
+                JRadioButton rowRadio = new JRadioButton("Row Selection");
+                rowRadio.setSelected(true);
+                modeGroup.add(rowRadio);
+                JRadioButton colRadio = new JRadioButton("Column Selection");
+                modeGroup.add(colRadio);
+
+                JPanel myPanel = new JPanel(new GridLayout(4, 2));
+                myPanel.add(new JLabel("Primary String:"));
+                myPanel.add(primaryStr);
+                myPanel.add(new JLabel("Secondary String:"));
+                myPanel.add(secondaryStr);
+                myPanel.add(regexRadio);
+                myPanel.add(caseRadio);
+                myPanel.add(rowRadio);
+                myPanel.add(colRadio);
+
+                int result = JOptionPane.showConfirmDialog(null, myPanel, "Find", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                if (result == JOptionPane.OK_OPTION) {
+                    String priStr = primaryStr.getText();
+                    String secStr = secondaryStr.getText();
+
+                    String[][] data = getData();
+
+                    if (rowRadio.isSelected()) {
+                        tablePane.setRowSelectionAllowed(true);
+                        tablePane.setColumnSelectionAllowed(false);
+                        mode = SelectionMode.ROW;
+                        radioRow.setSelected(true);
+                    } else {
+                        tablePane.setRowSelectionAllowed(false);
+                        tablePane.setColumnSelectionAllowed(true);
+                        mode = SelectionMode.COLUMN;
+                        radioCol.setSelected(true);
+                    }
+                    
+                    Pattern pattern;
+                    Matcher matcher;
+                    if (regexRadio.isSelected()) {
+                        if (caseRadio.isSelected()) {
+                            pattern = Pattern.compile(priStr);
+                        }
+                        else {
+                            pattern = Pattern.compile(priStr, Pattern.CASE_INSENSITIVE);
+                        }
+                    }
+                    else {
+                        pattern = Pattern.compile(priStr, Pattern.LITERAL);
+                    }
+                    
+                    String priStrLower = priStr.toLowerCase();
+                    boolean found = false;
+                    for (int row = 0; row < data.length; row++) {
+                        for (int col = 0; col < data[row].length; col++) {
+                            if (regexRadio.isSelected()) {
+                                matcher = pattern.matcher(data[row][col]);
+                                if (matcher.find()){
+                                    found = true;
+                                }
+                            }
+                            else if (caseRadio.isSelected()){
+                                if (data[row][col].contains(priStr)){
+                                    found = true;
+                                }
+                            }
+                            else {
+                                if (data[row][col].toLowerCase().contains(priStrLower)){
+                                    found = true;
+                                }
+                            }
+                            
+                            if (found) {
+                                System.out.println("Row: " + row + ", Col: " + col + "\nData: " + data[row][col]);
+                                if (rowRadio.isSelected()) {
+                                    tablePane.addRowSelectionInterval(row - 1, row - 1);
+                                } else {
+                                    tablePane.addColumnSelectionInterval(col, col);
+                                }
+                            }
+                            found = false;
+                        }
+                    }
+                }
+            }
+        };
+        
+        addMenuHeading("Edit").add(new JMenuItem(find));
  
         //////////////////////////////////
         //******************************//
