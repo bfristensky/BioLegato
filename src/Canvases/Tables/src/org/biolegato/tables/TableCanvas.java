@@ -4,7 +4,12 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.awt.GridLayout;
+
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.FlowLayout;
+import java.awt.BorderLayout;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -30,6 +35,7 @@ import javax.swing.JTable;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.JPanel;
+import javax.swing.JComboBox;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 import org.biolegato.main.BLMain;
@@ -784,6 +790,7 @@ public class TableCanvas extends DataCanvas {
                 }
             });
 
+        boolean tableForced = true;
         // Set the table selection model.  If the BioLegato property
         // "table.selection" is set to "row" or or "column", then limit the user
         // to only select by either rows or columns in the table canvas.  If the
@@ -806,6 +813,7 @@ public class TableCanvas extends DataCanvas {
             tablePane.setColumnSelectionAllowed(true);
             tablePane.setRowSelectionAllowed(false);
         } else {
+            tableForced = false;
             // Allow the user to choose how they wish to select data within the
             // table canvas.  The current options for the user are: by row, by
             // column, or by cell.
@@ -848,6 +856,8 @@ public class TableCanvas extends DataCanvas {
             // Add the selection mode panel to the main panel.
             mainPane.add(selectionPane);
         }
+        
+        final boolean tableForcedFinal = tableForced;
 
         // Create a new list for storing the row headers (i.e. row numbers to
         // the right of the JTable object).
@@ -861,46 +871,161 @@ public class TableCanvas extends DataCanvas {
         final AbstractAction find = new AbstractAction("Find") {
             @Override
             public void actionPerformed(ActionEvent ae) {
-                tablePane.clearSelection();
-
-                JTextField primaryStr = new JTextField(10);
-                JTextField secondaryStr = new JTextField(10);
+                JTextField firstStr = new JTextField(10);
+                JTextField secondStr = new JTextField(10);
+                JTextField thirdStr = new JTextField(10);
+                JTextField fourthStr = new JTextField(10);
+                
+                String[] bracketsLeft = {"", "("};
+                String[] bracketsRight = {"", ")"};
+                String[] logicalOperators = {"", "AND", "OR", "NOT"};
+                
+                JComboBox firstBracketLeftBox = new JComboBox(bracketsLeft);
+                JComboBox firstBracketRightBox = new JComboBox(bracketsRight);
+                JComboBox secondBracketLeftBox = new JComboBox(bracketsLeft);
+                JComboBox secondBracketRightBox = new JComboBox(bracketsRight);
+                JComboBox thirdBracketLeftBox = new JComboBox(bracketsLeft);
+                JComboBox thirdBracketRightBox = new JComboBox(bracketsRight);
+                JComboBox fourthBracketLeftBox = new JComboBox(bracketsLeft);
+                JComboBox fourthBracketRightBox = new JComboBox(bracketsRight);
+                
+                JComboBox firstOperatorBox = new JComboBox(logicalOperators);
+                JComboBox secondOperatorBox = new JComboBox(logicalOperators);
+                JComboBox thirdOperatorBox = new JComboBox(logicalOperators);
+                JComboBox fourthOperatorBox = new JComboBox(logicalOperators);
+                
                 ButtonGroup modeGroup = new ButtonGroup();
                 JRadioButton regexRadio = new JRadioButton("Regular Expression");
                 JRadioButton caseRadio = new JRadioButton("Match Case");
-                JRadioButton rowRadio = new JRadioButton("Row Selection");
-                rowRadio.setSelected(true);
-                modeGroup.add(rowRadio);
-                JRadioButton colRadio = new JRadioButton("Column Selection");
-                modeGroup.add(colRadio);
+                JRadioButton rowSelectionRadio = new JRadioButton("Row Selection");
+                rowSelectionRadio.setSelected(true);
+                modeGroup.add(rowSelectionRadio);
+                JRadioButton colSelectionRadio = new JRadioButton("Column Selection");
+                modeGroup.add(colSelectionRadio);
+                JRadioButton selectionRadio = new JRadioButton("From Current Selection");
 
-                JPanel myPanel = new JPanel(new GridLayout(4, 2));
-                myPanel.add(new JLabel("Primary String:"));
-                myPanel.add(primaryStr);
-                myPanel.add(new JLabel("Secondary String:"));
-                myPanel.add(secondaryStr);
-                myPanel.add(regexRadio);
-                myPanel.add(caseRadio);
-                myPanel.add(rowRadio);
-                myPanel.add(colRadio);
+                JPanel mainPanel = new JPanel(new GridBagLayout());
+                GridBagConstraints gbc = new GridBagConstraints();
+                
+                gbc.gridx = 0;
+                gbc.gridy = 0;
+                gbc.anchor = GridBagConstraints.LINE_START;
+                mainPanel.add(new JLabel("First String:"), gbc);
+//                JPanel firstStrBorderPanel = new JPanel(new BorderLayout());
+//                firstStrBorderPanel.add(new JLabel("First String:"), BorderLayout.LINE_START);
+//                mainPanel.add(firstStrBorderPanel, gbc);
+                
+                gbc.anchor = GridBagConstraints.CENTER;
+                gbc.gridx = 1;
+                gbc.gridwidth = GridBagConstraints.REMAINDER;
+                JPanel firstStrFlowPanel = new JPanel(new FlowLayout());
+                firstStrFlowPanel.add(firstOperatorBox);
+                firstStrFlowPanel.add(firstBracketLeftBox);
+                firstStrFlowPanel.add(firstStr);
+                firstStrFlowPanel.add(firstBracketRightBox);
+                mainPanel.add(firstStrFlowPanel, gbc);
+                
+                gbc.gridwidth = 1;
+                gbc.gridx = 0;
+                gbc.gridy = 1;
+                gbc.anchor = GridBagConstraints.LINE_START;
+                mainPanel.add(new JLabel("Second String:"), gbc);
+//                JPanel secondStrBorderPanel = new JPanel(new BorderLayout());
+//                secondStrBorderPanel.add(new JLabel("Second String:"), BorderLayout.LINE_START);
+//                mainPanel.add(secondStrBorderPanel, gbc);
+                
+                gbc.anchor = GridBagConstraints.CENTER;
+                gbc.gridx = 1;
+                gbc.gridwidth = GridBagConstraints.REMAINDER;
+                JPanel secondStrFlowPanel = new JPanel(new FlowLayout());
+                secondStrFlowPanel.add(secondOperatorBox);
+                secondStrFlowPanel.add(secondBracketLeftBox);
+                secondStrFlowPanel.add(secondStr);
+                secondStrFlowPanel.add(secondBracketRightBox);
+                mainPanel.add(secondStrFlowPanel, gbc);
+                
+                gbc.gridwidth = 1;
+                gbc.gridx = 0;
+                gbc.gridy = 2;
+                gbc.anchor = GridBagConstraints.LINE_START;
+                mainPanel.add(new JLabel("Third String:"), gbc);
+                
+                gbc.anchor = GridBagConstraints.CENTER;
+                gbc.gridx = 1;
+                gbc.gridwidth = GridBagConstraints.REMAINDER;
+                JPanel thirdStrFlowPanel = new JPanel(new FlowLayout());
+                thirdStrFlowPanel.add(thirdOperatorBox);
+                thirdStrFlowPanel.add(thirdBracketLeftBox);
+                thirdStrFlowPanel.add(thirdStr);
+                thirdStrFlowPanel.add(thirdBracketRightBox);
+                mainPanel.add(thirdStrFlowPanel, gbc);
+                
+                gbc.gridwidth = 1;
+                gbc.gridx = 0;
+                gbc.gridy = 3;
+                gbc.anchor = GridBagConstraints.LINE_START;
+                mainPanel.add(new JLabel("Fourth String:"), gbc);
+                
+                gbc.anchor = GridBagConstraints.CENTER;
+                gbc.gridx = 1;
+                gbc.gridwidth = GridBagConstraints.REMAINDER;
+                JPanel fourthStrFlowPanel = new JPanel(new FlowLayout());
+                fourthStrFlowPanel.add(fourthOperatorBox);
+                fourthStrFlowPanel.add(fourthBracketLeftBox);
+                fourthStrFlowPanel.add(fourthStr);
+                fourthStrFlowPanel.add(fourthBracketRightBox);
+                mainPanel.add(fourthStrFlowPanel, gbc);
+                
+                gbc.gridwidth = 1;
+                gbc.gridx = 0;
+                gbc.gridy = 4;
+                mainPanel.add(regexRadio, gbc);
+                
+                gbc.gridx = 1;
+                gbc.gridy = 4;
+                mainPanel.add(caseRadio, gbc);
+                
+                gbc.gridx = 2;
+                gbc.gridy = 4;
+                gbc.gridwidth = GridBagConstraints.REMAINDER;
+                mainPanel.add(selectionRadio, gbc);
+                
+                if (!tableForcedFinal) {
+                    gbc.gridwidth = 1;
+                    gbc.gridx = 0;
+                    gbc.gridy = 5;
+                    mainPanel.add(rowSelectionRadio, gbc);
+                    gbc.gridx = 1;
+                    gbc.gridy = 5;
+                    gbc.gridwidth = GridBagConstraints.REMAINDER;
+                    mainPanel.add(colSelectionRadio, gbc);
+                }
+                gbc.gridwidth = 1;
+                
 
-                int result = JOptionPane.showConfirmDialog(null, myPanel, "Find", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                int result = JOptionPane.showConfirmDialog(null, mainPanel, "Find", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
                 if (result == JOptionPane.OK_OPTION) {
-                    String priStr = primaryStr.getText();
-                    String secStr = secondaryStr.getText();
+                    String priStr = firstStr.getText();
+                    
+                    if (!selectionRadio.isSelected()) {
+                        tablePane.clearSelection();
+                    }
 
                     String[][] data = getData();
-
-                    if (rowRadio.isSelected()) {
-                        tablePane.setRowSelectionAllowed(true);
-                        tablePane.setColumnSelectionAllowed(false);
-                        mode = SelectionMode.ROW;
-                        radioRow.setSelected(true);
-                    } else {
-                        tablePane.setRowSelectionAllowed(false);
-                        tablePane.setColumnSelectionAllowed(true);
-                        mode = SelectionMode.COLUMN;
-                        radioCol.setSelected(true);
+                    tablePane.clearSelection();
+                    
+                    if (!tableForcedFinal) {
+                        if (rowSelectionRadio.isSelected()) {
+                            tablePane.setRowSelectionAllowed(true);
+                            tablePane.setColumnSelectionAllowed(false);
+                            mode = SelectionMode.ROW;
+                            radioRow.setSelected(true);
+                        } else {
+                            tablePane.setRowSelectionAllowed(false);
+                            tablePane.setColumnSelectionAllowed(true);
+                            mode = SelectionMode.COLUMN;
+                            radioCol.setSelected(true);
+                        }
                     }
                     
                     Pattern pattern;
@@ -940,7 +1065,7 @@ public class TableCanvas extends DataCanvas {
                             
                             if (found) {
                                 System.out.println("Row: " + row + ", Col: " + col + "\nData: " + data[row][col]);
-                                if (rowRadio.isSelected()) {
+                                if (mode == SelectionMode.ROW) {
                                     tablePane.addRowSelectionInterval(row - 1, row - 1);
                                 } else {
                                     tablePane.addColumnSelectionInterval(col, col);
