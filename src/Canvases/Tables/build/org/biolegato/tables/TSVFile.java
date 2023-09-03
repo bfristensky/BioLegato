@@ -222,30 +222,33 @@ public class TSVFile implements TSVFileConstants {
         String cell;
 
         // Translate each row in the 2D array and write it to the file.
+        // The original version enclosed each cell in double quotes (")
+        // The motivation was to accommodate MS-Excell, but Excell no longer
+        // requires quotes. Lines to begin and end a cell have been commented out.
         for (int y = 0; y < data.length; y++) {
             // Translate each column in the row array and write it to the file.
             // Start by writing the first column.
             if (data[y].length > 0) {
-                writer.append('\u005c"');
+                //writer.append('\"');
                 // Double all of the double-quotation marks.  This is to
                 // distinguish double-quotation marks in each field from
                 // double-quotation marks surrounding the fields.
                 writer.append(data[y][0].replaceAll("\u005c"", "\u005c"\u005c""));
-                writer.append('\u005c"');
+                //writer.append('\"');
             }
             // Write each additional column, appending the delimiter character
             // before it (i.e. the tab character) -- e.g. "\tABC"
             for (int x = 1; x < data[y].length; x++) {
                 cell = data[y][x];
                 writer.append('\u005ct');
-                writer.append('\u005c"');
+                //writer.append('\"');
                 // If the cell is not null, double all of the double-quotation
                 // marks.  This is to distinguish double-quotation marks in each
                 // field from double-quotation marks surrounding the fields.
                 if (cell != null) {
                     writer.append(data[y][x].replaceAll("\u005c"", "\u005c"\u005c""));
                 }
-                writer.append('\u005c"');
+                //writer.append('\"');
             }
             writer.append('\u005cn');
         }

@@ -37,157 +37,161 @@ public interface PCDConstants {
   /** RegularExpression Id. */
   int T_OSX = 13;
   /** RegularExpression Id. */
-  int T_SOLARIS = 14;
+  int T_MACOS = 14;
   /** RegularExpression Id. */
-  int T_UNIX = 15;
+  int T_SOLARIS = 15;
   /** RegularExpression Id. */
-  int T_WINDOWS = 16;
+  int T_UNIX = 16;
   /** RegularExpression Id. */
-  int T_X86 = 17;
+  int T_WINDOWS = 17;
   /** RegularExpression Id. */
-  int T_AMD64 = 18;
+  int T_X86 = 18;
   /** RegularExpression Id. */
-  int T_SPARC = 19;
+  int T_AMD64 = 19;
   /** RegularExpression Id. */
-  int T_FALSE = 20;
+  int T_ARM64 = 20;
   /** RegularExpression Id. */
-  int T_TRUE = 21;
+  int T_SPARC = 21;
   /** RegularExpression Id. */
-  int T_CSV = 22;
+  int T_FALSE = 22;
   /** RegularExpression Id. */
-  int T_TSV = 23;
+  int T_TRUE = 23;
   /** RegularExpression Id. */
-  int T_FASTA = 24;
+  int T_CSV = 24;
   /** RegularExpression Id. */
-  int T_FLAT = 25;
+  int T_TSV = 25;
   /** RegularExpression Id. */
-  int T_GDE = 26;
+  int T_FASTA = 26;
   /** RegularExpression Id. */
-  int T_GENBANK = 27;
+  int T_FLAT = 27;
   /** RegularExpression Id. */
-  int T_RAW = 28;
+  int T_GDE = 28;
   /** RegularExpression Id. */
-  int T_MASK = 29;
+  int T_GENBANK = 29;
   /** RegularExpression Id. */
-  int T_IN = 30;
+  int T_RAW = 30;
   /** RegularExpression Id. */
-  int T_OUT = 31;
+  int T_MASK = 31;
   /** RegularExpression Id. */
-  int T_CHECK = 32;
+  int T_IN = 32;
   /** RegularExpression Id. */
-  int T_CHOICES = 33;
+  int T_OUT = 33;
   /** RegularExpression Id. */
-  int T_CLOSE = 34;
+  int T_CHECK = 34;
   /** RegularExpression Id. */
-  int T_CONTENT = 35;
+  int T_CHOICES = 35;
   /** RegularExpression Id. */
-  int T_DIRECTION = 36;
+  int T_CLOSE = 36;
   /** RegularExpression Id. */
-  int T_FORMAT = 37;
+  int T_CONTENT = 37;
   /** RegularExpression Id. */
-  int T_MAX = 38;
+  int T_DIRECTION = 38;
   /** RegularExpression Id. */
-  int T_MIN = 39;
+  int T_FORMAT = 39;
   /** RegularExpression Id. */
-  int T_OVERWRITE = 40;
+  int T_MAX = 40;
   /** RegularExpression Id. */
-  int T_TYPE = 41;
+  int T_MIN = 41;
   /** RegularExpression Id. */
-  int T_SAVE = 42;
+  int T_OVERWRITE = 42;
   /** RegularExpression Id. */
-  int T_SHELL = 43;
+  int T_TYPE = 43;
   /** RegularExpression Id. */
-  int T_ICON = 44;
+  int T_SAVE = 44;
   /** RegularExpression Id. */
-  int T_SYS = 45;
+  int T_SHELL = 45;
   /** RegularExpression Id. */
-  int T_TIP = 46;
+  int T_ICON = 46;
   /** RegularExpression Id. */
-  int T_CANVAS = 47;
+  int T_SYS = 47;
   /** RegularExpression Id. */
-  int T_SELECTION = 48;
+  int T_TIP = 48;
   /** RegularExpression Id. */
-  int T_AND = 49;
+  int T_CANVAS = 49;
   /** RegularExpression Id. */
-  int T_IF = 50;
+  int T_SELECTION = 50;
   /** RegularExpression Id. */
-  int T_OR = 51;
+  int T_AND = 51;
   /** RegularExpression Id. */
-  int T_THEN = 52;
+  int T_IF = 52;
   /** RegularExpression Id. */
-  int T_XOR = 53;
+  int T_OR = 53;
   /** RegularExpression Id. */
-  int T_QUERY = 54;
+  int T_THEN = 54;
   /** RegularExpression Id. */
-  int T_DATABASE = 55;
+  int T_XOR = 55;
   /** RegularExpression Id. */
-  int T_JDBC = 56;
+  int T_QUERY = 56;
   /** RegularExpression Id. */
-  int T_MYSQL = 57;
+  int T_DATABASE = 57;
   /** RegularExpression Id. */
-  int T_HSQLDB = 58;
+  int T_JDBC = 58;
   /** RegularExpression Id. */
-  int T_LOGIN = 59;
+  int T_MYSQL = 59;
   /** RegularExpression Id. */
-  int T_PROMPT = 60;
+  int T_HSQLDB = 60;
   /** RegularExpression Id. */
-  int T_ALL = 61;
+  int T_LOGIN = 61;
   /** RegularExpression Id. */
-  int T_DEFAULT = 62;
+  int T_PROMPT = 62;
   /** RegularExpression Id. */
-  int T_EXEC = 63;
+  int T_ALL = 63;
   /** RegularExpression Id. */
-  int T_LABEL = 64;
+  int T_DEFAULT = 64;
   /** RegularExpression Id. */
-  int T_ITEM = 65;
+  int T_EXEC = 65;
   /** RegularExpression Id. */
-  int T_MENU = 66;
+  int T_LABEL = 66;
   /** RegularExpression Id. */
-  int T_CMDNAME = 67;
+  int T_ITEM = 67;
   /** RegularExpression Id. */
-  int T_ACT = 68;
+  int T_MENU = 68;
   /** RegularExpression Id. */
-  int T_PARAM = 69;
+  int T_CMDNAME = 69;
   /** RegularExpression Id. */
-  int T_TABSET = 70;
+  int T_ACT = 70;
   /** RegularExpression Id. */
-  int T_TAB = 71;
+  int T_PARAM = 71;
   /** RegularExpression Id. */
-  int T_PANEL = 72;
+  int T_TABSET = 72;
   /** RegularExpression Id. */
-  int COMMA = 73;
+  int T_TAB = 73;
   /** RegularExpression Id. */
-  int TEXT = 74;
+  int T_PANEL = 74;
   /** RegularExpression Id. */
-  int NUMBER = 75;
+  int COMMA = 75;
   /** RegularExpression Id. */
-  int DECIMAL = 76;
+  int TEXT = 76;
   /** RegularExpression Id. */
-  int ENVVAR = 77;
+  int NUMBER = 77;
   /** RegularExpression Id. */
-  int ID = 78;
+  int DECIMAL = 78;
   /** RegularExpression Id. */
-  int NL = 79;
+  int ENVVAR = 79;
   /** RegularExpression Id. */
-  int COMMENT = 80;
+  int ID = 80;
   /** RegularExpression Id. */
-  int WSP = 81;
+  int NL = 81;
   /** RegularExpression Id. */
-  int SIGN = 87;
+  int COMMENT = 82;
   /** RegularExpression Id. */
-  int DIGITS = 88;
+  int WSP = 83;
   /** RegularExpression Id. */
-  int SP = 89;
+  int SIGN = 89;
   /** RegularExpression Id. */
-  int DOLLAR = 90;
+  int DIGITS = 90;
   /** RegularExpression Id. */
-  int TAB = 91;
+  int SP = 91;
   /** RegularExpression Id. */
-  int EOL = 92;
+  int DOLLAR = 92;
   /** RegularExpression Id. */
-  int COEL = 93;
+  int TAB = 93;
   /** RegularExpression Id. */
-  int DOUBLEQ = 94;
+  int EOL = 94;
+  /** RegularExpression Id. */
+  int COEL = 95;
+  /** RegularExpression Id. */
+  int DOUBLEQ = 96;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -210,11 +214,13 @@ public interface PCDConstants {
     "\"tempfile\"",
     "\"linux\"",
     "\"osx\"",
+    "\"macos\"",
     "\"solaris\"",
     "\"unix\"",
     "\"windows\"",
     "<T_X86>",
     "<T_AMD64>",
+    "<T_ARM64>",
     "\"sparc\"",
     "\"false\"",
     "\"true\"",
@@ -278,11 +284,11 @@ public interface PCDConstants {
     "<NL>",
     "<COMMENT>",
     "<WSP>",
-    "<token of kind 82>",
-    "<token of kind 83>",
     "<token of kind 84>",
     "<token of kind 85>",
     "<token of kind 86>",
+    "<token of kind 87>",
+    "<token of kind 88>",
     "\"-\"",
     "<DIGITS>",
     "\" \"",

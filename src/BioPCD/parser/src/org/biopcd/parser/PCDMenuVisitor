@@ -833,6 +833,7 @@ Set<SystemToken.ARCH> ArchList() :
  *              - may be useful for shell-scripts)
  *     X86     (any x86 compatible machine)
  *     AMD64   (any amd64 compatible machine)
+ *     ARM64   (any arm64 compatible machine)
  *     Sparc   (any amd64 compatible machine)</pre>
  **
  * @return whether the architecture is supported
@@ -842,6 +843,7 @@ SystemToken.ARCH ArchName () : {}
     ( <T_ALL>    { return SystemToken.ARCH.ALL;   }
     | <T_X86>    { return SystemToken.ARCH.X86;   }
     | <T_AMD64>  { return SystemToken.ARCH.AMD64; }
+    | <T_ARM64>  { return SystemToken.ARCH.ARM64; }
     | <T_SPARC>  { return SystemToken.ARCH.SPARC; }
     )
 }

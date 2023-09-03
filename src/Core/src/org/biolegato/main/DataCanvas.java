@@ -78,8 +78,12 @@ public abstract class DataCanvas extends JApplet implements PCDIO {
             // by BioLegato's Apache Ant build script.
             JOptionPane.showMessageDialog(window,
                     "BioLegato version @VERSION@\n"
-                        + "by Graham Alvare and Brian Fristensky\n"
-                        + "Univeristy of Manitoba 2008 - @YEAR@ ",
+                        + "\n"
+                        + "Please cite:\n"
+                        + "Alvare G, Roche-Lima A, Fristensky B\n"
+                        + "BioLegato: a programmable, object-oriented graphic user interface.\n"
+                        + "BMC Bioinformatics 24, 316 (2023)\n"
+                        + "https://doi.org/10.1186/s12859-023-05436-4\n",
                     "About BioLegato",
                     JOptionPane.QUESTION_MESSAGE);
         }

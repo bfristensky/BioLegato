@@ -41,7 +41,7 @@ import org.biopcd.parser.PCDIO;
  **
  * @author Graham Alvare
  * @author Brian Fristensky
- * @version 1.1.0 25-Mar-2011
+ * @version 1.1.1 25-Mar-2011
  */
 public abstract class DataCanvas extends JApplet implements PCDIO {
 
@@ -74,12 +74,16 @@ public abstract class DataCanvas extends JApplet implements PCDIO {
 
 
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            // NOTE: 1.1.0 is replaced with the actual version number
+            // NOTE: 1.1.1 is replaced with the actual version number
             // by BioLegato's Apache Ant build script.
             JOptionPane.showMessageDialog(window,
-                    "BioLegato version 1.1.0\n"
-                        + "by Graham Alvare and Brian Fristensky\n"
-                        + "Univeristy of Manitoba 2008 - 2022 ",
+                    "BioLegato version 1.1.1\n"
+                        + "\n"
+                        + "Please cite:\n"
+                        + "Alvare G, Roche-Lima A, Fristensky B\n"
+                        + "BioLegato: a programmable, object-oriented graphic user interface.\n"
+                        + "BMC Bioinformatics 24, 316 (2023)\n"
+                        + "https://doi.org/10.1186/s12859-023-05436-4\n",
                     "About BioLegato",
                     JOptionPane.QUESTION_MESSAGE);
         }

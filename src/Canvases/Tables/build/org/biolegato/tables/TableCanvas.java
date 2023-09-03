@@ -4,6 +4,12 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
+import java.awt.FlowLayout;
+import java.awt.BorderLayout;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -13,6 +19,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -24,6 +32,10 @@ import javax.swing.JMenuItem;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
+import javax.swing.JPanel;
+import javax.swing.JComboBox;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 import org.biolegato.main.BLMain;
@@ -149,6 +161,8 @@ public class TableCanvas extends DataCanvas {
     };
     SelectionMode mode = SelectionMode.CELL;
 
+    
+    
     /**
      * Creates a new instance of a TableCanvas.  This is the most basic
      * constructor available.
@@ -730,7 +744,53 @@ public class TableCanvas extends DataCanvas {
 
         // Add the table's scroll pane to the main panel.
         mainPane.add(scrollPane);
+        JRadioButton radioCell;
+        radioCell = new JRadioButton(new AbstractAction("by cell") {
+                /**
+                 * When the user clicks on this radio button, change the table
+                 * canvas's selection mode to "by cell".
+                 **
+                 * @param evt this parameter is not used by this method.
+                 */
+                public void actionPerformed(ActionEvent evt) {
+                    tablePane.setCellSelectionEnabled(true);
+                    tablePane.setColumnSelectionAllowed(true);
+                    tablePane.setRowSelectionAllowed(true);
+                    mode = SelectionMode.CELL;
+                }
+            });
+        JRadioButton radioCol;
+        radioCol = new JRadioButton(new AbstractAction("by column") {
+                /**
+                 * When the user clicks on this radio button, change the table
+                 * canvas's selection mode to "by column".
+                 **
+                 * @param evt this parameter is not used by this method.
+                 */
+                public void actionPerformed(ActionEvent evt) {
+                    tablePane.setCellSelectionEnabled(false);
+                    tablePane.setColumnSelectionAllowed(true);
+                    tablePane.setRowSelectionAllowed(false);
+                    mode = SelectionMode.COLUMN;
+                }
+            });
+        JRadioButton radioRow;
+        radioRow = new JRadioButton(new AbstractAction("by row") {
+                /**
+                 * When the user clicks on this radio button, change the table
+                 * canvas's selection mode to "by row".
+                 **
+                 * @param evt this parameter is not used by this method.
+                 */
+                public void actionPerformed(ActionEvent e) {
+                    tablePane.setCellSelectionEnabled(false);
+                    tablePane.setColumnSelectionAllowed(false);
+                    tablePane.setRowSelectionAllowed(true);
+                    mode = SelectionMode.ROW;
+                }
+            });
 
+        boolean tableForced = true;
         // Set the table selection model.  If the BioLegato property
         // "table.selection" is set to "row" or or "column", then limit the user
         // to only select by either rows or columns in the table canvas.  If the
@@ -753,6 +813,7 @@ public class TableCanvas extends DataCanvas {
             tablePane.setColumnSelectionAllowed(true);
             tablePane.setRowSelectionAllowed(false);
         } else {
+            tableForced = false;
             // Allow the user to choose how they wish to select data within the
             // table canvas.  The current options for the user are: by row, by
             // column, or by cell.
@@ -761,7 +822,7 @@ public class TableCanvas extends DataCanvas {
             // buttons, for the user to control.
             Box selectionPane = new Box(BoxLayout.LINE_AXIS);
             // A variable to cache data for the new radio buttons to add.
-            JRadioButton radio;
+            
             // Create a button group to ensure that each selection mode is
             // mutually exclusive (i.e. the user can only pick one at a time).
             ButtonGroup group = new ButtonGroup();
@@ -777,63 +838,26 @@ public class TableCanvas extends DataCanvas {
 
             // Create and add the "by cell" selection mode radio button.  (This
             // mode will be selected by default.)
-            radio = new JRadioButton(new AbstractAction("by cell") {
-                /**
-                 * When the user clicks on this radio button, change the table
-                 * canvas's selection mode to "by cell".
-                 **
-                 * @param evt this parameter is not used by this method.
-                 */
-                public void actionPerformed(ActionEvent evt) {
-                    tablePane.setCellSelectionEnabled(true);
-                    tablePane.setColumnSelectionAllowed(true);
-                    tablePane.setRowSelectionAllowed(true);
-                    mode = SelectionMode.CELL;
-                }
-            });
-            radio.setSelected(true);
-            group.add(radio);
-            selectionPane.add(radio);
+            
+            radioCell.setSelected(true);
+            group.add(radioCell);
+            selectionPane.add(radioCell);
 
             // Create and add the "by column" selection mode radio button.
-            radio = new JRadioButton(new AbstractAction("by column") {
-                /**
-                 * When the user clicks on this radio button, change the table
-                 * canvas's selection mode to "by column".
-                 **
-                 * @param evt this parameter is not used by this method.
-                 */
-                public void actionPerformed(ActionEvent evt) {
-                    tablePane.setCellSelectionEnabled(false);
-                    tablePane.setColumnSelectionAllowed(true);
-                    tablePane.setRowSelectionAllowed(false);
-                    mode = SelectionMode.COLUMN;
-                }
-            });
-            group.add(radio);
-            selectionPane.add(radio);
+            
+            group.add(radioCol);
+            selectionPane.add(radioCol);
 
             // Create and add the "by row" selection mode radio button.
-            radio = new JRadioButton(new AbstractAction("by row") {
-                /**
-                 * When the user clicks on this radio button, change the table
-                 * canvas's selection mode to "by row".
-                 **
-                 * @param evt this parameter is not used by this method.
-                 */
-                public void actionPerformed(ActionEvent e) {
-                    tablePane.setCellSelectionEnabled(false);
-                    tablePane.setColumnSelectionAllowed(false);
-                    tablePane.setRowSelectionAllowed(true);
-                    mode = SelectionMode.ROW;
-                }
-            });
-            group.add(radio);
-            selectionPane.add(radio);
+            
+            group.add(radioRow);
+            selectionPane.add(radioRow);
 
             // Add the selection mode panel to the main panel.
             mainPane.add(selectionPane);
         }
+        
+        final boolean tableForcedFinal = tableForced;
 
         // Create a new list for storing the row headers (i.e. row numbers to
         // the right of the JTable object).
@@ -843,6 +867,218 @@ public class TableCanvas extends DataCanvas {
                                     // + tablePane.getRowMargin());
         rowHeader.setCellRenderer(new RowHeaderRenderer(tablePane));
         scrollPane.setRowHeaderView(rowHeader);
+        
+        final AbstractAction find = new AbstractAction("Find") {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                JTextField firstStr = new JTextField(10);
+                JTextField secondStr = new JTextField(10);
+                JTextField thirdStr = new JTextField(10);
+                JTextField fourthStr = new JTextField(10);
+                
+                String[] bracketsLeft = {"", "("};
+                String[] bracketsRight = {"", ")"};
+                String[] logicalOperators = {"", "AND", "OR", "NOT"};
+                
+                JComboBox firstBracketLeftBox = new JComboBox(bracketsLeft);
+                JComboBox firstBracketRightBox = new JComboBox(bracketsRight);
+                JComboBox secondBracketLeftBox = new JComboBox(bracketsLeft);
+                JComboBox secondBracketRightBox = new JComboBox(bracketsRight);
+                JComboBox thirdBracketLeftBox = new JComboBox(bracketsLeft);
+                JComboBox thirdBracketRightBox = new JComboBox(bracketsRight);
+                JComboBox fourthBracketLeftBox = new JComboBox(bracketsLeft);
+                JComboBox fourthBracketRightBox = new JComboBox(bracketsRight);
+                
+                JComboBox firstOperatorBox = new JComboBox(logicalOperators);
+                JComboBox secondOperatorBox = new JComboBox(logicalOperators);
+                JComboBox thirdOperatorBox = new JComboBox(logicalOperators);
+                JComboBox fourthOperatorBox = new JComboBox(logicalOperators);
+                
+                ButtonGroup modeGroup = new ButtonGroup();
+                JRadioButton regexRadio = new JRadioButton("Regular Expression");
+                JRadioButton caseRadio = new JRadioButton("Match Case");
+                JRadioButton rowSelectionRadio = new JRadioButton("Row Selection");
+                rowSelectionRadio.setSelected(true);
+                modeGroup.add(rowSelectionRadio);
+                JRadioButton colSelectionRadio = new JRadioButton("Column Selection");
+                modeGroup.add(colSelectionRadio);
+                JRadioButton selectionRadio = new JRadioButton("From Current Selection");
+
+                JPanel mainPanel = new JPanel(new GridBagLayout());
+                GridBagConstraints gbc = new GridBagConstraints();
+                
+                gbc.gridx = 0;
+                gbc.gridy = 0;
+                gbc.anchor = GridBagConstraints.LINE_START;
+                mainPanel.add(new JLabel("First String:"), gbc);
+//                JPanel firstStrBorderPanel = new JPanel(new BorderLayout());
+//                firstStrBorderPanel.add(new JLabel("First String:"), BorderLayout.LINE_START);
+//                mainPanel.add(firstStrBorderPanel, gbc);
+                
+                gbc.anchor = GridBagConstraints.CENTER;
+                gbc.gridx = 1;
+                gbc.gridwidth = GridBagConstraints.REMAINDER;
+                JPanel firstStrFlowPanel = new JPanel(new FlowLayout());
+                firstStrFlowPanel.add(firstOperatorBox);
+                firstStrFlowPanel.add(firstBracketLeftBox);
+                firstStrFlowPanel.add(firstStr);
+                firstStrFlowPanel.add(firstBracketRightBox);
+                mainPanel.add(firstStrFlowPanel, gbc);
+                
+                gbc.gridwidth = 1;
+                gbc.gridx = 0;
+                gbc.gridy = 1;
+                gbc.anchor = GridBagConstraints.LINE_START;
+                mainPanel.add(new JLabel("Second String:"), gbc);
+//                JPanel secondStrBorderPanel = new JPanel(new BorderLayout());
+//                secondStrBorderPanel.add(new JLabel("Second String:"), BorderLayout.LINE_START);
+//                mainPanel.add(secondStrBorderPanel, gbc);
+                
+                gbc.anchor = GridBagConstraints.CENTER;
+                gbc.gridx = 1;
+                gbc.gridwidth = GridBagConstraints.REMAINDER;
+                JPanel secondStrFlowPanel = new JPanel(new FlowLayout());
+                secondStrFlowPanel.add(secondOperatorBox);
+                secondStrFlowPanel.add(secondBracketLeftBox);
+                secondStrFlowPanel.add(secondStr);
+                secondStrFlowPanel.add(secondBracketRightBox);
+                mainPanel.add(secondStrFlowPanel, gbc);
+                
+                gbc.gridwidth = 1;
+                gbc.gridx = 0;
+                gbc.gridy = 2;
+                gbc.anchor = GridBagConstraints.LINE_START;
+                mainPanel.add(new JLabel("Third String:"), gbc);
+                
+                gbc.anchor = GridBagConstraints.CENTER;
+                gbc.gridx = 1;
+                gbc.gridwidth = GridBagConstraints.REMAINDER;
+                JPanel thirdStrFlowPanel = new JPanel(new FlowLayout());
+                thirdStrFlowPanel.add(thirdOperatorBox);
+                thirdStrFlowPanel.add(thirdBracketLeftBox);
+                thirdStrFlowPanel.add(thirdStr);
+                thirdStrFlowPanel.add(thirdBracketRightBox);
+                mainPanel.add(thirdStrFlowPanel, gbc);
+                
+                gbc.gridwidth = 1;
+                gbc.gridx = 0;
+                gbc.gridy = 3;
+                gbc.anchor = GridBagConstraints.LINE_START;
+                mainPanel.add(new JLabel("Fourth String:"), gbc);
+                
+                gbc.anchor = GridBagConstraints.CENTER;
+                gbc.gridx = 1;
+                gbc.gridwidth = GridBagConstraints.REMAINDER;
+                JPanel fourthStrFlowPanel = new JPanel(new FlowLayout());
+                fourthStrFlowPanel.add(fourthOperatorBox);
+                fourthStrFlowPanel.add(fourthBracketLeftBox);
+                fourthStrFlowPanel.add(fourthStr);
+                fourthStrFlowPanel.add(fourthBracketRightBox);
+                mainPanel.add(fourthStrFlowPanel, gbc);
+                
+                gbc.gridwidth = 1;
+                gbc.gridx = 0;
+                gbc.gridy = 4;
+                mainPanel.add(regexRadio, gbc);
+                
+                gbc.gridx = 1;
+                gbc.gridy = 4;
+                mainPanel.add(caseRadio, gbc);
+                
+                gbc.gridx = 2;
+                gbc.gridy = 4;
+                gbc.gridwidth = GridBagConstraints.REMAINDER;
+                mainPanel.add(selectionRadio, gbc);
+                
+                if (!tableForcedFinal) {
+                    gbc.gridwidth = 1;
+                    gbc.gridx = 0;
+                    gbc.gridy = 5;
+                    mainPanel.add(rowSelectionRadio, gbc);
+                    gbc.gridx = 1;
+                    gbc.gridy = 5;
+                    gbc.gridwidth = GridBagConstraints.REMAINDER;
+                    mainPanel.add(colSelectionRadio, gbc);
+                }
+                gbc.gridwidth = 1;
+                
+
+                int result = JOptionPane.showConfirmDialog(null, mainPanel, "Find", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                if (result == JOptionPane.OK_OPTION) {
+                    String priStr = firstStr.getText();
+                    
+                    if (!selectionRadio.isSelected()) {
+                        tablePane.clearSelection();
+                    }
+
+                    String[][] data = getData();
+                    tablePane.clearSelection();
+                    
+                    if (!tableForcedFinal) {
+                        if (rowSelectionRadio.isSelected()) {
+                            tablePane.setRowSelectionAllowed(true);
+                            tablePane.setColumnSelectionAllowed(false);
+                            mode = SelectionMode.ROW;
+                            radioRow.setSelected(true);
+                        } else {
+                            tablePane.setRowSelectionAllowed(false);
+                            tablePane.setColumnSelectionAllowed(true);
+                            mode = SelectionMode.COLUMN;
+                            radioCol.setSelected(true);
+                        }
+                    }
+                    
+                    Pattern pattern;
+                    Matcher matcher;
+                    if (regexRadio.isSelected()) {
+                        if (caseRadio.isSelected()) {
+                            pattern = Pattern.compile(priStr);
+                        }
+                        else {
+                            pattern = Pattern.compile(priStr, Pattern.CASE_INSENSITIVE);
+                        }
+                    }
+                    else {
+                        pattern = Pattern.compile(priStr, Pattern.LITERAL);
+                    }
+                    
+                    String priStrLower = priStr.toLowerCase();
+                    boolean found = false;
+                    for (int row = 0; row < data.length; row++) {
+                        for (int col = 0; col < data[row].length; col++) {
+                            if (regexRadio.isSelected()) {
+                                matcher = pattern.matcher(data[row][col]);
+                                if (matcher.find()){
+                                    found = true;
+                                }
+                            }
+                            else if (caseRadio.isSelected()){
+                                if (data[row][col].contains(priStr)){
+                                    found = true;
+                                }
+                            }
+                            else {
+                                if (data[row][col].toLowerCase().contains(priStrLower)){
+                                    found = true;
+                                }
+                            }
+                            
+                            if (found) {
+                                System.out.println("Row: " + row + ", Col: " + col + "\nData: " + data[row][col]);
+                                if (mode == SelectionMode.ROW) {
+                                    tablePane.addRowSelectionInterval(row - 1, row - 1);
+                                } else {
+                                    tablePane.addColumnSelectionInterval(col, col);
+                                }
+                            }
+                            found = false;
+                        }
+                    }
+                }
+            }
+        };
+        
+        addMenuHeading("Edit").add(new JMenuItem(find));
  
         //////////////////////////////////
         //******************************//
