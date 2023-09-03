@@ -24,6 +24,7 @@ public class SystemToken {
         ALL,
         X86,
         AMD64,
+        ARM64,
         SPARC;
     }
     /**
@@ -34,6 +35,7 @@ public class SystemToken {
         ALL,
         LINUX,
         OSX,
+        MACOS,
         SOLARIS,
         WINDOWS,
         UNIX;

@@ -162,10 +162,10 @@ import org.biopcd.widgets.*         ;
  * FullSQLQuery   ::=   ParseDBConnect() <WSP> <T_QUERY> <WSP> <TEXT>
  * FileFormat     ::= ( <T_CSV> | <T_TSV> | <T_FASTA> | <T_FLAT> | <T_GDE>
  * 		      | <T_GENBANK> | <T_RAW> | <T_MASK> | <TEXT> )
- * SystemName     ::= ( <T_ALL> | <T_LINUX> | <T_OSX> | <T_SOLARIS>
+ * SystemName     ::= ( <T_ALL> | <T_LINUX> | <T_OSX> | <T_MACOS> | <T_SOLARIS>
  * 	              | <T_UNIX> | <T_WINDOWS> ) [ <WSP> ArchList () ]
  * ArchList       ::=   ArchName() ( [ <WSP> ] <COMMA> [ <WSP> ] ArchName() )*
- * ArchName       ::= ( <T_ALL> | <T_X86> | <T_AMD64> | <T_SPARC> )
+ * ArchName       ::= ( <T_ALL> | <T_X86> | <T_AMD64> | <T_ARM64> | <T_SPARC> )
  * Decimal        ::= ( t=<DECIMAL> | value = <NUMBER> )
  * Bool           ::= ( <T_TRUE> | <T_FALSE> )
  * nl             ::= [ <WSP> ] ( <NL> | <EOF> )
@@ -199,11 +199,13 @@ import org.biopcd.widgets.*         ;
  *        T_TEMPFILE  ::= "tempfile"
  *        T_LINUX     ::= "linux"
  *        T_OSX       ::= "osx"
+ *        T_MACOS     ::= "macos"
  *        T_SOLARIS   ::= "solaris"
  *        T_UNIX      ::= "unix"
  *        T_WINDOWS   ::= "windows"
  *        T_X86       ::= ( "x86" | "intel" )
  *        T_AMD64     ::= ( "amd64" | "x86_64")
+ *        T_ARM64     ::= ( "arm64" | "aarch64")
  *        T_SPARC     ::= "sparc"
  *        T_FALSE     ::= "false"
  *        T_TRUE      ::= "true"
@@ -382,7 +384,7 @@ public class PCD/*@bgen(jjtree)*/implements PCDTreeConstants/*@egen*/ {/*@bgen(j
                 result = HP_UX;
             } else if (osName.startsWith("mac os x")) {
                 result = OSX;
-            } else if (osName.startsWith("mac os")) {
+            } else if (osName.startsWith("macos")) {
                 result = MACOS;
             } else {
                 System.err.println("Did not detect your OS!"
@@ -415,6 +417,10 @@ public class PCD/*@bgen(jjtree)*/implements PCDTreeConstants/*@egen*/ {/*@bgen(j
          * Represents any ARM-compatible CPU.
          */
         ARM,
+        /**
+         * Represents any ARM64-compatible CPU.
+         */
+        ARM64,
         /**
          * Represents any MIPS-compatible CPU.
          */
@@ -450,6 +456,8 @@ public class PCD/*@bgen(jjtree)*/implements PCDTreeConstants/*@egen*/ {/*@bgen(j
                 result = SPARC;
             } else if (osArch.equals("arm")) {
                 result = ARM;
+            } else if (osArch.equals("arm64") || osArch.equals("aarch64") ) {
+                result = ARM64;
             } else if (osArch.equals("alpha")) {
                 result = ALPHA;
             } else if (osArch.equals("mips")) {
@@ -2079,6 +2087,7 @@ String FileFormat() :
  *      ALL     (the command supports any operating system)
  *      Linux
  *      OSX
+ *      macos
  *      Solaris
  *      Unix    (the command will only work in UNIX-compatible systems)
  *      Windows (the command will only work in Windows-compatible systems)</pre>
@@ -2105,6 +2114,7 @@ SystemToken SystemName() :
     ( <T_ALL>     { osSupported = SystemToken.OS.ALL;     }
     | <T_LINUX>   { osSupported = SystemToken.OS.LINUX;   }
     | <T_OSX>     { osSupported = SystemToken.OS.OSX;     }
+    | <T_MACOS>   { osSupported = SystemToken.OS.MACOS;   }
     | <T_SOLARIS> { osSupported = SystemToken.OS.SOLARIS; }
     | <T_UNIX>    { osSupported = SystemToken.OS.UNIX;    }
     | <T_WINDOWS> { osSupported = SystemToken.OS.WINDOWS; }
@@ -2223,6 +2233,7 @@ Set<SystemToken.ARCH> ArchList() :
  *              - may be useful for shell-scripts)
  *     X86     (any x86 compatible machine)
  *     AMD64   (any amd64 compatible machine)
+ *     ARM64   (any arm64 compatible machine)
  *     Sparc   (any amd64 compatible machine)</pre>
  **
  * @return whether the architecture is supported
@@ -2253,6 +2264,12 @@ SystemToken.ARCH ArchName () : {/*@bgen(jjtree) ArchName */
                    jjtc000 = false;
                  }
 /*@egen*/  { return SystemToken.ARCH.AMD64; }
+    | <T_ARM64>/*@bgen(jjtree)*/
+                 {
+                   jjtree.closeNodeScope(jjtn000, true);
+                   jjtc000 = false;
+                 }
+/*@egen*/  { return SystemToken.ARCH.ARM64; }
     | <T_SPARC>/*@bgen(jjtree)*/
                  {
                    jjtree.closeNodeScope(jjtn000, true);
@@ -2757,6 +2774,7 @@ TOKEN_MGR_DECLS: {
 <*> TOKEN: {
              < T_LINUX:      "linux"    > : DATA
            | < T_OSX:        "osx"      > : DATA
+           | < T_MACOS:      "macos"      > : DATA
            | < T_SOLARIS:    "solaris"  > : DATA
            | < T_UNIX:       "unix"     > : DATA
            | < T_WINDOWS:    "windows"  > : DATA
@@ -2766,6 +2784,7 @@ TOKEN_MGR_DECLS: {
 <*> TOKEN: {
              < T_X86:       ("x86"   | "intel" ) > : DATA
            | < T_AMD64:     ("amd64" | "x86_64") > : DATA
+           | < T_ARM64:     ("arm64" | "aarch64") > : DATA
            | < T_SPARC:      "sparc"             > : DATA
            }
 

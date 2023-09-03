@@ -1006,7 +1006,6 @@ public class TableCanvas extends DataCanvas {
                 int result = JOptionPane.showConfirmDialog(null, mainPanel, "Find", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
                 if (result == JOptionPane.OK_OPTION) {
                     String priStr = firstStr.getText();
-                    String secStr = secondStr.getText();
                     
                     if (!selectionRadio.isSelected()) {
                         tablePane.clearSelection();

@@ -143,9 +143,36 @@ public class CSVFile extends FileFilter {
      *                             reading from the Reader object.
      */
     public static void readFile(TableCanvas table, Reader currentFile,
-                                boolean overwrite) throws IOException {
-        // TODO: implement overwrite feature
+                                boolean overwrite, boolean forceall) throws IOException {
+
         try {
+            if (overwrite) {
+
+                // We need to jot down the number of columns before we delete rows
+                int numCols = table.tableModel.getColumnCount();
+
+                // If no data are selected, delete all data in the canvas
+                boolean NothingSelected = (table.tablePane.getSelectedColumnCount() == 0
+                    && table.tablePane.getSelectedRowCount() == 0);
+                if (forceall || NothingSelected) {
+                    table.setSelectionMode(TableCanvas.SelectionMode.ROW);
+                    table.tablePane.selectAll();
+                    table.deleteSelectedRows();
+                    table.tablePane.clearSelection();
+                }
+
+                // DOESN'T ELIMINATE THE ERROR, EVEN IF WE RUN addRow(dummy) TWICE
+                // An error would be generated if we had an empty canvas, so add a dummy
+                // first row and clear the selection.  
+                /**if (forceall || NothingSelected) {
+                      String[] dummy = new String[numCols];
+                      for (int i = 0; i < numCols; i++ ) {
+                          dummy[i] = "";
+                      };
+                      table.tableModel.addRow(dummy);
+                } 
+             */   
+            }
             // Create a new parser object to read the CSV file.
             CSVFile parser = new CSVFile(currentFile);
 

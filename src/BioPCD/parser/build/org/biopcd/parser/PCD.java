@@ -147,10 +147,10 @@ import org.biopcd.widgets.*         ;
  * FullSQLQuery   ::=   ParseDBConnect() <WSP> <T_QUERY> <WSP> <TEXT>
  * FileFormat     ::= ( <T_CSV> | <T_TSV> | <T_FASTA> | <T_FLAT> | <T_GDE>
  * 		      | <T_GENBANK> | <T_RAW> | <T_MASK> | <TEXT> )
- * SystemName     ::= ( <T_ALL> | <T_LINUX> | <T_OSX> | <T_SOLARIS>
+ * SystemName     ::= ( <T_ALL> | <T_LINUX> | <T_OSX> | <T_MACOS> | <T_SOLARIS>
  * 	              | <T_UNIX> | <T_WINDOWS> ) [ <WSP> ArchList () ]
  * ArchList       ::=   ArchName() ( [ <WSP> ] <COMMA> [ <WSP> ] ArchName() )*
- * ArchName       ::= ( <T_ALL> | <T_X86> | <T_AMD64> | <T_SPARC> )
+ * ArchName       ::= ( <T_ALL> | <T_X86> | <T_AMD64> | <T_ARM64> | <T_SPARC> )
  * Decimal        ::= ( t=<DECIMAL> | value = <NUMBER> )
  * Bool           ::= ( <T_TRUE> | <T_FALSE> )
  * nl             ::= [ <WSP> ] ( <NL> | <EOF> )
@@ -184,11 +184,13 @@ import org.biopcd.widgets.*         ;
  *        T_TEMPFILE  ::= "tempfile"
  *        T_LINUX     ::= "linux"
  *        T_OSX       ::= "osx"
+ *        T_MACOS     ::= "macos"
  *        T_SOLARIS   ::= "solaris"
  *        T_UNIX      ::= "unix"
  *        T_WINDOWS   ::= "windows"
  *        T_X86       ::= ( "x86" | "intel" )
  *        T_AMD64     ::= ( "amd64" | "x86_64")
+ *        T_ARM64     ::= ( "arm64" | "aarch64")
  *        T_SPARC     ::= "sparc"
  *        T_FALSE     ::= "false"
  *        T_TRUE      ::= "true"
@@ -364,7 +366,7 @@ public class PCD/*@bgen(jjtree)*/implements PCDTreeConstants, PCDConstants {/*@b
                 result = HP_UX;
             } else if (osName.startsWith("mac os x")) {
                 result = OSX;
-            } else if (osName.startsWith("mac os")) {
+            } else if (osName.startsWith("macos")) {
                 result = MACOS;
             } else {
                 System.err.println("Did not detect your OS!"
@@ -397,6 +399,10 @@ public class PCD/*@bgen(jjtree)*/implements PCDTreeConstants, PCDConstants {/*@b
          * Represents any ARM-compatible CPU.
          */
         ARM,
+        /**
+         * Represents any ARM64-compatible CPU.
+         */
+        ARM64,
         /**
          * Represents any MIPS-compatible CPU.
          */
@@ -432,6 +438,8 @@ public class PCD/*@bgen(jjtree)*/implements PCDTreeConstants, PCDConstants {/*@b
                 result = SPARC;
             } else if (osArch.equals("arm")) {
                 result = ARM;
+            } else if (osArch.equals("arm64") || osArch.equals("aarch64") ) {
+                result = ARM64;
             } else if (osArch.equals("alpha")) {
                 result = ALPHA;
             } else if (osArch.equals("mips")) {
@@ -972,6 +980,7 @@ public class PCD/*@bgen(jjtree)*/implements PCDTreeConstants, PCDConstants {/*@b
             switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
             case T_LINUX:
             case T_OSX:
+            case T_MACOS:
             case T_SOLARIS:
             case T_UNIX:
             case T_WINDOWS:
@@ -2312,6 +2321,7 @@ public class PCD/*@bgen(jjtree)*/implements PCDTreeConstants, PCDConstants {/*@b
  *      ALL     (the command supports any operating system)
  *      Linux
  *      OSX
+ *      macos
  *      Solaris
  *      Unix    (the command will only work in UNIX-compatible systems)
  *      Windows (the command will only work in Windows-compatible systems)</pre>
@@ -2340,6 +2350,10 @@ public class PCD/*@bgen(jjtree)*/implements PCDTreeConstants, PCDConstants {/*@b
       case T_OSX:
         jj_consume_token(T_OSX);
                     osSupported = SystemToken.OS.OSX;
+        break;
+      case T_MACOS:
+        jj_consume_token(T_MACOS);
+                    osSupported = SystemToken.OS.MACOS;
         break;
       case T_SOLARIS:
         jj_consume_token(T_SOLARIS);
@@ -2484,6 +2498,7 @@ public class PCD/*@bgen(jjtree)*/implements PCDTreeConstants, PCDConstants {/*@b
  *              - may be useful for shell-scripts)
  *     X86     (any x86 compatible machine)
  *     AMD64   (any amd64 compatible machine)
+ *     ARM64   (any arm64 compatible machine)
  *     Sparc   (any amd64 compatible machine)</pre>
  **
  * @return whether the architecture is supported
@@ -2512,6 +2527,12 @@ public class PCD/*@bgen(jjtree)*/implements PCDTreeConstants, PCDConstants {/*@b
                    jjtree.closeNodeScope(jjtn000, true);
                    jjtc000 = false;
                    {if (true) return SystemToken.ARCH.AMD64;}
+        break;
+      case T_ARM64:
+        jj_consume_token(T_ARM64);
+                   jjtree.closeNodeScope(jjtn000, true);
+                   jjtc000 = false;
+                   {if (true) return SystemToken.ARCH.ARM64;}
         break;
       case T_SPARC:
         jj_consume_token(T_SPARC);
@@ -3041,46 +3062,6 @@ public class PCD/*@bgen(jjtree)*/implements PCDTreeConstants, PCDConstants {/*@b
     finally { jj_save(11, xla); }
   }
 
-  private boolean jj_3_5() {
-    if (jj_scan_token(T_SAVE)) return true;
-    return false;
-  }
-
-  private boolean jj_3_4() {
-    if (jj_scan_token(T_DEFAULT)) return true;
-    return false;
-  }
-
-  private boolean jj_3_8() {
-    if (jj_scan_token(T_DEFAULT)) return true;
-    return false;
-  }
-
-  private boolean jj_3_9() {
-    if (jj_scan_token(T_DEFAULT)) return true;
-    return false;
-  }
-
-  private boolean jj_3_3() {
-    if (jj_scan_token(T_LABEL)) return true;
-    return false;
-  }
-
-  private boolean jj_3_7() {
-    if (jj_scan_token(T_DEFAULT)) return true;
-    return false;
-  }
-
-  private boolean jj_3_2() {
-    if (jj_scan_token(T_DEFAULT)) return true;
-    return false;
-  }
-
-  private boolean jj_3_1() {
-    if (jj_scan_token(T_LABEL)) return true;
-    return false;
-  }
-
   private boolean jj_3_12() {
     if (jj_scan_token(T_CONTENT)) return true;
     return false;
@@ -3101,6 +3082,46 @@ public class PCD/*@bgen(jjtree)*/implements PCDTreeConstants, PCDConstants {/*@b
     return false;
   }
 
+  private boolean jj_3_5() {
+    if (jj_scan_token(T_SAVE)) return true;
+    return false;
+  }
+
+  private boolean jj_3_8() {
+    if (jj_scan_token(T_DEFAULT)) return true;
+    return false;
+  }
+
+  private boolean jj_3_4() {
+    if (jj_scan_token(T_DEFAULT)) return true;
+    return false;
+  }
+
+  private boolean jj_3_9() {
+    if (jj_scan_token(T_DEFAULT)) return true;
+    return false;
+  }
+
+  private boolean jj_3_3() {
+    if (jj_scan_token(T_LABEL)) return true;
+    return false;
+  }
+
+  private boolean jj_3_2() {
+    if (jj_scan_token(T_DEFAULT)) return true;
+    return false;
+  }
+
+  private boolean jj_3_7() {
+    if (jj_scan_token(T_DEFAULT)) return true;
+    return false;
+  }
+
+  private boolean jj_3_1() {
+    if (jj_scan_token(T_LABEL)) return true;
+    return false;
+  }
+
   /** Generated Token Manager. */
   public PCDTokenManager token_source;
   SimpleCharStream jj_input_stream;
@@ -3116,19 +3137,24 @@ public class PCD/*@bgen(jjtree)*/implements PCDTreeConstants, PCDConstants {/*@b
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static private int[] jj_la1_2;
+  static private int[] jj_la1_3;
   static {
       jj_la1_init_0();
       jj_la1_init_1();
       jj_la1_init_2();
+      jj_la1_init_3();
    }
    private static void jj_la1_init_0() {
-      jj_la1_0 = new int[] {0x1,0x1f000,0x1,0x0,0x1,0x0,0xffe,0x0,0x0,0x0,0x0,0x1,0x0,0xc0000000,0x0,0x3fc00000,0x1f000,0x0,0x0,0x0,0x0,0xe0000,0x0,0x0,0x0,0x0,0x0,0x300000,0x0,0x1,};
+      jj_la1_0 = new int[] {0x1,0x3f000,0x1,0x0,0x1,0x0,0xffe,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0xff000000,0x3f000,0x0,0x0,0x0,0x0,0x3c0000,0x0,0x0,0x0,0x0,0x0,0xc00000,0x0,0x1,};
    }
    private static void jj_la1_init_1() {
-      jj_la1_1 = new int[] {0x0,0x20000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x40000000,0xc00000,0x0,0x0,0x0,0x18000,0x0,0x20000000,0x0,0x0,0x0,0x0,0x20000000,0x0,0x0,0x0,0x6000000,0x0,0x0,0x0,0x0,};
+      jj_la1_1 = new int[] {0x0,0x80000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x3000000,0x0,0x0,0x3,0x60000,0x0,0x80000000,0x0,0x0,0x0,0x0,0x80000000,0x0,0x0,0x0,0x18000000,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_init_2() {
-      jj_la1_2 = new int[] {0x28000,0x0,0x28000,0x170,0x0,0x170,0x0,0x1,0x1,0x0,0x0,0x28000,0x1,0x0,0x0,0x400,0x0,0x20000,0x20200,0x20000,0x20000,0x0,0x20000,0x20000,0x20000,0x400,0x1800,0x0,0x20000,0x8000,};
+      jj_la1_2 = new int[] {0xa0000,0x0,0xa0000,0x5c0,0x0,0x5c0,0x0,0x4,0x4,0x1,0x0,0xa0000,0x4,0x0,0x0,0x1000,0x0,0x80000,0x80800,0x80000,0x80000,0x0,0x80000,0x80000,0x80000,0x1000,0x6000,0x0,0x80000,0x20000,};
+   }
+   private static void jj_la1_init_3() {
+      jj_la1_3 = new int[] {0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[12];
   private boolean jj_rescan = false;
@@ -3317,7 +3343,7 @@ public class PCD/*@bgen(jjtree)*/implements PCDTreeConstants, PCDConstants {/*@b
   /** Generate ParseException. */
   public ParseException generateParseException() {
     jj_expentries.clear();
-    boolean[] la1tokens = new boolean[95];
+    boolean[] la1tokens = new boolean[97];
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
@@ -3334,10 +3360,13 @@ public class PCD/*@bgen(jjtree)*/implements PCDTreeConstants, PCDConstants {/*@b
           if ((jj_la1_2[i] & (1<<j)) != 0) {
             la1tokens[64+j] = true;
           }
+          if ((jj_la1_3[i] & (1<<j)) != 0) {
+            la1tokens[96+j] = true;
+          }
         }
       }
     }
-    for (int i = 0; i < 95; i++) {
+    for (int i = 0; i < 97; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
