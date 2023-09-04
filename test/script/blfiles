@@ -11,12 +11,16 @@
 # part of an install or update.
 
 # Set BIRCH environment variable, on which everything else depends
+#BIRCH=/home/psgendb/BIRCHDEV/java/bioLegato-dev/test
 BIRCH=/home/psgendb/BIRCHDEV/java/bioLegato/test
 export BIRCH
 
 # Uncomment one choice for BIRCH_PLATFORM
 BIRCH_PLATFORM="linux-x86_64"
+#BIRCH_PLATFORM="linux-arm64"
 #BIRCH_PLATFORM="osx-x86_64"
+#BIRCH_PLATFORM="macos-arm64"
+
 export BIRCH_PLATFORM
 #-----------------------------------------------------------------
 
