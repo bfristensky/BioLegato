@@ -338,10 +338,10 @@ public class BLMain {
                                 //***********//
                                 ///////////////
                                 // Show BioLegato's version number.
-                                // NOTE: 1.1.1 is replaced with the
+                                // NOTE: 1.1.2 is replaced with the
                                 // version number of BioLegato by the ant
                                 // build script.
-                                System.out.println("BioLegato v1.1.1");
+                                System.out.println("BioLegato v1.1.2");
                                 System.exit(0);
                                 
                             } else if ("debug".equals(argument)) {
