@@ -868,7 +868,7 @@ public class TableCanvas extends DataCanvas {
         rowHeader.setCellRenderer(new RowHeaderRenderer(tablePane));
         scrollPane.setRowHeaderView(rowHeader);
         
-        final AbstractAction find = new AbstractAction("Find") {
+        final AbstractAction find = new AbstractAction("Find (EXPERIMENTAL!)") {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 JTextField firstStr = new JTextField(10);
@@ -1003,7 +1003,7 @@ public class TableCanvas extends DataCanvas {
                 gbc.gridwidth = 1;
                 
 
-                int result = JOptionPane.showConfirmDialog(null, mainPanel, "Find", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+                int result = JOptionPane.showConfirmDialog(null, mainPanel, "Find (EXPERIMENTAL!)", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
                 if (result == JOptionPane.OK_OPTION) {
                     String priStr = firstStr.getText();
                     
