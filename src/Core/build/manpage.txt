@@ -2,7 +2,7 @@ NAME
     Bio Legato - A customizable GUI for running programs
 
 VERSION
-    Version 1.1.2
+    Version 1.1.3
 
 SYNOPSIS
     biolegato [options] [files]
