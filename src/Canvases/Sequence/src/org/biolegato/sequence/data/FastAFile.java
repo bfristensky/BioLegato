@@ -146,7 +146,7 @@ public class FastAFile extends DataFormat {
                 if (y < modellength && !addonly) {
                     char [] text = new char[sbuff.length()];
                     sbuff.getChars(0, text.length, text, 0);
-                    datamodel.insert(x, y, text, 0, text.length, true);
+                    datamodel.insert(x, y, text, 0, text.length, true,false);
                 } else {
                     datamodel.add(y, new Seq(Seq.detectType(sbuff), name,
                                                         sbuff, description));

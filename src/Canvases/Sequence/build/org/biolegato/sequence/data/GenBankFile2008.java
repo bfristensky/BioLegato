@@ -271,7 +271,7 @@ public class GenBankFile2008 extends DataFormat {
                         // itself, and no metadata (such as type, etc.)
                         char [] text = new char[sequencebuffer.length()];
                         sequencebuffer.getChars(0, text.length, text, 0);
-                        datamodel.insert(x, y, text, 0, text.length, true);
+                        datamodel.insert(x, y, text, 0, text.length, true,false);
                     } else {
                         // ADD a new sequence to the end of the data model.
                         // begin by reading further information from the locus

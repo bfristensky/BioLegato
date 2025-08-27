@@ -388,6 +388,7 @@ void Param(int scope, Map<String, Widget> widgetList, PCDIO pcdio) :
           | <T_TEXTAREA> nl() parameter = textAreaFields (scope + 1, name)
           | <T_NUMBER>   nl() parameter = numberFields   (scope + 1, name)
           | <T_DECIMAL>  nl() parameter = decimalFields  (scope + 1, name)
+          | <T_PANEL>    nl() parameter = panelFields    (scope + 1, name)
           | <T_FILE>     nl() parameter = fileFields     (scope + 1, name)
           | <T_DIR>      nl() parameter = dirFields      (scope + 1, name)
           | <T_TEMPFILE> nl() parameter = tempfileFields (scope + 1, name, pcdio)

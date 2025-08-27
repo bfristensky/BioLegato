@@ -41,14 +41,6 @@
             </bookmark>
         </file>
         <file>
-            <url>BioPCD/parser/src/org/biopcd/widgets/WidgetGenerator.java</url>
-            <bookmark id="0">
-                <name/>
-                <line>32</line>
-                <key/>
-            </bookmark>
-        </file>
-        <file>
             <url>Core/src/org/biolegato/main/Command.java</url>
             <bookmark id="0">
                 <name/>
@@ -65,14 +57,6 @@
             </bookmark>
         </file>
         <file>
-            <url>Turtle/src/org/turtleshell/turtle.jj</url>
-            <bookmark id="0">
-                <name/>
-                <line>388</line>
-                <key/>
-            </bookmark>
-        </file>
-        <file>
             <url>GDE/src/org/biolegato/gdesupport/canvas/data/Cell.java</url>
             <bookmark id="0">
                 <name/>
@@ -85,6 +69,22 @@
             <bookmark id="0">
                 <name/>
                 <line>13</line>
+                <key/>
+            </bookmark>
+        </file>
+        <file>
+            <url>BioPCD/parser/src/org/biopcd/widgets/WidgetGenerator.java</url>
+            <bookmark id="0">
+                <name/>
+                <line>32</line>
+                <key/>
+            </bookmark>
+        </file>
+        <file>
+            <url>Turtle/src/org/turtleshell/turtle.jj</url>
+            <bookmark id="0">
+                <name/>
+                <line>388</line>
                 <key/>
             </bookmark>
         </file>

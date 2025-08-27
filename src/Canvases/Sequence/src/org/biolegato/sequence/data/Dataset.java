@@ -132,10 +132,11 @@ public class Dataset extends AbstractListModel {
      * @param length  the length in characters of data from the array to insert.
      * @param protect whether to test the protections of the sequence, already
      *                in the Dataset, before inserting the text.
+     * @param delAnnotation whether to delete annotation when a sequence is changed
      * @return true if the insertion was successful, otherwise false.
      */
     public boolean insert(int x, int y, char[] text, int offset,
-            int length, boolean protect) {
+            int length, boolean protect, boolean delAnnotation) {
         Seq current;
         boolean result = false;
 
@@ -162,7 +163,9 @@ public class Dataset extends AbstractListModel {
                 // Deletes GenBank original copies of the sequence
                 // this is because we are modifying the sequence, so we do not
                 // want the original sequence to be exported
-                current.original = null;
+                if (delAnnotation) {
+                    current.original = null;
+                }
 
                 // Call the canvas and notify it that the sequence length has
                 // changed.  This is essential for repainting the text area.
@@ -198,7 +201,7 @@ public class Dataset extends AbstractListModel {
      *                in the Dataset, before deleting the text.
      * @return true if the deletion was successful, otherwise false.
      */
-    public boolean delete(int x, int y, int length, boolean protect) {
+    public boolean delete(int x, int y, int length, boolean protect, boolean delAnnotation) {
         Seq curr;
         char[] text = null;
         final int xend = x + length;
@@ -241,7 +244,9 @@ public class Dataset extends AbstractListModel {
                     // Deletes GenBank original copies of the sequence
                     // this is because we are modifying the sequence, so we do
                     // not want the original sequence to be exported.
-                    curr.original = null;
+                    if (delAnnotation) {
+                        curr.original = null;
+                    }
 
                     // Call the canvas and notify it that the sequence length
                     // has changed (+ a positive length indicates an insertion;

@@ -133,7 +133,7 @@ public class GDEFlatfile extends DataFormat {
                 if (y < modellength && !addonly) {
                     char [] text = new char[sequence.length()];
                     sequence.getChars(0, text.length, text, 0);
-                    datamodel.insert(x, y, text, 0, text.length, true);
+                    datamodel.insert(x, y, text, 0, text.length, true,false);
                 } else {
                     datamodel.add(y, new Seq(type, name, sequence));
                 }

@@ -1211,8 +1211,8 @@ public class SequenceTextArea extends JComponent implements ListDataListener,
 
                     // Replace the original text with the altered-case version
                     // of the text selected.
-                    datamodel.delete(minsx, y, length, false);
-                    datamodel.insert(minsx, y, data, 0, length, false);
+                    //datamodel.delete(minsx, y, length, false, false);
+                    //datamodel.insert(minsx, y, data, 0, length, false, false);
                 }
             }
         }
@@ -1251,7 +1251,7 @@ public class SequenceTextArea extends JComponent implements ListDataListener,
                 insert(x, number, text, false);
             }
         } else {
-            datamodel.insert(x, y, text, 0, text.length, true);
+            datamodel.insert(x, y, text, 0, text.length, true,false);
         }
     }
 
@@ -1313,7 +1313,7 @@ public class SequenceTextArea extends JComponent implements ListDataListener,
                     }
                 }
             }
-            result |= datamodel.delete(x, count, w, true);
+            result |= datamodel.delete(x, count, w, true,true);
         }
 
         // If we are performing a group deletion, and there are sequences to
@@ -1328,7 +1328,7 @@ public class SequenceTextArea extends JComponent implements ListDataListener,
                 // actual full sequences from the Dataset object!)
                 if ((gln < y || gln > max)
                         && gln < datamodel.getSize()) {
-                    result |= datamodel.delete(x, gln, w, true);
+                    result |= datamodel.delete(x, gln, w, true,true);
                 } else if (gln >= datamodel.getSize()) {
                     System.err.println("Sequence text area -"
                             + " Invalid row number: " + gln);

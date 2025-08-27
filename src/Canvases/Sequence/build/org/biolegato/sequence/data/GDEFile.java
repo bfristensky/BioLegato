@@ -272,7 +272,7 @@ public class GDEFile extends DataFormat {
             //        is simpler than its reverse case).
             if (y < modellength && !addonly) {
                 char[] seqarray = sequence.toCharArray();
-                datamodel.insert(x, y, seqarray, 0, seqarray.length, true);
+                datamodel.insert(x, y, seqarray, 0, seqarray.length, true,false);
             } else {
                 datamodel.add(y, new Seq(type, name, new StringBuffer(sequence),
                         direction, topology, strands, groupID, description));

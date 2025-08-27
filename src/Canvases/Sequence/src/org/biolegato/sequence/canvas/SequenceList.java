@@ -493,8 +493,8 @@ public final class SequenceList extends JList implements SequenceCanvasObject {
 
             // Delete the old version of the sequence, then insert the modified
             // (case changed) version -- i.e. alter by replacement.
-            datamodel.delete(0, sequenceNumber, length, false);
-            datamodel.insert(0, sequenceNumber, data, 0, length, false);
+            datamodel.delete(0, sequenceNumber, length, false,false);
+            datamodel.insert(0, sequenceNumber, data, 0, length, false, false);
         }
     }
 

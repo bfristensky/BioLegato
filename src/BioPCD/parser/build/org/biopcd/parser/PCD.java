@@ -1175,7 +1175,7 @@ public class PCD/*@bgen(jjtree)*/implements PCDTreeConstants, PCDConstants {/*@b
  *    is then added to a tabbed pane in the main window.
  * </p>
  * <p>
- *    Each tab can only contain paramter objects,
+ *    Each tab can only contain parameter objects,
  *    and each tab MUST contain at least one parameter object.
  * </p>
  **

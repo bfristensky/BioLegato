@@ -1133,7 +1133,7 @@ void Content(int scope, Map<String, Widget> widgetList, PCDIO pcdio) :
  *    is then added to a tabbed pane in the main window.
  * </p>
  * <p>
- *    Each tab can only contain paramter objects,
+ *    Each tab can only contain parameter objects,
  *    and each tab MUST contain at least one parameter object.
  * </p>
  **
@@ -1388,6 +1388,7 @@ void Param(int scope, Map<String, Widget> widgetList, PCDIO pcdio) :
           | <T_TEXT>     nl() parameter = textFields     (scope + 1, name)
           | <T_TEXTAREA> nl() parameter = textAreaFields (scope + 1, name)
           | <T_NUMBER>   nl() parameter = numberFields   (scope + 1, name)
+          | <T_PANEL>    nl() parameter = Widget     (scope + 1, name)
           | <T_DECIMAL>  nl() parameter = decimalFields  (scope + 1, name)
           | <T_FILE>     nl() parameter = fileFields     (scope + 1, name)
           | <T_DIR>      nl() parameter = dirFields      (scope + 1, name)
