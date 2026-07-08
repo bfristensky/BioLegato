@@ -1,0 +1,124 @@
+Subject:
+Re: Mac question
+From:
+<ggma221@outlook.com>
+Date:
+6/25/24, 11:57
+To:
+"Brian Fristensky" <brian.fristensky@umanitoba.ca>
+
+Caution! This message was sent from outside the University of Manitoba.
+
+Brian,
+ 
+I am very sorry to hear about your heart and hope you get well soon.  If there is anything I can do, let me know.
+ 
+This is my main email address these days, but my older bailaowai@hotmail.com one still works and both share the same Inbox.
+ 
+These days, I'm working part-time and looking after my toddler son David, who's three and a half years old and growing up quickly.  Attached is a picture.
+ 
+It's been ages since we last talked in-person, and it would be great to see you sometime.
+ 
+I'm glad to hear that you got BIRCH ported over to the new Mac ARM platform, I also like the new tutorial videos on the website.
+ 
+I noticed there's a BioLegato bug with changecase deleting all of the annotation in the BugZilla, and thought I would try to lend a hand.  Even though it's been almost a decade since I last worked on BioLegato's code, I remembered that BioLegao deletes the annotation data whenever a sequence is modified.
+ 
+I took a look at the code and think I've tracked down the bug to lines 1214 and 1215 in src/Canvases/Sequence/src/org/biolegato/sequence/canvas/SequenceTextArea.java:
+ 
+                    datamodel.delete(minsx, y, length, false);
+                    datamodel.insert(minsx, y, data, 0, length, false);
+and the variable 'original' in src/Canvases/Sequence/src/org/biolegato/sequence/Seq.java, which after taking a look at the file formats can safely say only seems to be implemented and used for GenBank files at the moment.
+ 
+What happens is whenever the methods datamodel.insert or datamodel.delete are called, the variable 'original', containing the annotation data, is deleted because the method assumes it is no longer valid whenever there is a change.  While this implementation of change case has the advantage of being simple, it has the disadvantage of deleting the annotation data when all that is done is a change of case.
+ 
+A simple fix would be to add a variable to dataset.insert and dataset.delete methods to tell it to skip deleting the annotation data on lines 165 and 244 of src/Canvases/Sequence/src/org/biolegato/sequence/data/Dataset.java.
+ 
+I've attached modified versions of the files, which I haven't yet had a chance to test, but should hopefully fix the problem.
+ 
+Kind regards,
+Graham
+
+    ----- Original Message -----
+    From: Brian Fristensky
+    To: ggma221@outlook.com
+    Sent: Monday, June 24, 2024 12:16 PM
+    Subject: Re: Mac question
+
+    Hi, Graham,
+
+    So nice to hear from you.
+
+    I will look around today for the Snow Leopard DVD. If we had it, it should still
+    be among the Mac stuff.
+
+    Is your Outlook.com address now the default address for you?
+
+    Since you asked "How are you doing?" I have to mention that
+    in April I had unstable angina from 3 blocked arteries,
+    resulting in a triple bypass CABG
+    operation. Until about 3 weeks before I felt fine, to the
+    extent that when Teresa and I went to Hawaii in February, I
+    ran 2 days, we went snorkling, hiking and surfing. A cardiac stress
+    test in late March indicated the blockages, which were later confirmed
+    by angiogram.
+
+    Anyway, after an initial very uncomfortable 4 of 5 weeks, I am
+    now feeling more vigorous and normal. I can strongly recommend
+    the cardiac rehab program at Reh-Fit Centre to others.
+
+    I will get back to you regarding the DVD.
+
+    BTW - I bought a Mac M1 Mini in 2022, and now have a complete
+    BIRCH version on the ARM platform.
+
+    Brian
+
+    On 6/24/24 10:48, ggma221@outlook.com wrote:
+>     Caution! This message was sent from outside the University of Manitoba.
+>
+>     Hi Brian,
+>      
+>     How are you doing?
+>      
+>     I'm looking for an old Mac computer and a copy of Mac OS X Snow Leopard Server DVD.  I've been checking Kijiji with no luck and remember that we used to have a copy oF Snow Leopard Server for Albacore when I worked at the BitLab years ago.  I was wondering if it might be possible to borrow the install disc?
+>      
+>     Thank you,
+>     Graham
+
+    -- 
+    ===========================================================
+    Brian Fristensky
+    Department of Plant Science      
+    University of Manitoba         
+    Winnipeg, MB R3T 2N2  CANADA
+    Phone: 204-474-6085
+    FAX: 204-474-7528   
+    brian.fristensky@umanitoba.ca 
+    http://home.cc.umanitoba.ca/~frist/   
+    ====================================================
+
+    The trouble is, the production of today's most advanced
+    logic devices require a whopping 600 to 1000 steps, a level
+    of complexity that'll soon rival that of getting your
+    travel reimbursements past university administration.
+
+         - Sabine Hossenfelder, "How dead is Moore's Law?"
+
+    ===========================================================
+
+    The University of Manitoba campuses are located on original
+    lands of Anishinaabeg, Cree, Oji-Cree, Dakota and Dene
+    peoples, and on the homeland of the Métis Nation.
+
+    We respect the Treaties that were made on these territories,
+    we acknowledge the harms and mistakes of the past, and we
+    dedicate ourselves to move forward in partnership with
+    Indigenous communities in a spirit of reconciliation and
+    collaboration.
+
+
+IMG_4049.JPG
+Attachments:
+Dataset.java	47.9 KB
+SequenceTextArea.java	92.4 KB
+IMG_4049.JPG	786 KB

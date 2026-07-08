@@ -1,0 +1,51 @@
+Running BioLegato (or at least the installer) fails with Java 26.0.1.
+
+Error: Could not find or load main class org.biolegato.sequence.canvas.SequenceCanvas
+Caused by: java.lang.NoClassDefFoundError: javax/swing/JApplet
+
+javax.swing.JApplet was present in Java 8 
+https://docs.oracle.com/javase/8/docs/api/javax/swing/JApplet.html
+
+It was deprecated in Java 9
+
+https://docs.oracle.com/en/java/javase/17/docs/api/java.desktop/javax/swing/JApplet.html
+
+and scheduled to be removed in Java 26.
+
+Note that Ubuntu 26 has Java 25 as its default JDK.
+
+Search on this error message. Japplet has been removed from recent Java versions. Examples show how to migrate to JFrame.
+
+To find Java src code containing JApplet, 
+
+grep -r . -e 'JApplet'
+./Core/src/org/biolegato/main/DataCanvas.java:import javax.swing.JApplet;
+./Core/src/org/biolegato/main/DataCanvas.java:public abstract class DataCanvas extends JApplet implements PCDIO {
+./Core/src/org/biolegato/main/BLMain.java.1.0.5.1.bak1:        // TRANSITION WRAPPING (for future JApplet support!)
+./Core/src/org/biolegato/main/BLMain.java.1.0.5.1.bak1:                         * TRANSITION WRAPPING (for future JApplet support!)
+./Core/src/org/biolegato/main/BLMain.java:        // TRANSITION WRAPPING (for future JApplet support!)
+./Core/src/org/biolegato/main/BLMain.java:                         * TRANSITION WRAPPING (for future JApplet support!)
+grep: ./Core/build/org/biolegato/main/DataCanvas.class: binary file matches
+./Core/build/org/biolegato/main/DataCanvas.java:import javax.swing.JApplet;
+./Core/build/org/biolegato/main/DataCanvas.java:public abstract class DataCanvas extends JApplet implements PCDIO {
+./Core/build/org/biolegato/main/BLMain.java.1.0.5.1.bak1:        // TRANSITION WRAPPING (for future JApplet support!)
+./Core/build/org/biolegato/main/BLMain.java.1.0.5.1.bak1:                         * TRANSITION WRAPPING (for future JApplet support!)
+./Core/build/org/biolegato/main/BLMain.java:        // TRANSITION WRAPPING (for future JApplet support!)
+./Core/build/org/biolegato/main/BLMain.java:                         * TRANSITION WRAPPING (for future JApplet support!)
+./Canvases/dbpcd/docs/overview-tree.html:<li type="circle">javax.swing.JApplet (implements javax.accessibility.Accessible, javax.swing.RootPaneContainer)
+./Canvases/dbpcd/docs/org/biolegato/database/package-tree.html:<li type="circle">javax.swing.JApplet (implements javax.accessibility.Accessible, javax.swing.RootPaneContainer)
+./Canvases/dbpcd/docs/org/biolegato/database/DBCanvas.html:<li><a href="#nested_classes_inherited_from_class_javax.swing.JApplet">Nested</a>&nbsp;|&nbsp;</li>
+./Canvases/dbpcd/docs/org/biolegato/database/DBCanvas.html:<li>javax.swing.JApplet</li>
+./Canvases/dbpcd/docs/org/biolegato/database/DBCanvas.html:<li class="blockList"><a name="nested_classes_inherited_from_class_javax.swing.JApplet">
+./Canvases/dbpcd/docs/org/biolegato/database/DBCanvas.html:<h3>Nested classes/interfaces inherited from class&nbsp;javax.swing.JApplet</h3>
+./Canvases/dbpcd/docs/org/biolegato/database/DBCanvas.html:<code>javax.swing.JApplet.AccessibleJApplet</code></li>
+./Canvases/dbpcd/docs/org/biolegato/database/DBCanvas.html:<li class="blockList"><a name="fields_inherited_from_class_javax.swing.JApplet">
+./Canvases/dbpcd/docs/org/biolegato/database/DBCanvas.html:<h3>Fields inherited from class&nbsp;javax.swing.JApplet</h3>
+./Canvases/dbpcd/docs/org/biolegato/database/DBCanvas.html:<li class="blockList"><a name="methods_inherited_from_class_javax.swing.JApplet">
+./Canvases/dbpcd/docs/org/biolegato/database/DBCanvas.html:<h3>Methods inherited from class&nbsp;javax.swing.JApplet</h3>
+./Canvases/dbpcd/docs/org/biolegato/database/DBCanvas.html:<li><a href="#nested_classes_inherited_from_class_javax.swing.JApplet">Nested</a>&nbsp;|&nbsp;</li>
+
+The above makes it look like only the DataCanvas is affected.
+This was fixed in DataCanvas by changing JApplet to JFrame.
+
+Notes: We also need to check getbirch, as well as 3rd party Java programs in BIRCH
