@@ -1,3 +1,6 @@
+FIXED IN BioLegato1.1.4
+
+
 Running BioLegato (or at least the installer) fails with Java 26.0.1.
 
 Error: Could not find or load main class org.biolegato.sequence.canvas.SequenceCanvas

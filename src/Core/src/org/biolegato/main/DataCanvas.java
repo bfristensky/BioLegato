@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
-import javax.swing.JApplet;
+/** import javax.swing.JApplet; */
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -43,7 +43,8 @@ import org.biopcd.parser.PCDIO;
  * @author Brian Fristensky
  * @version @VERSION@ 25-Mar-2011
  */
-public abstract class DataCanvas extends JApplet implements PCDIO {
+/** public abstract class DataCanvas extends JApplet implements PCDIO { */
+public abstract class DataCanvas extends JFrame implements PCDIO {
 
 
 /////////////////////////

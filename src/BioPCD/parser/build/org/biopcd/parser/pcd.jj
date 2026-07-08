@@ -1382,13 +1382,15 @@ void Param(int scope, Map<String, Widget> widgetList, PCDIO pcdio) :
     assertIndent(scope + 1) <T_TYPE>  <WSP>
           (
             <T_BUTTON>   nl() parameter = buttonFields   (scope + 1, name)
+       /*   | <T_PANEL>    nl() parameter = Panel          (scope + 1, name, Map<String, Widget>, pcdio) */
+       /*   | <T_PANEL>    nl() parameter = Panel          (scope + 1, widgetList, pcdio) */
+       /*   | <T_PANEL>    nl() parameter = Panel          (scope + 1, widgetList,PCDIO) */
           | <T_CHOOSER>  nl() parameter = listFields     (scope + 1, name, ListType.CHOOSER)
           | <T_COMBOBOX> nl() parameter = listFields     (scope + 1, name, ListType.COMBOBOX)
           | <T_LIST>     nl() parameter = listFields     (scope + 1, name, ListType.LIST)
           | <T_TEXT>     nl() parameter = textFields     (scope + 1, name)
           | <T_TEXTAREA> nl() parameter = textAreaFields (scope + 1, name)
           | <T_NUMBER>   nl() parameter = numberFields   (scope + 1, name)
-          | <T_PANEL>    nl() parameter = Widget     (scope + 1, name)
           | <T_DECIMAL>  nl() parameter = decimalFields  (scope + 1, name)
           | <T_FILE>     nl() parameter = fileFields     (scope + 1, name)
           | <T_DIR>      nl() parameter = dirFields      (scope + 1, name)

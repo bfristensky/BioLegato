@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
-import javax.swing.JApplet;
+/** import javax.swing.JApplet; */
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -41,9 +41,12 @@ import org.biopcd.parser.PCDIO;
  **
  * @author Graham Alvare
  * @author Brian Fristensky
- * @version 1.1.3 25-Mar-2011
+ * @version 1.1.4 25-Mar-2011
  */
-public abstract class DataCanvas extends JApplet implements PCDIO {
+/** public abstract class DataCanvas extends JApplet implements PCDIO {
+* JApplet deprecated and deleted as of Java 26.
+*/
+public abstract class DataCanvas extends JFrame implements PCDIO {
 
 
 /////////////////////////
@@ -74,10 +77,10 @@ public abstract class DataCanvas extends JApplet implements PCDIO {
 
 
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            // NOTE: 1.1.3 is replaced with the actual version number
+            // NOTE: 1.1.4 is replaced with the actual version number
             // by BioLegato's Apache Ant build script.
             JOptionPane.showMessageDialog(window,
-                    "BioLegato version 1.1.3\n"
+                    "BioLegato version 1.1.4\n"
                         + "\n"
                         + "Please cite:\n"
                         + "Alvare G, Roche-Lima A, Fristensky B\n"
@@ -248,8 +251,10 @@ public abstract class DataCanvas extends JApplet implements PCDIO {
     /**
      * Starts BioLegato Applet version.
      */
-    @Override
-    public void init() {
+    /** JApplet is deprecated, and deleted as of Java 26.*/
+    //@Override
+    //public void init() {
+    public void main() {    
         javax.swing.JRootPane grootPane = this.getRootPane();
         grootPane.putClientProperty("defeatSystemEventQueueCheck",
                 Boolean.TRUE);
